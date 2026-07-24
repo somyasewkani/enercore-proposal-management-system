@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Enercore | Settings{% endblock %}
+{% set active_page = 'settings' %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto p-margin-desktop">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Settings</h2>
+        <p class="text-body-md text-on-surface-variant">Manage your account preferences and system configuration.</p>
+    </div>
+
+    <div class="grid grid-cols-12 gap-gutter">
+        <!-- Sidebar Navigation -->
+        <div class="col-span-12 md:col-span-4">
+            <div class="glass-card rounded-xl p-4">
+                <nav class="space-y-1">
+                    <a class="flex items-center gap-3 px-4 py-3 sidebar-active rounded-lg transition-colors" href="{{ url_for('settings') }}#profile">
+                        <span class="material-symbols-outlined">account_circle</span>
+                        <span class="font-label-md text-label-md">Profile Settings</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="{{ url_for('settings') }}#notifications">
+                        <span class="material-symbols-outlined">notifications</span>
+                        <span class="font-label-md text-label-md">Notifications</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="{{ url_for('settings') }}#security">
+                        <span class="material-symbols-outlined">security</span>
+                        <span class="font-label-md text-label-md">Security & Privacy</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Settings Content -->
+        <div class="col-span-12 md:col-span-8">
+            <form method="POST" action="{{ url_for('save_settings') }}" class="glass-card rounded-xl p-8 space-y-8">
+                <div>
+                    <h3 class="font-headline-md text-headline-md mb-6">Profile Information</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase">Full Name</label>
+                            <input name="full_name" placeholder="Enter full name" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ session.user.full_name if session.get('user') else '' }}" type="text" required>
+                        </div>
+                        <div>
+                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase">Email Address</label>
+                            <input name="email" placeholder="Enter email address" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ session.user.email if session.get('user') else '' }}" type="email" required>
+                        </div>
+                        <div>
+                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase">Role</label>
+                            <select name="role" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none">
+                                <option value="Sales Engineer" {% if session.get('user') and session.user.role == 'Sales Engineer' %}selected{% endif %}>Sales Engineer</option>
+                                <option value="Executive Director" {% if session.get('user') and session.user.role == 'Executive Director' %}selected{% endif %}>Executive Director</option>
+                                <option value="Project Manager" {% if session.get('user') and session.user.role == 'Project Manager' %}selected{% endif %}>Project Manager</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase">Phone</label>
+                            <input name="phone" placeholder="Enter phone number" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ session.user.phone if (session.get('user') and session.user.phone) else '' }}" type="tel">
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-outline-variant/20">
+
+                <div>
+                    <h3 class="font-headline-md text-headline-md mb-6">Display Preferences</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-3">
+                            <div>
+                                <p class="font-body-md font-bold text-on-surface">Dark Mode</p>
+                                <p class="text-body-sm text-on-surface-variant">Toggle dark theme for reduced eye strain</p>
+                            </div>
+                            <button type="button" onclick="document.documentElement.classList.toggle('dark')" class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary">
+                                <span class="inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform translate-x-6"></span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between py-3">
+                            <div>
+                                <p class="font-body-md font-bold text-on-surface">Email Notifications</p>
+                                <p class="text-body-sm text-on-surface-variant">Receive updates on proposal status changes</p>
+                            </div>
+                            <button type="button" class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary">
+                                <span class="inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform translate-x-6"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-outline-variant/20">
+
+                <div>
+                    <h3 class="font-headline-md text-headline-md mb-6">System Preferences</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between py-3">
+                            <div>
+                                <p class="font-body-md font-bold text-on-surface">Default Currency</p>
+                                <p class="text-body-sm text-on-surface-variant">Change currency display format</p>
+                            </div>
+                            <select name="currency" class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-2 outline-none">
+                                <option>USD ($)</option>
+                                <option>EUR (€)</option>
+                                <option>GBP (£)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <a href="{{ url_for('settings') }}" class="px-6 py-2 rounded-lg border border-outline-variant/40 text-on-surface-variant font-label-md hover:bg-surface-container-high transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-6 py-2 rounded-lg bg-primary text-on-primary font-label-md hover:bg-primary-container transition-colors shadow-md">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Enercore | Electricity Bill Upload & Analysis{% endblock %}
+{% set active_page = 'analysis' %}
+
+{% block extra_styles %}
+<style>
+    .step-active { color: #006b1b; }
+    .progress-bar-fill { transition: width 0.5s ease-in-out; }
+    .upload-dashed {
+        background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23BFCCB9' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        border-radius: 16px;
+    }
+    .upload-dashed:hover {
+        background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23006B1B' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-container-max mx-auto p-margin-desktop min-h-screen">
+    <!-- Header -->
+    <header class="flex justify-between items-end mb-10">
+        <div>
+            <nav class="flex items-center gap-2 text-on-surface-variant mb-2">
+                <span class="font-label-md text-label-md">PROPOSALS</span>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="font-label-md text-label-md text-primary">BILL UPLOAD</span>
+            </nav>
+            <h1 class="font-headline-lg text-headline-lg text-on-surface">Electricity Bill Analysis</h1>
+            <p class="text-on-surface-variant font-body-md text-body-md mt-1">Upload utility statements to extract consumption profiles and calculate solar ROI.</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <button onclick="document.getElementById('guidelinesModal').classList.toggle('hidden')" 
+                class="flex items-center justify-center gap-2 h-[44px] px-6 rounded-lg bg-surface-container-high text-on-surface font-label-md hover:bg-surface-container-highest transition-colors whitespace-nowrap">
+                <span class="material-symbols-outlined text-[20px]">help_outline</span>
+                View Guidelines
+            </button>
+        </div>
+    </header>
+
+    <!-- Guidelines Modal -->
+    <div id="guidelinesModal" class="hidden glass-card p-6 rounded-xl mb-6 border border-secondary/20 shadow-lg">
+        <div class="flex justify-between items-center mb-3">
+            <h4 class="font-bold text-on-surface">Upload Guidelines</h4>
+            <button onclick="document.getElementById('guidelinesModal').classList.add('hidden')" class="material-symbols-outlined text-outline">close</button>
+        </div>
+        <p class="text-body-sm text-on-surface-variant">Ensure bills are clear, uncropped, and show at least 12 months of consumption metrics for maximum OCR accuracy.</p>
+    </div>
+
+    <!-- Bento Grid Layout -->
+    <div class="grid grid-cols-12 gap-gutter max-w-container-max">
+        <!-- Left Column: Upload & Instructions -->
+        <div class="col-span-12 lg:col-span-7 space-y-gutter">
+            <!-- Drag & Drop Zone -->
+            <section class="glass-card rounded-xl p-10 flex flex-col items-center justify-center min-h-[400px] text-center transition-all duration-300 relative">
+                <div class="upload-dashed w-full h-full absolute inset-0 pointer-events-none opacity-50"></div>
+                <form method="POST" action="{{ url_for('upload_bill') }}" enctype="multipart/form-data" class="relative z-10 space-y-6">
+                    <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                        <span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+                    </div>
+                    <div class="space-y-2">
+                        <h2 class="font-headline-md text-headline-md text-on-surface">Upload Utility Bills</h2>
+                        <p class="text-on-surface-variant font-body-md text-body-md max-w-sm mx-auto">
+                            Drag and drop PDF or image files (JPG, PNG) of your client's electricity bills. Our AI will extract consumption data automatically.
+                        </p>
+                    </div>
+                    <div class="flex flex-col items-center gap-4">
+                        <input type="file" name="bill_file" accept=".pdf,.jpg,.jpeg,.png" id="billFileInput" class="hidden" onchange="this.form.submit()">
+                        <label for="billFileInput" 
+                            class="cursor-pointer flex items-center justify-center gap-2 h-[44px] px-6 rounded-lg bg-primary text-on-primary font-label-md hover:opacity-90 transition-all shadow-md active:scale-95 whitespace-nowrap">
+                            <span class="material-symbols-outlined text-[20px]">add</span>
+                            Select Files to Upload
+                        </label>
+                        <span class="text-on-surface-variant font-label-md text-label-md">Maximum file size: 25MB</span>
+                    </div>
+                </form>
+            </section>
+        </div>
+
+        <!-- Right Column: Analysis & Data -->
+        <div class="col-span-12 lg:col-span-5 space-y-gutter">
+            <!-- Monthly Preview Table -->
+            <section class="glass-card rounded-xl overflow-hidden">
+                <div class="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-lowest">
+                    <h3 class="font-headline-md text-headline-md text-on-surface">Consumption Preview</h3>
+                    <span class="text-on-surface-variant font-label-md text-label-md">LTM</span>
+                </div>
+                <div class="p-8 text-center border-t border-outline-variant/10">
+                    <span class="material-symbols-outlined text-outline-variant text-[36px] mb-2">description</span>
+                    <p class="text-body-sm text-on-surface-variant">No utility statement uploaded yet.</p>
+                </div>
+                <div class="p-6">
+                    <a href="{{ url_for('analysis') }}" 
+                        class="w-full flex items-center justify-center gap-3 h-[56px] rounded-lg bg-primary text-on-primary font-headline-md text-headline-md font-bold hover:scale-[0.98] transition-all shadow-xl shadow-primary/30 whitespace-nowrap">
+                        <span class="material-symbols-outlined">analytics</span>
+                        View Bill Analysis
+                    </a>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}

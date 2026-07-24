@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Enercore | Client Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#8f4e00",
+                    "outline-variant": "#bfcab9",
+                    "on-error-container": "#93000a",
+                    "surface-container-low": "#f2f4f6",
+                    "on-surface": "#191c1e",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#f7fff1",
+                    "surface-dim": "#d8dadc",
+                    "tertiary-container": "#0077ce",
+                    "on-secondary-fixed-variant": "#6d3a00",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#005313",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#a2c9ff",
+                    "on-secondary-fixed": "#2e1500",
+                    "surface": "#f7f9fb",
+                    "inverse-surface": "#2d3133",
+                    "surface-variant": "#e0e3e5",
+                    "background": "#f7f9fb",
+                    "secondary-fixed": "#ffdcc2",
+                    "primary-fixed-dim": "#7ddc7a",
+                    "on-tertiary-container": "#fdfcff",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-tertiary-fixed-variant": "#004881",
+                    "inverse-primary": "#7ddc7a",
+                    "tertiary": "#005ea4",
+                    "primary-container": "#268630",
+                    "secondary-container": "#ff8f06",
+                    "on-primary-fixed": "#002204",
+                    "surface-container-high": "#e6e8ea",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-bright": "#f7f9fb",
+                    "inverse-on-surface": "#eff1f3",
+                    "primary": "#006b1b",
+                    "primary-fixed": "#98f994",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#006e1c",
+                    "on-secondary": "#ffffff",
+                    "outline": "#6f7a6b",
+                    "on-tertiary-fixed": "#001c38",
+                    "tertiary-fixed": "#d3e4ff",
+                    "on-secondary-container": "#623300",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#3f4a3d",
+                    "on-background": "#191c1e",
+                    "surface-container": "#eceef0",
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "40px",
+                    "container-max": "1440px",
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "gutter": "24px",
+                    "margin-tablet": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            background: rgba(0, 107, 27, 0.08);
+            border-left: 4px solid #006b1b;
+            color: #006b1b;
+            font-weight: 700;
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- SideNavBar -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col py-base z-50">
+<div class="px-6 py-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<img alt="Enercore Logo" class="w-full h-full object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxXXZ5leVEZf1jBXz8-L47ot4YvXZI6LYnwly3FJ4xr0ORLOJ6DWNOkw-KiRbHXpo1U6dqKrUk7vb6QDXS-5yiJP2wOBmY0HuwAwcjrfTKZuxNDoZuYeIYIQLa715q7JDTubsrs0xi7hOoVnkp8qdk_CvNhJcfoUU0LZBde_YWyYBnei8WWxSfo0xsuR-_jVcoQqbzMRWs13KhU2NzzO9l0GNGmKjgqAg3Ko6731THkjHHAgHLeh8GH12Sywj5T5OZ6FGkYX-7Y0g"/>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-lg transition-colors scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="groups" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-label-md text-label-md">Clients</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Proposals</span>
+</a>
+</nav>
+<div class="px-3 pb-6">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="h-16 w-full fixed top-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 flex justify-between items-center pl-[312px] pr-margin-desktop">
+<div class="flex items-center flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-body-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search clients..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<div class="h-8 w-px bg-outline-variant/30 mx-2"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right hidden sm:block">
+<p class="text-label-md font-bold text-on-surface">Alex Rivera</p>
+</div>
+<img class="w-10 h-10 rounded-full object-cover border border-outline-variant/50" data-alt="User profile picture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt1fhuk9SxF3umtBNz2AfUMU-xuyGBAnz2lzwxGChVWGPQe0icG2OrRx8UrlmWUzHuYKunJqNOJ873mLlPNWRRhkQ7K-qspA1RY0FKZue2rOsspcbIKHBcxnSJW6W3f7mrt92oHM1fh-E580ClCbnCL6t2RjUOVW7YKnEvgPQIbzp3xNYxyrqY2I3_0pYVdsYAmn0fnC1XGoSQ6gVJxMY9Dwk1kTf70WxL1nh3FAdi69owphhezK-Q_3L0kHehgqiogedymYMduOM"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pl-[280px] pt-16 min-h-screen">
+<div class="max-w-[1440px] mx-auto p-margin-desktop">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Clients</h2>
+<p class="text-body-md text-outline">Manage your customer list and proposal status.</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-lg font-label-md flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                    Add New Client
+                </button>
+</div>
+<div class="grid grid-cols-1 gap-gutter">
+<!-- Main Table Section -->
+<div class="space-y-gutter">
+<!-- Client Table -->
+<div class="glass-card rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Company Name</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Contact Person</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Current Proposal Status</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Last Activity</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container/30 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-tertiary-container/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">factory</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Nexus Logistics</p>
+<p class="text-[11px] text-outline">ID: SOL-8291</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface">Sarah Jenkins</p>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            Active Proposal
+                                        </span>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface-variant">Oct 12, 2023</p>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="px-3 py-1.5 rounded text-label-md font-bold text-primary hover:bg-primary/10 transition-colors">View</button>
+<button class="px-3 py-1.5 rounded text-label-md font-bold text-outline hover:bg-surface-container-high transition-colors">Edit</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container/30 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-secondary-container/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">corporate_fare</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Vertex Data Centers</p>
+<p class="text-[11px] text-outline">ID: SOL-4432</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface">Marcus Thorne</p>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/10 text-secondary font-bold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                            Analysis Phase
+                                        </span>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface-variant">Today, 4:00 PM</p>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="px-3 py-1.5 rounded text-label-md font-bold text-primary hover:bg-primary/10 transition-colors">View</button>
+<button class="px-3 py-1.5 rounded text-label-md font-bold text-outline hover:bg-surface-container-high transition-colors">Edit</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container/30 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-tertiary-container/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Summit Retail Group</p>
+<p class="text-[11px] text-outline">ID: SOL-1109</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface">Elena Rodriguez</p>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-outline-variant/30 text-on-surface-variant font-bold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                            On Hold
+                                        </span>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface-variant">Oct 14, 2023</p>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="px-3 py-1.5 rounded text-label-md font-bold text-primary hover:bg-primary/10 transition-colors">View</button>
+<button class="px-3 py-1.5 rounded text-label-md font-bold text-outline hover:bg-surface-container-high transition-colors">Edit</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container/30 transition-colors group border-b-0">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">local_hospital</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Green Valley Health</p>
+<p class="text-[11px] text-outline">ID: SOL-2278</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface">David Chen</p>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            Proposal Sent
+                                        </span>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface-variant">Yesterday</p>
+</td>
+<td class="px-6 py-5 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="px-3 py-1.5 rounded text-label-md font-bold text-primary hover:bg-primary/10 transition-colors">View</button>
+<button class="px-3 py-1.5 rounded text-label-md font-bold text-outline hover:bg-surface-container-high transition-colors">Edit</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 bg-surface-container-lowest flex justify-center border-t border-outline-variant/10">
+<button class="text-primary font-label-md hover:underline flex items-center gap-1">
+                                View All 48 Clients
+                                <span class="material-symbols-outlined text-[18px]">arrow_right_alt</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- AI Chatbot (Fixed Bottom Right) -->
+<div class="fixed bottom-8 right-8 z-[100] flex flex-col items-end">
+<!-- Chat Bubble -->
+<div class="hidden mb-4 w-[360px] h-[500px] glass-card rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-primary/20" id="chat-window">
+<div class="bg-primary p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">bolt</span>
+</div>
+<div>
+<p class="text-on-primary font-bold text-label-md">Enercore Intelligence</p>
+<p class="text-primary-fixed text-[10px] opacity-80">Online | AI Assistant</p>
+</div>
+</div>
+<button class="text-on-primary hover:bg-on-primary/10 rounded-lg p-1" onclick="toggleChat()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 p-4 overflow-y-auto space-y-4 no-scrollbar bg-surface/50">
+<div class="flex gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-[14px] text-primary">bolt</span>
+</div>
+<div class="bg-white p-3 rounded-tr-xl rounded-b-xl shadow-sm border border-outline-variant/20 max-w-[85%]">
+<p class="text-body-sm text-on-surface">Hello Alex! Your portfolio currently has 48 clients. Total estimated project value is ₹2.4 Cr. How can I help you today?</p>
+</div>
+</div>
+</div>
+<div class="p-4 bg-white border-t border-outline-variant/20">
+<div class="relative">
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-3 pr-10 py-2 text-body-sm focus:ring-1 focus:ring-primary" placeholder="Type a message..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-primary hover:bg-primary-container/20 p-1 rounded">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Chat Trigger Button -->
+<button class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group" onclick="toggleChat()">
+<span class="material-symbols-outlined text-[28px] group-hover:rotate-12 transition-transform">chat_bubble</span>
+</button>
+</div>
+<script>
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.classList.toggle('hidden');
+            chatWindow.classList.toggle('flex');
+        }
+    </script>
+</body></html>

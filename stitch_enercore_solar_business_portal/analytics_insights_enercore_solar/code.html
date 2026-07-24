@@ -1,0 +1,477 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><svg class="inline-defs-container" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"></svg><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Enercore Analytics | Solar Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#8f4e00",
+                        "outline-variant": "#bfcab9",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface": "#191c1e",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#f7fff1",
+                        "surface-dim": "#d8dadc",
+                        "tertiary-container": "#0077ce",
+                        "on-secondary-fixed-variant": "#6d3a00",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#005313",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#a2c9ff",
+                        "on-secondary-fixed": "#2e1500",
+                        "surface": "#f7f9fb",
+                        "inverse-surface": "#2d3133",
+                        "surface-variant": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "secondary-fixed": "#ffdcc2",
+                        "primary-fixed-dim": "#7ddc7a",
+                        "on-tertiary-container": "#fdfcff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#004881",
+                        "inverse-primary": "#7ddc7a",
+                        "tertiary": "#005ea4",
+                        "primary-container": "#268630",
+                        "secondary-fixed-dim": "#ffb77b",
+                        "surface-container": "#eceef0",
+                        "on-primary-fixed": "#002204",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary": "#006b1b",
+                        "primary-fixed": "#98f994",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#006e1c",
+                        "secondary-container": "#ff8f06",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6f7a6b",
+                        "on-tertiary-fixed": "#001c38",
+                        "tertiary-fixed": "#d3e4ff",
+                        "on-secondary-container": "#623300",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#3f4a3d",
+                        "on-background": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "container-max": "1440px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "gutter": "24px",
+                        "margin-tablet": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .chart-grid {
+            background-image: radial-gradient(circle, #E2E8F0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-on-surface">
+<!-- Side Navigation Shell -->
+
+<!-- Top Navigation Shell -->
+<header class="h-16 w-full fixed top-0 z-40 flex justify-between items-center pl-[312px] pr-margin-desktop bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20">
+<div class="flex items-center gap-4 w-96">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-body-sm focus:ring-2 focus:ring-primary/20" placeholder="Search analytics, leads, reports..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full border border-outline-variant/40 object-cover" data-alt="Professional headshot of a senior solar energy analyst, wearing a dark navy blazer, smiling confidently against a minimalist blurred office background, high-end corporate photography style with soft studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2cRGIk7TfuN4e4Qor6jsG9azd7tFLt0qWSRGMfeX26V2ovWp15we7wjqgEEjtgvneLlb9si8G_xS0eZeVY-wdKqqdXzgUP3Jf4xRDfbq1wDxWR_85mbAqibfdbp1E6DHH86NftRX0JcrrEReoawqc30Sjsnu8pmc_bQBntJJgDmc3BV5v8DFFKQMlMU7inSa-78EGDXUNdLwU7vqA9IFE3iHY-e6y0jPD59EwGvtl2A4m-23BW1kUOUhTWvP1quCcDYMKGeD8BaE">
+<div class="hidden lg:block">
+<p class="text-body-sm font-bold leading-none text-on-surface">Alex Rivera</p>
+<p class="text-label-md font-label-md text-outline">Regional Director</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Stage -->
+<main class="ml-[280px] pt-16 min-h-screen">
+<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-8">
+<!-- Header Section -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Intelligence Dashboard</h2>
+<p class="text-body-lg text-on-surface-variant mt-1">Real-time solar performance metrics and predictive growth insights.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-lowest border border-outline-variant/50 px-4 py-2.5 rounded-lg font-label-md text-label-md text-on-surface flex items-center gap-2 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                        LAST 30 DAYS
+                    </button>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-label-md text-label-md flex items-center gap-2 hover:opacity-90 shadow-sm transition-all">
+<span class="material-symbols-outlined text-[18px]">file_download</span>
+                        EXPORT REPORT
+                    </button>
+</div>
+</div>
+<!-- Executive Summary Widgets -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-primary/10 rounded-xl text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+</div>
+<span class="text-primary font-bold text-label-md bg-primary-fixed/30 px-2 py-1 rounded-full">+12.4%</span>
+</div>
+<p class="text-label-md font-label-md text-outline uppercase tracking-wider mb-1">Total Revenue Potential</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">$4.2M</h3>
+</div>
+<div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-tertiary-container/10 rounded-xl text-tertiary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<span class="text-tertiary font-bold text-label-md bg-tertiary-fixed/30 px-2 py-1 rounded-full">+28%</span>
+</div>
+<p class="text-label-md font-label-md text-outline uppercase tracking-wider mb-1">Proposed Capacity</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">84.5 MW</h3>
+</div>
+<div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-secondary-container/10 rounded-xl text-secondary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">description</span>
+</div>
+<span class="text-secondary font-bold text-label-md bg-secondary-fixed/30 px-2 py-1 rounded-full">142 total</span>
+</div>
+<p class="text-label-md font-label-md text-outline uppercase tracking-wider mb-1">Active Proposals</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">94</h3>
+</div>
+<div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow group" style="transform: translateY(0px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-primary-container/10 rounded-xl text-primary group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">partner_heart</span>
+</div>
+<span class="text-primary font-bold text-label-md bg-primary-fixed/30 px-2 py-1 rounded-full">89% score</span>
+</div>
+<p class="text-label-md font-label-md text-outline uppercase tracking-wider mb-1">Client Retention</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">High</h3>
+</div>
+</div>
+<!-- Main Charts Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Lead Conversion Trends - Area Chart -->
+<div class="col-span-12 lg:col-span-8 glass-card p-8 rounded-3xl relative overflow-hidden" style="transform: translateY(0px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+<div class="flex justify-between items-start mb-8 relative z-10">
+<div>
+<h4 class="text-body-lg font-bold text-on-surface">Lead Conversion Trends</h4>
+<p class="text-body-sm text-outline">Pipeline efficiency over the last 6 months</p>
+</div>
+<div class="flex gap-2">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary"></div>
+<span class="text-label-md font-label-md text-on-surface-variant">Converted</span>
+</div>
+<div class="flex items-center gap-2 ml-4">
+<div class="w-3 h-3 rounded-full bg-tertiary"></div>
+<span class="text-label-md font-label-md text-on-surface-variant">Identified</span>
+</div>
+</div>
+</div>
+<div class="h-64 chart-grid flex items-end justify-between px-4 pb-8 relative">
+<!-- Simulated Area Chart using SVG/CSS -->
+<svg class="absolute inset-x-0 bottom-8 w-full h-48" preserveAspectRatio="none" viewBox="0 0 100 100">
+<defs>
+<linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#006b1b" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#006b1b" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<path d="M0 80 Q 20 60, 40 70 T 80 30 T 100 40 L 100 100 L 0 100 Z" fill="url(#areaGradient)"></path>
+<path d="M0 80 Q 20 60, 40 70 T 80 30 T 100 40" fill="none" stroke="#006b1b" stroke-width="2"></path>
+<path d="M0 90 Q 25 80, 50 85 T 75 60 T 100 70" fill="none" stroke="#005ea4" stroke-dasharray="4" stroke-width="2"></path>
+</svg>
+<!-- X-Axis Labels -->
+<div class="absolute bottom-2 inset-x-0 flex justify-between px-4 text-label-md font-label-md text-outline">
+<span class="">JAN</span><span class="">FEB</span><span class="">MAR</span><span class="">APR</span><span class="">MAY</span><span class="">JUN</span>
+</div>
+</div>
+</div>
+<!-- Solar Capacity Proposed - Pie Chart -->
+<div class="col-span-12 lg:col-span-4 glass-card p-8 rounded-3xl" style="transform: translateY(0px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+
+
+<div class="relative flex justify-center py-4">
+<!-- Custom Pie Chart Visualization -->
+
+</div>
+
+</div>
+<!-- Revenue Potential - Bar Chart -->
+<div class="col-span-12 lg:col-span-7 glass-card p-8 rounded-3xl" style="transform: translateY(0px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+<div class="flex justify-between items-center mb-8">
+<h4 class="text-body-lg font-bold text-on-surface">Revenue Potential by Industry</h4>
+<div class="text-primary font-bold text-label-md cursor-pointer hover:underline flex items-center gap-1">
+                            VIEW DETAILS <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</div>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<div class="flex justify-between text-label-md font-label-md">
+<span class="text-on-surface">Manufacturing &amp; Logistics</span>
+<span class="text-on-surface-variant">$1.4M</span>
+</div>
+<div class="w-full bg-surface-container-high h-4 rounded-full overflow-hidden">
+<div class="h-full bg-primary-container w-[85%] rounded-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-md font-label-md">
+<span class="text-on-surface">Healthcare Systems</span>
+<span class="text-on-surface-variant">$0.9M</span>
+</div>
+<div class="w-full bg-surface-container-high h-4 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[65%] rounded-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-md font-label-md">
+<span class="text-on-surface">Educational Campus</span>
+<span class="text-on-surface-variant">$0.7M</span>
+</div>
+<div class="w-full bg-surface-container-high h-4 rounded-full overflow-hidden">
+<div class="h-full bg-tertiary w-[50%] rounded-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-md font-label-md">
+<span class="text-on-surface">Commercial Real Estate</span>
+<span class="text-on-surface-variant">$1.2M</span>
+</div>
+<div class="w-full bg-surface-container-high h-4 rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container w-[75%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Monthly Proposals Generated - Line Chart -->
+<div class="col-span-12 lg:col-span-5 glass-card p-8 rounded-3xl">
+<h4 class="text-body-lg font-bold text-on-surface mb-2">Proposals Velocity</h4>
+<p class="text-body-sm text-outline mb-8">Monthly document generation trends</p>
+<div class="h-48 flex items-end justify-between gap-2 px-2">
+<!-- Bar styling for line trend representation -->
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-surface-container-high h-16 rounded-t-lg group relative">
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg"></div>
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100">12</div>
+</div>
+<span class="mt-2 text-[10px] font-bold text-outline">MAR</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-surface-container-high h-24 rounded-t-lg group relative">
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg"></div>
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100">18</div>
+</div>
+<span class="mt-2 text-[10px] font-bold text-outline">APR</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary/40 h-32 rounded-t-lg group relative">
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg"></div>
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100">24</div>
+</div>
+<span class="mt-2 text-[10px] font-bold text-outline">MAY</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary h-40 rounded-t-lg group relative">
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg"></div>
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100">32</div>
+</div>
+<span class="mt-2 text-[10px] font-bold text-outline">JUN</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-primary/70 h-36 rounded-t-lg group relative">
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg"></div>
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-primary opacity-0 group-hover:opacity-100">28</div>
+</div>
+<span class="mt-2 text-[10px] font-bold text-outline">JUL</span>
+</div>
+</div>
+<div class="mt-8 p-4 bg-primary/5 rounded-xl flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+<div>
+<p class="text-body-sm font-bold text-on-surface">Efficiency Gain: +14%</p>
+<p class="text-label-md text-outline">AI Proposal drafting reduced turnaround by 4.2h.</p>
+</div>
+</div>
+</div>
+<!-- Industry-wise Lead Distribution Breakdown -->
+<div class="col-span-12 glass-card p-0 rounded-3xl overflow-hidden" style="transform: translateY(0px); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);">
+<div class="p-8 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-lowest/50">
+<div>
+<h4 class="text-body-lg font-bold text-on-surface">Industry Lead Distribution</h4>
+<p class="text-body-sm text-outline">Top sector opportunities and win-rates</p>
+</div>
+<button class="text-primary font-bold text-label-md flex items-center gap-1">
+                            DOWNLOAD CSV <span class="material-symbols-outlined text-sm">download</span>
+</button>
+</div>
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-8 py-4 text-label-md font-label-md text-outline uppercase tracking-wider">Industry Sector</th>
+<th class="px-8 py-4 text-label-md font-label-md text-outline uppercase tracking-wider">Active Leads</th>
+<th class="px-8 py-4 text-label-md font-label-md text-outline uppercase tracking-wider">Avg. Deal Size</th>
+<th class="px-8 py-4 text-label-md font-label-md text-outline uppercase tracking-wider">Win Probability</th>
+<th class="px-8 py-4 text-label-md font-label-md text-outline uppercase tracking-wider">Trend</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-8 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">factory</span>
+</div>
+<span class="text-body-md font-bold">Manufacturing</span>
+</div>
+</td>
+<td class="px-8 py-5 text-body-md">42</td>
+<td class="px-8 py-5 text-body-md">$245k</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="bg-primary w-[72%] h-full rounded-full"></div>
+</div>
+<span class="text-body-sm font-bold">72%</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-8 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[18px]">local_hospital</span>
+</div>
+<span class="text-body-md font-bold">Healthcare</span>
+</div>
+</td>
+<td class="px-8 py-5 text-body-md">28</td>
+<td class="px-8 py-5 text-body-md">$180k</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="bg-tertiary w-[54%] h-full rounded-full"></div>
+</div>
+<span class="text-body-sm font-bold">54%</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="material-symbols-outlined text-tertiary">trending_flat</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-8 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+</div>
+<span class="text-body-md font-bold">Retail Centers</span>
+</div>
+</td>
+<td class="px-8 py-5 text-body-md">19</td>
+<td class="px-8 py-5 text-body-md">$112k</td>
+<td class="px-8 py-5">
+<div class="flex items-center gap-2">
+<div class="w-24 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="bg-secondary-container w-[32%] h-full rounded-full"></div>
+</div>
+<span class="text-body-sm font-bold">32%</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="material-symbols-outlined text-secondary">trending_down</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Footer Info -->
+<footer class="max-w-[1440px] mx-auto px-margin-desktop py-8 border-t border-outline-variant/20 flex justify-between items-center text-label-md font-label-md text-outline">
+
+<div class="flex gap-6">
+
+
+
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interaction for hover effects on glass cards
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+                card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Dynamic highlight for nav active state (redundant but nice for demo)
+        const currentPath = "Analytics";
+        document.querySelectorAll('nav a').forEach(link => {
+            if (link.textContent.trim() === currentPath) {
+                link.classList.add('bg-primary/5', 'text-primary');
+            }
+        });
+    </script>
+
+
+</body></html>

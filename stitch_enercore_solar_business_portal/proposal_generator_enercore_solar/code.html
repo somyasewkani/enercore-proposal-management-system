@@ -1,0 +1,407 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Enercore | Proposal Generator</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#8f4e00",
+                        "outline-variant": "#bfcab9",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface": "#191c1e",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#f7fff1",
+                        "surface-dim": "#d8dadc",
+                        "tertiary-container": "#0077ce",
+                        "on-secondary-fixed-variant": "#6d3a00",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#005313",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#a2c9ff",
+                        "on-secondary-fixed": "#2e1500",
+                        "surface": "#f7f9fb",
+                        "inverse-surface": "#2d3133",
+                        "surface-variant": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "secondary-fixed": "#ffdcc2",
+                        "primary-fixed-dim": "#7ddc7a",
+                        "on-tertiary-container": "#fdfcff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#004881",
+                        "inverse-primary": "#7ddc7a",
+                        "tertiary": "#005ea4",
+                        "primary-container": "#268630",
+                        "secondary-container": "#ff8f06",
+                        "on-secondary": "#ffffff",
+                        "outline": "#6f7a6b",
+                        "on-tertiary-fixed": "#001c38",
+                        "tertiary-fixed": "#d3e4ff",
+                        "on-secondary-container": "#623300",
+                        "error-container": "#ffdad6",
+                        "on-surface-variant": "#3f4a3d",
+                        "on-background": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "container-max": "1440px",
+                        "margin-mobile": "16px",
+                        "base": "8px",
+                        "gutter": "24px",
+                        "margin-tablet": "24px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active-indicator {
+            position: absolute;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: #006b1b;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #bfcab9;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6f7a6b;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary/20">
+<!-- Side Navigation Shell -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col py-base z-40 shadow-sm">
+<div class="px-6 py-4 flex items-center gap-3 mb-6">
+<img alt="Enercore Enterprise Logo" class="h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9XWgUneDqE-7DKHJHd0aS1Ctzb3FQmrWTfn_yYEsDCtJNd9aMPK0spspnUiJ3Zvx8onsl9mH6ffUhyTU0ELJPM0EAOQFn04UUeTvlD5eNaptjzv9Q8Pnq2XF6J-pdtAnI_NwZifnUE6pezBAZVQNOYw10ZoEs8u8LOWPFHG6xxSE1L7ABHoijqYW-jyRg8lenfNv6vWU2hU4tVlhan8xKM5SLeeJPMJZ-8gehbR4ZOD0Xp3Uug5iR4IZyL9jfMUKsBCkyl8A7DUI">
+</div>
+<nav class="flex-1 space-y-1">
+<a class="group relative flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="group relative flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">groups</span>
+<span class="font-label-md text-label-md">Clients</span>
+</a>
+<a class="group relative flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">account_tree</span>
+<span class="font-label-md text-label-md">Pipeline</span>
+</a>
+<a class="group relative flex items-center px-6 py-3 text-primary font-bold border-l-4 border-primary bg-surface-container/50 scale-[0.98] transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mr-3">description</span>
+<span class="font-label-md text-label-md">Proposals</span>
+</a>
+<a class="group relative flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">query_stats</span>
+<span class="font-label-md text-label-md">Analysis</span>
+</a>
+<a class="group relative flex items-center px-6 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">insights</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+</nav>
+<div class="mt-auto px-6 py-4 border-t border-outline-variant/20">
+<a class="flex items-center text-on-surface-variant font-medium hover:bg-surface-container-high py-2 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Top Navigation Shell -->
+<header class="h-16 w-full fixed top-0 z-30 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 flex justify-between items-center pl-[312px] pr-margin-desktop shadow-sm">
+<div class="flex items-center gap-4">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Proposal Generator</h1>
+<span class="text-outline">/</span>
+<span class="text-on-surface-variant font-medium">Horizon Green Energy Corp.</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-high/50 rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 overflow-hidden flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">person</span>
+</div>
+</div>
+</header>
+<!-- Main Content Stage -->
+<main class="ml-[280px] pt-16 min-h-screen">
+<div class="max-w-[1440px] mx-auto p-gutter flex gap-gutter h-[calc(100vh-64px)] overflow-hidden">
+<!-- Left: Workspace Editor (Section Editors & Settings) -->
+<section class="flex-1 overflow-y-auto pr-2 space-y-gutter pb-margin-desktop">
+<!-- Action Bar -->
+<div class="flex items-center justify-between sticky top-0 bg-background/90 backdrop-blur-sm z-10 pb-4">
+<div class="flex gap-3">
+<button class="bg-primary text-on-primary px-6 h-[44px] rounded-lg font-bold flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">send</span>
+                            Send to Client
+                        </button>
+<button class="border border-tertiary text-tertiary px-6 h-[44px] rounded-lg font-bold flex items-center gap-2 hover:bg-tertiary/5 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+                            Export as PDF
+                        </button><button class="border border-outline text-on-surface-variant px-6 h-[44px] rounded-lg font-bold flex items-center gap-2 hover:bg-surface-container-high active:scale-[0.98] transition-all"><span class="material-symbols-outlined">edit</span>Edit Proposal</button>
+</div>
+<span class="text-label-md font-label-md text-outline italic">Last saved 2m ago</span>
+</div>
+<!-- Settings Card -->
+<div class="glass-card rounded-xl p-8 shadow-sm">
+<h3 class="font-headline-md text-headline-md mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">tune</span>
+                        Proposal Settings
+                    </h3>
+<div class="grid grid-cols-2 gap-8">
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-3 uppercase tracking-wider">Theme choice</label>
+<div class="flex gap-4">
+<label class="flex-1 cursor-pointer">
+<input checked="" class="hidden peer" name="theme" type="radio">
+<div class="p-4 border-2 border-outline-variant rounded-xl peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
+<span class="material-symbols-outlined block mb-1 text-primary">auto_awesome</span>
+<p class="font-body-md font-bold">Modern</p>
+</div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="hidden peer" name="theme" type="radio">
+<div class="p-4 border-2 border-outline-variant rounded-xl peer-checked:border-primary peer-checked:bg-primary/5 transition-all text-center">
+<span class="material-symbols-outlined block mb-1 text-secondary">history_edu</span>
+<p class="font-body-md font-bold">Classic</p>
+</div>
+</label>
+</div>
+</div>
+<div>
+<label class="font-label-md text-label-md text-on-surface-variant block mb-3 uppercase tracking-wider">Pricing Toggles</label>
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<span class="font-body-md">Show Federal Rebates</span>
+<input checked="" class="form-checkbox h-5 w-5 text-primary rounded border-outline-variant focus:ring-primary" type="checkbox">
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-md">Display ROI Timeline</span>
+<input checked="" class="form-checkbox h-5 w-5 text-primary rounded border-outline-variant focus:ring-primary" type="checkbox">
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8">
+<label class="font-label-md text-label-md text-on-surface-variant block mb-3 uppercase tracking-wider">Warranty Info</label>
+<select class="w-full bg-white border border-outline-variant rounded-lg p-3 focus:border-primary focus:ring-primary outline-none">
+<option>Standard 25-Year Performance Guarantee</option>
+<option>Extended 30-Year Comprehensive</option>
+<option>Premium Lifetime Service Plan</option>
+</select>
+</div>
+</div>
+<!-- Section Editors: Bento Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Technical Specs -->
+<div class="col-span-12 glass-card rounded-xl p-8 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">settings_input_component</span>
+                                Technical Specs
+                            </h3>
+<button class="text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined">add</span>
+                                Add Component
+                            </button>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
+<p class="text-label-md font-label-md text-outline uppercase">Panels</p>
+<p class="font-body-lg font-bold">Hanwha Q.PEAK 400W</p>
+<p class="text-body-sm text-on-surface-variant">Qty: 24 units</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
+<p class="text-label-md font-label-md text-outline uppercase">Inverter</p>
+<p class="font-body-lg font-bold">SolarEdge SE10000H</p>
+<p class="text-body-sm text-on-surface-variant">Grid-tied string</p>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
+<p class="text-label-md font-label-md text-outline uppercase">Battery</p>
+<p class="font-body-lg font-bold">Tesla Powerwall 2</p>
+<p class="text-body-sm text-on-surface-variant">Qty: 1 unit</p>
+</div>
+</div>
+</div>
+<!-- Financial Analysis -->
+<div class="col-span-7 glass-card rounded-xl p-8 shadow-sm">
+<h3 class="font-headline-md text-headline-md mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">payments</span>
+                            Financial Analysis
+                        </h3>
+<div class="space-y-6">
+<div class="flex justify-between border-b border-outline-variant/20 pb-4">
+<span class="text-on-surface-variant">System Total Cost</span>
+<span class="font-bold text-headline-md">$34,250.00</span>
+</div>
+<div class="flex justify-between border-b border-outline-variant/20 pb-4">
+<span class="text-on-surface-variant">Estimated Yearly Savings</span>
+<span class="font-bold text-primary">+$2,480.00</span>
+</div>
+<div class="flex justify-between">
+<span class="text-on-surface-variant">Payback Period</span>
+<span class="font-bold text-secondary">7.2 Years</span>
+</div>
+</div>
+</div>
+<!-- Company Profile -->
+<div class="col-span-5 glass-card rounded-xl p-8 shadow-sm">
+<h3 class="font-headline-md text-headline-md mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">business</span>
+                            Company Profile
+                        </h3>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 bg-surface-container-high rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-outline">verified</span>
+</div>
+<div>
+<p class="font-bold">Tier 1 Installer</p>
+<p class="text-label-md text-on-surface-variant">Accredited since 2012</p>
+</div>
+</div>
+<textarea class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg p-3 text-body-sm min-h-[100px] resize-none" placeholder="Enter company bio description...">Enercore is a leading provider of AI-optimized solar energy solutions, helping over 5,000 businesses transition to sustainable power with precision engineering.</textarea>
+</div>
+</div>
+</div>
+</section>
+<!-- Right: Real-time Preview Pane -->
+<section class="w-[480px] h-full flex flex-col bg-surface-container-high rounded-t-xl shadow-inner border-l border-outline-variant/20 relative overflow-hidden">
+<div class="p-4 flex items-center justify-between border-b border-outline-variant/20 bg-surface/50 backdrop-blur-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant">visibility</span>
+<span class="font-label-md font-bold uppercase tracking-widest text-on-surface-variant">PDF Preview</span>
+</div>
+<div class="flex items-center gap-3"><button class="flex items-center gap-1 px-3 py-1 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors mr-2"><span class="material-symbols-outlined text-[18px]">edit_note</span><span class="text-label-md font-bold uppercase tracking-wider">Live Edit</span></button>
+<button class="p-1 hover:bg-surface-container-highest rounded"><span class="material-symbols-outlined text-on-surface-variant">zoom_in</span></button>
+<button class="p-1 hover:bg-surface-container-highest rounded"><span class="material-symbols-outlined text-on-surface-variant">fullscreen</span></button>
+</div>
+</div>
+<!-- Simulated PDF Page -->
+<div class="flex-1 p-8 overflow-y-auto bg-slate-300/30">
+<div class="mx-auto w-[360px] min-h-[510px] bg-white shadow-2xl origin-top transition-transform hover:scale-[1.02] duration-500 relative">
+<!-- PDF Content Representation -->
+<div class="p-8 h-full flex flex-col">
+<div class="flex justify-between items-start mb-12">
+<img alt="Enercore Logo Preview" class="h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9XWgUneDqE-7DKHJHd0aS1Ctzb3FQmrWTfn_yYEsDCtJNd9aMPK0spspnUiJ3Zvx8onsl9mH6ffUhyTU0ELJPM0EAOQFn04UUeTvlD5eNaptjzv9Q8Pnq2XF6J-pdtAnI_NwZifnUE6pezBAZVQNOYw10ZoEs8u8LOWPFHG6xxSE1L7ABHoijqYW-jyRg8lenfNv6vWU2hU4tVlhan8xKM5SLeeJPMJZ-8gehbR4ZOD0Xp3Uug5iR4IZyL9jfMUKsBCkyl8A7DUI">
+<div class="text-right">
+<p class="text-[8px] font-bold text-primary">OFFICIAL PROPOSAL</p>
+<p class="text-[6px] text-outline">Ref: #ENE-2024-882</p>
+</div>
+</div>
+<div class="mb-8">
+<h2 class="text-xl font-bold text-on-surface leading-tight">Solar Infrastructure Integration Plan</h2>
+<p class="text-[10px] text-on-surface-variant mt-2">Prepared for: <span class="font-bold">Horizon Green Energy Corp.</span></p>
+</div>
+<div class="w-full h-32 bg-slate-100 rounded-lg mb-8 overflow-hidden relative group">
+<div class="w-full h-full bg-cover bg-center" data-alt="A cinematic, high-resolution aerial view of a corporate warehouse complex with a sleek, minimalist solar panel array installed on the rooftop. The lighting is golden-hour sunlight casting long, dramatic shadows, emphasizing the precision and scale of the energy system. The aesthetic is clean and industrial, reflecting a professional enterprise environment." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDAVjv9HFUcCuNYn-fR2QEEO9g4oJs9tJg04n90Xhi4KoSu7a_4IErrYib4cOhtkXmoJuh6UOQ0Eyyw_HGl8e9iu9IHsnn-NH6JsAHBh-gGVPh-CEWBpjz5VgtKhBY-DOaQUAS1bioalceNoldn_cvHKQD94i6R1zXhAcwE6FBe1t215uFbAvfxUe7hmHx26dSfG_sIhhEFUIXs2KmRaVUzp20csiZwZyRj7ySxvjWwRBGk_i1JxLmIPt_FdXKH4yXWquzqHN1RGvw')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+</div>
+<div class="space-y-4">
+<div class="h-1 w-12 bg-primary rounded-full"></div>
+<p class="text-[8px] text-on-surface leading-relaxed">
+                                    This comprehensive proposal outlines the technical specifications, financial projections, and strategic implementation of a high-efficiency solar photovoltaic system. Our AI-driven analysis indicates a maximum energy yield optimization for your specific location.
+                                </p>
+<div class="grid grid-cols-2 gap-4 mt-6">
+<div class="border-l border-primary/20 pl-2">
+<p class="text-[6px] uppercase font-bold text-outline">Investment</p>
+<p class="text-sm font-bold text-primary">$34,250</p>
+</div>
+<div class="border-l border-primary/20 pl-2">
+<p class="text-[6px] uppercase font-bold text-outline">ROI Period</p>
+<p class="text-sm font-bold text-on-surface">7.2 Years</p>
+</div>
+</div>
+</div>
+<div class="mt-auto pt-12 flex justify-between items-end border-t border-slate-100">
+<div class="text-[6px] text-outline">
+<p class="">ENERCORE SYSTEMS INC.</p>
+<p class="">Solar Intelligence Division</p>
+</div>
+<div class="h-8 w-24 bg-slate-50 border border-slate-100 rounded flex items-center justify-center italic text-[6px] text-slate-400">
+                                    Confidential Document
+                                </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Preview Controls Footbar -->
+<div class="p-3 bg-surface border-t border-outline-variant/20 flex justify-center gap-2">
+<button class="bg-primary/10 text-primary p-2 rounded-full hover:bg-primary/20"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<span class="px-4 py-2 bg-surface-container-highest rounded-full text-label-md font-bold">PAGE 1 / 12</span>
+<button class="bg-primary/10 text-primary p-2 rounded-full hover:bg-primary/20"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+</div>
+</section>
+</div>
+</main>
+<!-- Micro-interaction Scripts -->
+<script>
+        // Simple scale interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => btn.classList.add('scale-95'));
+            btn.addEventListener('mouseup', () => btn.classList.remove('scale-95'));
+            btn.addEventListener('mouseleave', () => btn.classList.remove('scale-95'));
+        });
+
+        // Hover effect for glass cards
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.boxShadow = '0 10px 30px -10px rgba(30, 136, 229, 0.1)';
+                card.style.transition = 'all 0.3s ease';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+            });
+        });
+    </script>
+</body></html>

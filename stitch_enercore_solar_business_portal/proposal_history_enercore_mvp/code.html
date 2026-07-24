@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" style="width: 1280px; height: 1361px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Proposal History | Enercore Solar Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .sidebar-active {
+            border-left: 4px solid #006b1b;
+            background: rgba(236, 238, 240, 0.5);
+            font-weight: 700;
+            color: #006b1b;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #bfcab9;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#8f4e00",
+                    "outline-variant": "#bfcab9",
+                    "on-error-container": "#93000a",
+                    "surface-container-low": "#f2f4f6",
+                    "on-surface": "#191c1e",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#f7fff1",
+                    "surface-dim": "#d8dadc",
+                    "tertiary-container": "#0077ce",
+                    "on-secondary-fixed-variant": "#6d3a00",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#005313",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#a2c9ff",
+                    "on-secondary-fixed": "#2e1500",
+                    "surface": "#f7f9fb",
+                    "inverse-surface": "#2d3133",
+                    "surface-variant": "#e0e3e5",
+                    "background": "#f7f9fb",
+                    "secondary-fixed": "#ffdcc2",
+                    "primary-fixed-dim": "#7ddc7a",
+                    "on-tertiary-container": "#fdfcff",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-tertiary-fixed-variant": "#004881",
+                    "inverse-primary": "#7ddc7a",
+                    "tertiary": "#005ea4",
+                    "primary-container": "#268630",
+                    "secondary-container": "#ff8f06",
+                    "on-secondary": "#ffffff",
+                    "outline": "#6f7a6b",
+                    "on-tertiary-fixed": "#001c38",
+                    "tertiary-fixed": "#d3e4ff",
+                    "on-secondary-container": "#623300",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#3f4a3d",
+                    "on-background": "#191c1e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "40px",
+                    "container-max": "1440px",
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "gutter": "24px",
+                    "margin-tablet": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface overflow-x-hidden">
+<!-- Side Navigation Bar -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col py-base shadow-sm z-50">
+<div class="px-6 py-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">solar_power</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary leading-tight">Enercore</h1>
+<p class="text-[10px] font-label-md uppercase tracking-widest text-outline">Solar Intelligence</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium rounded-lg hover:bg-surface-container-high transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">explore</span>
+<span class="font-body-md">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium rounded-lg hover:bg-surface-container-high transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">person_search</span>
+<span class="font-body-md">Leads</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 sidebar-active rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="font-body-md">Proposals</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium rounded-lg hover:bg-surface-container-high transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">bar_chart</span>
+<span class="font-body-md">Sales Performance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium rounded-lg hover:bg-surface-container-high transition-colors group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">database</span>
+<span class="font-body-md">Inventory</span>
+</a>
+</nav>
+<div class="px-4 py-6 border-t border-outline-variant/20">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium rounded-lg hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="h-16 w-full fixed top-0 z-40 flex justify-between items-center pl-[312px] pr-margin-desktop bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl py-2 pl-10 pr-4 focus:ring-2 focus:ring-primary/20 text-body-md" placeholder="Search proposals, clients, or IDs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full border-2 border-surface"></span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right">
+<p class="font-label-md text-on-surface">Alex Rivera</p>
+</div>
+<div class="w-10 h-10 rounded-full border-2 border-primary/20 p-0.5">
+<img class="w-full h-full rounded-full object-cover" data-alt="A professional headshot of a corporate solar energy consultant wearing a modern navy blazer against a minimalist white office background with soft lighting. The image captures a clean, authoritative, and trustworthy executive persona suitable for a high-end enterprise software interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWi63mNR0c8eSddlhXk1UVp9ZnW6sun_p10_0DcwgtSDDRL6viFn3CmuDg5v5LSh1JTuyOi5a36moX2LkXRS5y1MWYK59DOzctLgGDkgHb7KWfIQGEzbo37L8ZGz8SNuC3HIkB2xzWtQ3sE1ToR2_ginzBIhy9X84Tb1Ep2H2Wtlr2ssHBZm-O3IZYfQ7_8Y1L2R6R9CP0pJ6NxxGLy_GM4341GpYx1V3pBUv2zj76wH-8NlMQLEsJTgEhanEDHUVit-fnejir2Hs"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[280px] pt-16 min-h-screen">
+<div class="max-w-[1440px] mx-auto p-margin-desktop">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Proposal History</h2>
+<p class="text-body-md text-on-surface-variant">Review and manage generated solar proposals.</p>
+</div>
+<button class="bg-primary hover:bg-primary-container text-on-primary px-6 py-2.5 rounded-lg font-medium flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="">New Proposal</span>
+</button>
+</div>
+<!-- Dashboard Stats Row (Bento Style) -->
+<div class="grid grid-cols-12 gap-gutter mb-8">
+<div class="col-span-12 md:col-span-3 glass-card rounded-2xl p-6 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="font-label-md text-outline uppercase tracking-wider mb-2">Total Proposals</p>
+<h3 class="font-display-lg text-headline-lg text-on-surface">1,248</h3>
+<p class="text-body-sm text-primary flex items-center gap-1 mt-2 font-medium">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+                            +12% this month
+                        </p>
+</div>
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-primary/5 text-[120px] rotate-12 group-hover:scale-110 transition-transform duration-700">description</span>
+</div>
+<div class="col-span-12 md:col-span-3 glass-card rounded-2xl p-6 relative overflow-hidden group">
+<div class="relative z-10">
+<p class="font-label-md text-outline uppercase tracking-wider mb-2">Active Capacity</p>
+<h3 class="font-display-lg text-headline-lg text-on-surface">14.2 MW</h3>
+<p class="text-body-sm text-tertiary flex items-center gap-1 mt-2 font-medium">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+                            Across all regions
+                        </p>
+</div>
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-tertiary/5 text-[120px] -rotate-12 group-hover:scale-110 transition-transform duration-700">solar_power</span>
+</div>
+<div class="col-span-12 md:col-span-6 glass-card rounded-2xl p-6 flex items-center justify-between bg-gradient-to-br from-white/70 to-primary-fixed/10">
+<div class="max-w-[60%]">
+<h4 class="font-headline-md text-on-surface mb-2">Draft Continuity</h4>
+<p class="text-body-sm text-on-surface-variant">Pick up where you left off. You have 4 unfinished proposals.</p>
+<button class="mt-4 text-primary font-bold text-body-sm flex items-center gap-1 group">
+                            Resume Last Draft
+                            <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+<div class="w-24 h-24 relative">
+<div class="absolute inset-0 bg-primary/10 rounded-full animate-pulse"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[40px]" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Filter & Table Container -->
+<div class="glass-card rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<!-- Filter Bar -->
+<div class="p-6 border-b border-outline-variant/20 flex flex-wrap gap-4 items-center justify-between">
+<div class="flex gap-4 items-center overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
+<button class="bg-surface-container-high px-4 py-2 rounded-full text-body-sm font-semibold text-primary flex items-center gap-2 whitespace-nowrap">
+                            All Proposals
+                            <span class="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded-full">1.2k</span>
+</button>
+<button class="px-4 py-2 rounded-full text-body-sm font-medium text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap">Commercial</button>
+<button class="px-4 py-2 rounded-full text-body-sm font-medium text-on-surface-variant hover:bg-surface-container transition-colors whitespace-nowrap">Residential</button>
+<div class="h-6 w-[1px] bg-outline-variant/30"></div>
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant/40 text-body-sm font-medium hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                            Date Range
+                        </button>
+</div>
+<div class="flex gap-2">
+<button class="p-2 rounded-lg border border-outline-variant/40 hover:bg-surface-container transition-colors" title="Export CSV">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<!-- Table Content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Preview</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Proposal ID</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Client Name</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Capacity</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-high/20 transition-colors group" style="opacity: 1; transform: translateY(0px); transition: opacity 0.4s, transform 0.4s;">
+<td class="px-6 py-4">
+<div class="w-20 h-14 rounded-lg bg-surface-container relative overflow-hidden border border-outline-variant/20 shadow-sm group-hover:scale-105 transition-transform">
+<img class="w-full h-full object-cover" data-alt="Solar installation thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA84yh9x0nGXO-FHS2S35GePIk0FcmzSI1nyuF3pxRO8KnhfyV5ApmmVf_RNW5P1jUSHhskUxzwuh7XUmzUBllwY4xf0eXZVpjZX5Pl3cET4MJjUdj6eclfwS7JZgD5t-fc2YJk_Yj0R5JCdY_J8z7bgCpHJlaJorvOoyNkvaGD0LeTuPkXUaqN8HjOUrCnQTTyueqK_GX9E7KrnAeBWbYPbmqYyeS5jay1tRfirbO-7hjK3G2XiQwU8VyOMH3_NAoC6b6VsNWHbAg"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-medium text-on-surface">EC-8842-X</p>
+<span class="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded font-bold">SYNCED</span>
+</td>
+<td class="px-6 py-4">
+<p class="font-medium text-on-surface">Meridian Tech Corp</p>
+<p class="text-body-sm text-outline">Houston, TX</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-on-surface">450.5</span>
+<span class="text-[10px] font-bold text-outline">kWp</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end items-center gap-1">
+<button class="p-2 rounded-lg hover:bg-surface-container-highest text-on-surface-variant transition-colors" title="View">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-secondary/10 text-secondary transition-colors" title="Duplicate">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-tertiary/10 text-tertiary transition-colors" title="Download PDF">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</button>
+<div class="relative group/more">
+<button class="p-2 rounded-lg hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+<div class="hidden group-hover/more:block absolute right-0 top-full mt-1 bg-surface-container-lowest border border-outline-variant/30 rounded-lg shadow-xl z-50 min-w-[120px] py-1">
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-error/5 text-error flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">archive</span>
+                                    Archive
+                                </button>
+</div>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-high/20 transition-colors group" style="opacity: 1; transform: translateY(0px); transition: opacity 0.4s, transform 0.4s;">
+<td class="px-6 py-4">
+<div class="w-20 h-14 rounded-lg bg-surface-container relative overflow-hidden border border-outline-variant/20 shadow-sm group-hover:scale-105 transition-transform">
+<img class="w-full h-full object-cover" data-alt="Residential solar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdN5B4B65mZ1y5A8Lm0YfajXQk8_hLiHid60rTBtXRQ0PvcpuNES-KKX5lC-yzpakSBVRfLtHFfdb-Rv0PrWk_Br06RaZUsg5-XPEim7F1saweALbn35o1EUseYpXfQDlS9U7rPvzoNVB2F3-nppT0httuiXEwUL6qu68lXN0NjstwB-JRnxmjePJxgqfy5Cy-TidOKT5bfcLdq47P9ebEbmAdqGNVbWP1GvjAjrV8KF5noljnBson0ge68NitJauU_HGVWA3XppA"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-medium text-on-surface">EC-7210-R</p>
+<span class="text-[10px] text-secondary bg-secondary/10 px-1.5 py-0.5 rounded font-bold uppercase">Draft</span>
+</td>
+<td class="px-6 py-4">
+<p class="font-medium text-on-surface">Harrison Residence</p>
+<p class="text-body-sm text-outline">Palo Alto, CA</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-on-surface">12.8</span>
+<span class="text-[10px] font-bold text-outline">kWp</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end items-center gap-1">
+<button class="p-2 rounded-lg hover:bg-surface-container-highest text-on-surface-variant transition-colors" title="View">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-secondary/10 text-secondary transition-colors" title="Duplicate">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-tertiary/10 text-tertiary transition-colors opacity-30 cursor-not-allowed" disabled="" title="Download PDF">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</button>
+<div class="relative group/more">
+<button class="p-2 rounded-lg hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+<div class="hidden group-hover/more:block absolute right-0 top-full mt-1 bg-surface-container-lowest border border-outline-variant/30 rounded-lg shadow-xl z-50 min-w-[120px] py-1">
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-error/5 text-error flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">archive</span>
+                                    Archive
+                                </button>
+</div>
+</div>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-high/20 transition-colors group" style="opacity: 1; transform: translateY(0px); transition: opacity 0.4s, transform 0.4s;">
+<td class="px-6 py-4">
+<div class="w-20 h-14 rounded-lg bg-surface-container relative overflow-hidden border border-outline-variant/20 shadow-sm group-hover:scale-105 transition-transform">
+<img class="w-full h-full object-cover" data-alt="Solar farm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJVqMWRBTYgIFR7uO4WLCmupj8zhq7NkvUXtINQ7zt3I65MkIaM06dRAk1GjSug5PwDrkWuML3xfTKxb6Ti2nqICNAtN86hKs7mlvCxb_bhnXJQZiJcVWS9KVa4o3H7-PVzOzJ_ob6A8pgyEHUJ60jlya69i5GQj37WaeaCrwXNxJZmWSst9WU3ShC2KnEaGktz7BE-PFfiYZ5czB0iZ47RN45-DRmVNhZzijsco45euBEdiuGj14EzAGuwyNRbwOdRQma1l9qh-k"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-medium text-on-surface">EC-9102-U</p>
+<span class="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded font-bold">SYNCED</span>
+</td>
+<td class="px-6 py-4">
+<p class="font-medium text-on-surface">Greenway Logistics</p>
+<p class="text-body-sm text-outline">Phoenix, AZ</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="font-bold text-on-surface">2,450.0</span>
+<span class="text-[10px] font-bold text-outline">kWp</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end items-center gap-1">
+<button class="p-2 rounded-lg hover:bg-surface-container-highest text-on-surface-variant transition-colors" title="View">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-primary/10 text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-secondary/10 text-secondary transition-colors" title="Duplicate">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-tertiary/10 text-tertiary transition-colors" title="Download PDF">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</button>
+<div class="relative group/more">
+<button class="p-2 rounded-lg hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+<div class="hidden group-hover/more:block absolute right-0 top-full mt-1 bg-surface-container-lowest border border-outline-variant/30 rounded-lg shadow-xl z-50 min-w-[120px] py-1">
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-error/5 text-error flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">archive</span>
+                                    Archive
+                                </button>
+</div>
+</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-6 border-t border-outline-variant/20 flex items-center justify-between">
+<p class="text-body-sm text-on-surface-variant">Showing 1 to 10 of 1,248 entries</p>
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-lg flex items-center justify-center border border-outline-variant/40 hover:bg-surface-container transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center bg-primary text-on-primary font-bold">1</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-surface-container transition-colors font-medium">2</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-surface-container transition-colors font-medium">3</button>
+<button class="w-10 h-10 rounded-lg flex items-center justify-center border border-outline-variant/40 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach((row, index) => {
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    row.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                    row.style.opacity = '1';
+                    row.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        });
+    </script>
+<div aria-hidden="true" data-snapdom-sandbox="true" id="snapdom-sandbox" style="position: absolute; left: -9999px; top: -9999px; width: 0px; height: 0px; overflow: hidden;"></div></body></html>

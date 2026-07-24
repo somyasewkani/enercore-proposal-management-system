@@ -1,0 +1,403 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Enercore | Electricity Bill Upload &amp; Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "secondary": "#8f4e00",
+                "outline-variant": "#bfcab9",
+                "on-error-container": "#93000a",
+                "surface-container-low": "#f2f4f6",
+                "on-surface": "#191c1e",
+                "on-error": "#ffffff",
+                "on-primary-container": "#f7fff1",
+                "surface-dim": "#d8dadc",
+                "tertiary-container": "#0077ce",
+                "on-secondary-fixed-variant": "#6d3a00",
+                "error": "#ba1a1a",
+                "on-primary-fixed-variant": "#005313",
+                "on-tertiary": "#ffffff",
+                "tertiary-fixed-dim": "#a2c9ff",
+                "on-secondary-fixed": "#2e1500",
+                "surface": "#f7f9fb",
+                "inverse-surface": "#2d3133",
+                "surface-variant": "#e0e3e5",
+                "background": "#f7f9fb",
+                "secondary-fixed": "#ffdcc2",
+                "primary-fixed-dim": "#7ddc7a",
+                "on-tertiary-container": "#fdfcff",
+                "surface-container-highest": "#e0e3e5",
+                "on-tertiary-fixed-variant": "#004881",
+                "inverse-primary": "#7ddc7a",
+                "tertiary": "#005ea4",
+                "primary-container": "#268630",
+                "secondary-fixed-dim": "#ffb77b",
+                "surface-container": "#eceef0",
+                "on-primary-fixed": "#002204",
+                "surface-container-high": "#e6e8ea",
+                "surface-container-lowest": "#ffffff",
+                "surface-bright": "#f7f9fb",
+                "inverse-on-surface": "#eff1f3",
+                "primary": "#006b1b",
+                "primary-fixed": "#98f994",
+                "on-primary": "#ffffff",
+                "surface-tint": "#006e1c",
+                "secondary-container": "#ff8f06",
+                "on-secondary": "#ffffff",
+                "outline": "#6f7a6b",
+                "on-tertiary-fixed": "#001c38",
+                "tertiary-fixed": "#d3e4ff",
+                "on-secondary-container": "#623300",
+                "error-container": "#ffdad6",
+                "on-surface-variant": "#3f4a3d",
+                "on-background": "#191c1e"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "margin-desktop": "40px",
+                "container-max": "1440px",
+                "margin-mobile": "16px",
+                "base": "8px",
+                "gutter": "24px",
+                "margin-tablet": "24px"
+            },
+            "fontFamily": {
+                "headline-lg": ["Inter"],
+                "headline-md": ["Inter"],
+                "body-sm": ["Inter"],
+                "display-lg": ["Inter"],
+                "body-md": ["Inter"],
+                "label-md": ["Inter"],
+                "body-lg": ["Inter"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .step-active { color: #006b1b; }
+        .progress-bar-fill {
+            transition: width 0.5s ease-in-out;
+        }
+        .upload-dashed {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23BFCCB9' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            border-radius: 16px;
+        }
+        .upload-dashed:hover {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='16' ry='16' stroke='%23006B1B' stroke-width='2' stroke-dasharray='12%2c 12' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- Side Navigation Shell -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col py-base z-50 shadow-sm">
+<div class="px-6 py-8 flex items-center gap-3">
+<img alt="Enercore Logo" class="h-10 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9XWgUneDqE-7DKHJHd0aS1Ctzb3FQmrWTfn_yYEsDCtJNd9aMPK0spspnUiJ3Zvx8onsl9mH6ffUhyTU0ELJPM0EAOQFn04UUeTvlD5eNaptjzv9Q8Pnq2XF6J-pdtAnI_NwZifnUE6pezBAZVQNOYw10ZoEs8u8LOWPFHG6xxSE1L7ABHoijqYW-jyRg8lenfNv6vWU2hU4tVlhan8xKM5SLeeJPMJZ-8gehbR4ZOD0Xp3Uug5iR4IZyL9jfMUKsBCkyl8A7DUI">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-primary">Enercore</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Solar Intelligence</span>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">groups</span>
+<span class="font-body-md text-body-md">Clients</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary font-bold border-l-4 border-primary bg-surface-container/50 group" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-body-md text-body-md">Proposals</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">account_tree</span>
+<span class="font-body-md text-body-md">Pipeline</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">query_stats</span>
+<span class="font-body-md text-body-md">Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">insights</span>
+<span class="font-body-md text-body-md">Analytics</span>
+</a>
+</nav>
+<div class="p-4 border-t border-outline-variant/20">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:text-primary">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] p-margin-desktop min-h-screen">
+<!-- Header -->
+<header class="flex justify-between items-end mb-10">
+<div>
+<nav class="flex items-center gap-2 text-on-surface-variant mb-2">
+<span class="font-label-md text-label-md">PROPOSALS</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="font-label-md text-label-md text-primary">BILL UPLOAD</span>
+</nav>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Electricity Bill Analysis</h1>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Upload utility statements to extract consumption profiles and calculate solar ROI.</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-surface-container-high text-on-surface px-6 py-2.5 rounded-lg font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+                    View Guidelines
+                </button>
+</div>
+</header>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter max-w-container-max">
+<!-- Left Column: Upload & Instructions -->
+<div class="col-span-12 lg:col-span-7 space-y-gutter">
+<!-- Drag & Drop Zone -->
+<section class="glass-card rounded-xl p-10 flex flex-col items-center justify-center min-h-[400px] text-center transition-all duration-300" id="upload-section">
+<div class="upload-dashed w-full h-full absolute inset-0 pointer-events-none opacity-50"></div>
+<div class="relative z-10 space-y-6">
+<div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+<span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+</div>
+<div class="space-y-2">
+<h2 class="font-headline-md text-headline-md text-on-surface">Upload Utility Bills</h2>
+<p class="text-on-surface-variant font-body-md text-body-md max-w-sm mx-auto">
+                                Drag and drop PDF or image files (JPG, PNG) of your client's electricity bills. Our AI will extract consumption data automatically.
+                            </p>
+</div>
+<div class="flex flex-col items-center gap-4">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-label-md text-label-md hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-primary/20" onclick="simulateUpload()">
+<span class="material-symbols-outlined">add</span>
+                                Select Files to Upload
+                            </button>
+<span class="text-on-surface-variant font-label-md text-label-md">Maximum file size: 25MB</span>
+</div>
+</div>
+</section>
+<!-- Instructions Section -->
+<section class="glass-card rounded-xl p-8 space-y-6">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">info</span>
+<h3 class="font-headline-md text-headline-md text-on-surface">Sales Representative Instructions</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-3">
+<div class="flex gap-4">
+<span class="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0 font-bold">1</span>
+<div class="font-body-md text-body-md text-on-surface-variant">
+<strong class="text-on-surface block mb-1">Verify Full Year</strong>
+                                    Ensure the bill includes a 12-month historical consumption chart for accurate ROI.
+                                </div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex gap-4">
+<span class="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0 font-bold">2</span>
+<div class="font-body-md text-body-md text-on-surface-variant">
+<strong class="text-on-surface block mb-1">Check Quality</strong>
+                                    Avoid blurry photos. Ensure account numbers and tariff names are clearly visible.
+                                </div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex gap-4">
+<span class="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0 font-bold">3</span>
+<div class="font-body-md text-body-md text-on-surface-variant">
+<strong class="text-on-surface block mb-1">Data Privacy</strong>
+                                    Inform clients their data is encrypted and used only for energy analysis.
+                                </div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex gap-4">
+<span class="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center flex-shrink-0 font-bold">4</span>
+<div class="font-body-md text-body-md text-on-surface-variant">
+<strong class="text-on-surface block mb-1">Tariff Detail</strong>
+                                    If the bill shows "Demand Charges," upload all pages of the statement.
+                                </div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Analysis & Data -->
+<div class="col-span-12 lg:col-span-5 space-y-gutter">
+<!-- OCR Analysis Progress (Hidden initially) -->
+<div class="hidden glass-card rounded-xl p-6 border-primary/20 bg-primary/5" id="ocr-status">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<div class="animate-spin text-primary">
+<span class="material-symbols-outlined">sync</span>
+</div>
+<span class="font-label-md text-label-md text-primary uppercase">OCR Analysis in Progress</span>
+</div>
+<span class="font-label-md text-label-md text-primary" id="progress-text">45%</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2">
+<div class="bg-primary h-2 rounded-full progress-bar-fill" id="progress-bar" style="width: 45%"></div>
+</div>
+<p class="mt-3 text-on-surface-variant font-body-sm text-body-sm italic">Identifying meter numbers, consumption tables, and tariff structures...</p>
+</div>
+<!-- Summary Cards -->
+<div class="grid grid-cols-2 gap-4">
+<div class="glass-card rounded-xl p-6 border-l-4 border-tertiary">
+<p class="text-on-surface-variant font-label-md text-label-md uppercase mb-2">Average Usage</p>
+<h4 class="text-3xl font-bold text-on-surface">1,420 <span class="text-lg font-normal text-on-surface-variant">kWh/mo</span></h4>
+<div class="mt-2 flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-semibold">+4% vs region</span>
+</div>
+</div>
+<div class="glass-card rounded-xl p-6 border-l-4 border-secondary">
+<p class="text-on-surface-variant font-label-md text-label-md uppercase mb-2">Tariff Est.</p>
+<h4 class="text-3xl font-bold text-on-surface">$0.32 <span class="text-lg font-normal text-on-surface-variant">/kWh</span></h4>
+<div class="mt-2 flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-sm">error_outline</span>
+<span class="text-xs font-semibold">Tier 2 Pricing</span>
+</div>
+</div>
+</div>
+<!-- Monthly Preview Table -->
+<section class="glass-card rounded-xl overflow-hidden">
+<div class="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-lowest">
+<h3 class="font-headline-md text-headline-md text-on-surface">Consumption Preview</h3>
+<span class="text-on-surface-variant font-label-md text-label-md">LTM (Last 12 Months)</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low/50">
+<tr>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant uppercase">Month</th>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant uppercase text-right">Usage (kWh)</th>
+<th class="px-6 py-3 font-label-md text-label-md text-on-surface-variant uppercase text-right">Cost ($)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 font-body-md text-body-md">January</td>
+<td class="px-6 py-4 font-body-md text-body-md text-right">1,650</td>
+<td class="px-6 py-4 font-body-md text-body-md text-right font-medium">$528.00</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 font-body-md text-body-md">February</td>
+<td class="px-6 py-4 font-body-md text-body-md text-right">1,480</td>
+<td class="px-6 py-4 font-body-md text-body-md text-right font-medium">$473.60</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 font-body-md text-body-md">March</td>
+<td class="px-6 py-4 font-body-md text-body-md text-right">1,320</td>
+<td class="px-6 py-4 font-body-md text-body-md text-right font-medium">$422.40</td>
+</tr>
+<tr class="bg-primary/5 italic border-l-4 border-primary">
+<td class="px-6 py-4 font-body-md text-body-md" colspan="3">... 9 more months extracted</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-6">
+<button class="w-full bg-primary text-on-primary h-[56px] rounded-lg font-headline-md text-headline-md font-bold hover:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/30" onclick="startAnalysis()">
+<span class="material-symbols-outlined">analytics</span>
+                            Start AI Analysis
+                        </button>
+<p class="text-center text-on-surface-variant font-label-md text-label-md mt-4">
+                            Calculates shading, panel efficiency &amp; 25-year ROI
+                        </p>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Overlay Success Animation Placeholder (Hidden) -->
+<div class="fixed inset-0 z-[100] bg-surface/90 backdrop-blur-md flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-500" id="success-overlay">
+<div class="max-w-md text-center space-y-6 px-margin-mobile">
+<div class="w-32 h-32 mx-auto">
+<!-- Checkmark Animation or SVG -->
+<svg class="w-full h-full text-primary" viewBox="0 0 52 52">
+<circle class="stroke-current fill-none" cx="26" cy="26" r="25" stroke-width="2"></circle>
+<path class="stroke-current fill-none" d="M14 27l7.5 7.5L38 18" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+</svg>
+</div>
+<h2 class="font-display-lg text-display-lg text-on-surface">Analysis Complete</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">The energy model has been generated. Redirecting to your Solar Proposal dashboard...</p>
+</div>
+</div>
+<script>
+        function simulateUpload() {
+            const status = document.getElementById('ocr-status');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const uploadBtn = document.querySelector('button[onclick="simulateUpload()"]');
+            
+            status.classList.remove('hidden');
+            uploadBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Uploading...';
+            uploadBtn.disabled = true;
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 10) + 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    progressText.innerText = "Complete";
+                    uploadBtn.innerHTML = '<span class="material-symbols-outlined">check</span> Bill Uploaded';
+                    uploadBtn.classList.replace('bg-primary', 'bg-surface-container-highest');
+                    uploadBtn.classList.replace('text-on-primary', 'text-primary');
+                }
+                progressBar.style.width = progress + '%';
+                progressText.innerText = progress + '%';
+            }, 300);
+        }
+
+        function startAnalysis() {
+            const overlay = document.getElementById('success-overlay');
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                overlay.classList.replace('opacity-0', 'opacity-100');
+            }, 10);
+            
+            setTimeout(() => {
+                window.location.reload(); // Simulate redirect
+            }, 3000);
+        }
+
+        // Micro-interaction: Hover effects for bento cards
+        const cards = document.querySelectorAll('.glass-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+                card.style.boxShadow = '0 12px 24px -10px rgba(30, 136, 229, 0.15)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = 'none';
+            });
+        });
+    </script>
+</body></html>

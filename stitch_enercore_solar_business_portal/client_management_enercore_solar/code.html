@@ -1,0 +1,566 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Enercore | Client Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#8f4e00",
+                    "outline-variant": "#bfcab9",
+                    "on-error-container": "#93000a",
+                    "surface-container-low": "#f2f4f6",
+                    "on-surface": "#191c1e",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#f7fff1",
+                    "surface-dim": "#d8dadc",
+                    "tertiary-container": "#0077ce",
+                    "on-secondary-fixed-variant": "#6d3a00",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed-variant": "#005313",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#a2c9ff",
+                    "on-secondary-fixed": "#2e1500",
+                    "surface": "#f7f9fb",
+                    "inverse-surface": "#2d3133",
+                    "surface-variant": "#e0e3e5",
+                    "background": "#f7f9fb",
+                    "secondary-fixed": "#ffdcc2",
+                    "primary-fixed-dim": "#7ddc7a",
+                    "on-tertiary-container": "#fdfcff",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-tertiary-fixed-variant": "#004881",
+                    "inverse-primary": "#7ddc7a",
+                    "tertiary": "#005ea4",
+                    "primary-container": "#268630",
+                    "secondary-container": "#ff8f06",
+                    "on-primary-fixed": "#002204",
+                    "surface-container-high": "#e6e8ea",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-bright": "#f7f9fb",
+                    "inverse-on-surface": "#eff1f3",
+                    "primary": "#006b1b",
+                    "primary-fixed": "#98f994",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#006e1c",
+                    "secondary-container": "#ff8f06",
+                    "on-secondary": "#ffffff",
+                    "outline": "#6f7a6b",
+                    "on-tertiary-fixed": "#001c38",
+                    "tertiary-fixed": "#d3e4ff",
+                    "on-secondary-container": "#623300",
+                    "error-container": "#ffdad6",
+                    "on-surface-variant": "#3f4a3d",
+                    "on-background": "#191c1e",
+                    "surface-container": "#eceef0",
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "40px",
+                    "container-max": "1440px",
+                    "margin-mobile": "16px",
+                    "base": "8px",
+                    "gutter": "24px",
+                    "margin-tablet": "24px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            background: rgba(0, 107, 27, 0.08);
+            border-left: 4px solid #006b1b;
+            color: #006b1b;
+            font-weight: 700;
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- SideNavBar -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col py-base z-50">
+<div class="px-6 py-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxXXZ5leVEZf1jBXz8-L47ot4YvXZI6LYnwly3FJ4xr0ORLOJ6DWNOkw-KiRbHXpo1U6dqKrUk7vb6QDXS-5yiJP2wOBmY0HuwAwcjrfTKZuxNDoZuYeIYIQLa715q7JDTubsrs0xi7hOoVnkp8qdk_CvNhJcfoUU0LZBde_YWyYBnei8WWxSfo0xsuR-_jVcoQqbzMRWs13KhU2NzzO9l0GNGmKjgqAg3Ko6731THkjHHAgHLeh8GH12Sywj5T5OZ6FGkYX-7Y0g" alt="Enercore Logo" class="w-full h-full object-cover rounded-lg">
+</div>
+<div>
+
+
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-lg transition-colors scale-[0.98]" href="#">
+<span class="material-symbols-outlined" data-icon="groups" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-label-md text-label-md">Clients</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="font-label-md text-label-md">Pipeline</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="query_stats">query_stats</span>
+<span class="font-label-md text-label-md">Bill Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Proposals</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-label-md text-label-md">Reports &amp; Analytics</span>
+</a>
+</nav>
+<div class="px-3 pb-6">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="h-16 w-full fixed top-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/20 flex justify-between items-center pl-[312px] pr-margin-desktop">
+<div class="flex items-center flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-body-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search clients, proposals, or locations..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-surface-container-high transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<div class="h-8 w-px bg-outline-variant/30 mx-2"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right hidden sm:block">
+<p class="text-label-md font-bold text-on-surface">Alex Rivera</p>
+<p class="text-[10px] text-outline">Senior Account Executive</p>
+</div>
+<img class="w-10 h-10 rounded-full object-cover border border-outline-variant/50" data-alt="A professional headshot of a Hispanic male executive in his late 30s, wearing a crisp white shirt and a modern blazer. The lighting is bright and clean, characteristic of a high-end corporate office, with a soft-focus background of a sustainable glass-walled architecture. The overall aesthetic is professional, modern, and authoritative, matching a premium enterprise software user profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt1fhuk9SxF3umtBNz2AfUMU-xuyGBAnz2lzwxGChVWGPQe0icG2OrRx8UrlmWUzHuYKunJqNOJ873mLlPNWRRhkQ7K-qspA1RY0FKZue2rOsspcbIKHBcxnSJW6W3f7mrt92oHM1fh-E580ClCbnCL6t2RjUOVW7YKnEvgPQIbzp3xNYxyrqY2I3_0pYVdsYAmn0fnC1XGoSQ6gVJxMY9Dwk1kTf70WxL1nh3FAdi69owphhezK-Q_3L0kHehgqiogedymYMduOM">
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pl-[280px] pt-16 min-h-screen">
+<div class="max-w-[1440px] mx-auto p-margin-desktop">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Client Management</h2>
+<p class="text-body-md text-outline">Monitor and manage your enterprise solar project portfolio.</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-3 rounded-lg font-label-md flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                    Add New Client
+                </button>
+</div>
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Main Table Section (Bento Column) -->
+<div class="col-span-12 lg:col-span-9 space-y-gutter">
+<!-- Filters Row -->
+<div class="glass-card rounded-xl p-4 flex flex-wrap items-center gap-4">
+<div class="flex items-center gap-2 bg-surface-container px-3 py-2 rounded-lg cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+<span class="text-label-md">Industry: All</span>
+</div>
+<div class="flex items-center gap-2 bg-surface-container px-3 py-2 rounded-lg cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span class="text-label-md">Last Activity</span>
+</div>
+<div class="flex items-center gap-2 bg-surface-container px-3 py-2 rounded-lg cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">assignment</span>
+<span class="text-label-md">Status: Pending</span>
+</div>
+<div class="ml-auto flex items-center gap-2 text-outline text-label-md">
+<span class="">Showing 48 clients</span>
+</div>
+</div>
+<!-- Client Table -->
+<div class="glass-card rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Company Name</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Contact Person</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Industry</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Location</th>
+<th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Status</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container/30 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-tertiary-container/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">factory</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Nexus Logistics</p>
+<p class="text-[11px] text-outline">ID: SOL-8291</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface">Sarah Jenkins</p>
+<p class="text-[11px] text-outline">Chief Ops Officer</p>
+</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant text-[11px] font-bold rounded-full">Warehouse</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-1 text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                            Austin, TX
+                                        </div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            Active Proposal
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-outline opacity-0 group-hover:opacity-100 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container/30 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-secondary-container/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">corporate_fare</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Vertex Data Centers</p>
+<p class="text-[11px] text-outline">ID: SOL-4432</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface">Marcus Thorne</p>
+<p class="text-[11px] text-outline">Sustainability Lead</p>
+</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant text-[11px] font-bold rounded-full">Technology</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-1 text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                            Ashburn, VA
+                                        </div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/10 text-secondary font-bold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                            Analysis Phase
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-outline opacity-0 group-hover:opacity-100 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container/30 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-tertiary-container/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">apartment</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Summit Retail Group</p>
+<p class="text-[11px] text-outline">ID: SOL-1109</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface">Elena Rodriguez</p>
+<p class="text-[11px] text-outline">Facility Manager</p>
+</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant text-[11px] font-bold rounded-full">Retail</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-1 text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                            Phoenix, AZ
+                                        </div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-outline-variant/30 text-on-surface-variant font-bold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                            On Hold
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-outline opacity-0 group-hover:opacity-100 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container/30 transition-colors group border-b-0">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-primary-container/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">local_hospital</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Green Valley Health</p>
+<p class="text-[11px] text-outline">ID: SOL-2278</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5">
+<p class="text-body-sm text-on-surface">David Chen</p>
+<p class="text-[11px] text-outline">Energy Specialist</p>
+</td>
+<td class="px-6 py-5">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant text-[11px] font-bold rounded-full">Healthcare</span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-1 text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+                                            Denver, CO
+                                        </div>
+</td>
+<td class="px-6 py-5 text-center">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-[11px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            Proposal Sent
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-outline opacity-0 group-hover:opacity-100 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 bg-surface-container-lowest flex justify-center border-t border-outline-variant/10">
+<button class="text-primary font-label-md hover:underline flex items-center gap-1">
+                                View All 48 Clients
+                                <span class="material-symbols-outlined text-[18px]">arrow_right_alt</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Sidebar Widget Column -->
+<div class="col-span-12 lg:col-span-3 space-y-gutter">
+<!-- Follow-up Reminders Widget -->
+<section class="glass-card rounded-xl p-6 shadow-sm border-l-4 border-secondary">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-[20px] font-bold text-on-surface">Follow-ups</h3>
+<span class="bg-secondary text-on-secondary text-[11px] font-bold px-2 py-0.5 rounded-full">3 DUE</span>
+</div>
+<div class="space-y-4">
+<!-- Reminder 1 -->
+<div class="p-3 bg-surface-container rounded-lg border border-transparent hover:border-secondary/20 transition-all cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<p class="text-label-md font-bold text-on-surface group-hover:text-secondary transition-colors">Nexus Logistics</p>
+<span class="text-[10px] text-error font-bold uppercase">Overdue</span>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-2 mb-3">Confirm site inspection date for the North-East hub expansion.</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline">schedule</span>
+<span class="text-[11px] text-outline">Scheduled: Oct 12</span>
+</div>
+</div>
+<!-- Reminder 2 -->
+<div class="p-3 bg-surface-container rounded-lg border border-transparent hover:border-secondary/20 transition-all cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<p class="text-label-md font-bold text-on-surface group-hover:text-secondary transition-colors">Vertex Data</p>
+<span class="text-[10px] text-secondary font-bold uppercase">Today</span>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-2 mb-3">Send revised technical specs for the Ashburn facility solar array.</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline">schedule</span>
+<span class="text-[11px] text-outline">Due: 4:00 PM</span>
+</div>
+</div>
+<!-- Reminder 3 -->
+<div class="p-3 bg-surface-container rounded-lg border border-transparent hover:border-secondary/20 transition-all cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<p class="text-label-md font-bold text-on-surface group-hover:text-secondary transition-colors">Summit Retail</p>
+<span class="text-[10px] text-outline font-bold uppercase">Tomorrow</span>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-2 mb-3">Initial discovery call with Elena regarding Phoenix rollout.</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline">schedule</span>
+<span class="text-[11px] text-outline">Oct 16, 10:00 AM</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-outline-variant rounded-lg text-label-md font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors">
+                            Manage All Reminders
+                        </button>
+</section>
+<!-- Industry Insights Widget -->
+<div class="glass-card rounded-xl p-6 shadow-sm overflow-hidden relative">
+<div class="relative z-10">
+<h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-4">Quick Stats</h3>
+<div class="space-y-4">
+<div>
+<div class="flex justify-between text-label-md mb-1">
+<span class="text-outline">Conversion Rate</span>
+<span class="text-primary font-bold">24.8%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 24.8%"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-label-md mb-1">
+<span class="text-outline">Proposal Velocity</span>
+<span class="text-tertiary font-bold">+12d</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full" style="width: 65%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Subtle Background Pattern -->
+<div class="absolute -bottom-6 -right-6 opacity-5 pointer-events-none">
+<span class="material-symbols-outlined text-[120px]">monitoring</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- AI Chatbot (Fixed Bottom Right) -->
+<div class="fixed bottom-8 right-8 z-[100] flex flex-col items-end">
+<!-- Chat Bubble (Hidden by default, shown on toggle) -->
+<div class="hidden mb-4 w-[360px] h-[500px] glass-card rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-primary/20" id="chat-window">
+<div class="bg-primary p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">bolt</span>
+</div>
+<div>
+<p class="text-on-primary font-bold text-label-md">Enercore Intelligence</p>
+<p class="text-primary-fixed text-[10px] opacity-80">Online | AI Assistant</p>
+</div>
+</div>
+<button class="text-on-primary hover:bg-on-primary/10 rounded-lg p-1" onclick="toggleChat()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 p-4 overflow-y-auto space-y-4 no-scrollbar bg-surface/50">
+<div class="flex gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-[14px] text-primary">bolt</span>
+</div>
+<div class="bg-white p-3 rounded-tr-xl rounded-b-xl shadow-sm border border-outline-variant/20 max-w-[85%]">
+<p class="text-body-sm text-on-surface">Hello Alex! I see you're looking at your client list. I've noticed Nexus Logistics hasn't been contacted regarding their site inspection for 3 days. Would you like me to draft a follow-up email?</p>
+</div>
+</div>
+<div class="flex flex-row-reverse gap-2">
+<div class="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-1 border border-outline-variant/50">
+<img class="w-full h-full object-cover" data-alt="A small circular professional avatar of a man with short hair and glasses, representing the user in a chat interface. The aesthetic is clean and consistent with a high-end corporate dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlUFQW8xqxxE1_1QjUymoEPrQDs6Faxh1WJoyH1UA38_Mxl46cpxzc3zCtBE3hYwoxvSeqzvIG6cjv2xIWDLol_H8etAd0s9QvpTaEVJ2VmE0nn6Ubt_u3ov8uN8Dv8yEhCElVh9Dzw8b8EsyzMTPQ_dq2kdQmR-SJIMxpOoouyG5AeGFs6kbP_J3If9Ct6RHJxqXCf246KPoNaxGP1Skj_c5avgMKwyBIU6HCF-svyYIaBzrZlLPHeGR2A2MMQqY4p82QjSncvOs">
+</div>
+<div class="bg-primary p-3 rounded-tl-xl rounded-b-xl shadow-sm text-on-primary max-w-[85%]">
+<p class="text-body-sm">Yes, please draft a short reminder for Sarah Jenkins.</p>
+</div>
+</div>
+<div class="flex gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-container flex items-center justify-center flex-shrink-0 mt-1">
+<span class="material-symbols-outlined text-[14px] text-primary">bolt</span>
+</div>
+<div class="bg-white p-3 rounded-tr-xl rounded-b-xl shadow-sm border border-outline-variant/20 max-w-[85%]">
+<p class="text-body-sm italic text-outline">Generating draft...</p>
+</div>
+</div>
+</div>
+<div class="p-4 bg-white border-t border-outline-variant/20">
+<div class="relative">
+<input class="w-full bg-surface-container-low border-none rounded-lg pl-3 pr-10 py-2 text-body-sm focus:ring-1 focus:ring-primary" placeholder="Type a message..." type="text">
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-primary hover:bg-primary-container/20 p-1 rounded">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Chat Trigger Button -->
+<button class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group" onclick="toggleChat()">
+<span class="material-symbols-outlined text-[28px] group-hover:rotate-12 transition-transform">chat_bubble</span>
+</button>
+</div>
+<script>
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.classList.toggle('hidden');
+            chatWindow.classList.toggle('flex');
+        }
+
+        // Add micro-interactions for table rows
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', (e) => {
+                if (!e.target.closest('button')) {
+                    // Logic for opening client details
+                }
+            });
+        });
+    </script>
+
+
+
+
+
+
+</body></html>

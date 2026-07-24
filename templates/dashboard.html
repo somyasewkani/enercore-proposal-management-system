@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+{% block title %}Enercore | Executive Dashboard{% endblock %}
+
+{% block extra_styles %}
+.chart-grid {
+    background-image: radial-gradient(circle, #E2E8F0 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.action-dropdown {
+    display: none;
+    position: absolute;
+    right: 2rem;
+    margin-top: 0.5rem;
+    width: 200px;
+    background: #ffffff;
+    border: 1px solid rgba(191, 202, 185, 0.4);
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+}
+
+.action-dropdown.active {
+    display: block;
+}
+{% endblock %}
+
+{% block content %}
+<div class="p-margin-desktop pb-margin-desktop">
+    <!-- Header Section -->
+    <section class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+            <span class="font-label-md text-secondary tracking-[0.2em] uppercase mb-2 block">Executive Insights</span>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface">Solar Portfolio Overview</h2>
+            <p class="text-on-surface-variant mt-1 font-body-md opacity-80">Real-time performance tracking for solar deployment operations.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <select id="dateRangeSelect" onchange="updateDateRange(this.value)" 
+                    class="h-[44px] pl-4 pr-10 rounded-lg bg-surface-container-lowest border border-outline-variant/30 text-on-surface-variant font-label-md hover:bg-surface-container-high transition-all outline-none appearance-none cursor-pointer">
+                    <option value="30" {% if date_range == '30' %}selected{% endif %}>Last 30 Days</option>
+                    <option value="90" {% if date_range == '90' %}selected{% endif %}>Last 90 Days</option>
+                    <option value="365" {% if date_range == '365' %}selected{% endif %}>This Year</option>
+                    <option value="all" {% if date_range == 'all' %}selected{% endif %}>All Time</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant pointer-events-none text-[20px]">calendar_today</span>
+            </div>
+
+            <a href="{{ url_for('proposal') }}" 
+                class="flex items-center justify-center gap-2 h-[44px] px-6 rounded-lg bg-primary text-on-primary font-label-md hover:bg-primary-container transition-all shadow-md active:scale-95 whitespace-nowrap">
+                <span class="material-symbols-outlined text-[20px]">add</span>
+                New Proposal
+            </a>
+        </div>
+    </section>
+
+    <!-- KPI Metrics Grid -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-gutter">
+        {% for kpi in kpis %}
+        <div class="glass-card p-6 rounded-xl flex flex-col justify-between {% if kpi.icon == 'solar_power' %}bg-primary/5 border-primary/20{% endif %}">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-3 {% if kpi.icon == 'solar_power' %}bg-primary text-white solar-glow{% elif kpi.icon == 'description' %}bg-secondary/10 text-secondary{% elif kpi.icon == 'analytics' %}bg-tertiary/10 text-tertiary{% else %}bg-primary/10 text-primary{% endif %} rounded-lg">
+                    <span class="material-symbols-outlined">{{ kpi.icon }}</span>
+                </div>
+                <span class="font-label-md {% if kpi.tone == 'up' %}text-primary bg-primary-fixed/30{% else %}text-on-surface-variant bg-surface-container-high/50{% endif %} px-2 py-1 rounded-full flex items-center gap-1">
+                    {% if kpi.tone == 'up' %}<span class="material-symbols-outlined text-[14px]">trending_up</span>{% endif %}
+                    {{ kpi.delta }}
+                </span>
+            </div>
+            <div>
+                <h3 class="font-label-md text-on-surface-variant uppercase tracking-wider mb-1">{{ kpi.label }}</h3>
+                <div class="font-display-lg text-[32px] text-on-surface leading-none">{{ kpi.value }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+
+    <!-- Middle Content: Bento Grid Layout -->
+    <section class="grid grid-cols-12 gap-gutter mb-gutter">
+        <!-- Pipeline Chart (8 Columns) -->
+        <div class="col-span-12 lg:col-span-8 glass-card rounded-xl p-8">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="font-headline-md text-headline-md text-on-surface">Solar Capacity Pipeline</h3>
+                    <p class="font-body-sm text-on-surface-variant">Projected MW deployment per month for next 2 quarters.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1">
+                        <span class="w-3 h-3 rounded-full bg-primary"></span>
+                        <span class="font-label-md text-on-surface-variant">Residential</span>
+                    </div>
+                    <div class="flex items-center gap-1 ml-4">
+                        <span class="w-3 h-3 rounded-full bg-secondary"></span>
+                        <span class="font-label-md text-on-surface-variant">Commercial</span>
+                    </div>
+                </div>
+            </div>
+            <div class="h-[300px] w-full">
+                <canvas id="pipelineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Upcoming Follow-ups (4 Columns) -->
+        <div class="col-span-12 lg:col-span-4 glass-card rounded-xl p-8 flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-headline-md text-headline-md text-on-surface">Follow-ups</h3>
+                <span class="bg-secondary-container/20 text-on-secondary-container px-3 py-1 rounded-full font-label-md">{{ followups|length }} Today</span>
+            </div>
+            <div class="flex-1 space-y-4 custom-scrollbar overflow-y-auto max-h-[340px] pr-2">
+                {% if followups %}
+                {% for item in followups %}
+                <div class="p-4 rounded-xl border border-outline-variant/30 hover:border-primary/40 transition-all cursor-pointer group {% if loop.index is even %}bg-surface-container-low/30{% endif %}"
+                    onclick="window.location.href='{{ url_for('pipeline') }}'">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-label-md {% if item.tone == 'primary' %}text-primary{% elif item.tone == 'secondary' %}text-secondary{% else %}text-on-surface-variant{% endif %}">{{ item.when }}</span>
+                        <span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors text-[18px]">{{ item.icon }}</span>
+                    </div>
+                    <p class="font-body-md font-bold text-on-surface">{{ item.title }}</p>
+                    <p class="font-body-sm text-on-surface-variant">{{ item.note }}</p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="p-8 text-center border border-dashed border-outline-variant/30 rounded-xl">
+                    <span class="material-symbols-outlined text-outline-variant text-[32px] mb-1">event_available</span>
+                    <p class="text-body-sm text-on-surface-variant font-medium">No follow-up reminders scheduled.</p>
+                </div>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('pipeline') }}" class="w-full mt-6 py-3 rounded-lg border border-primary text-primary font-label-md hover:bg-primary/5 transition-colors text-center block whitespace-nowrap">
+                View All Reminders
+            </a>
+        </div>
+    </section>
+
+    <!-- Bottom Table Section -->
+    <section class="glass-card rounded-xl overflow-hidden border border-outline-variant/20 shadow-sm relative">
+        <div class="p-8 flex flex-col md:flex-row md:items-center justify-between border-b border-outline-variant/10 gap-4">
+            <div>
+                <h3 class="font-headline-md text-headline-md text-on-surface">Recent Client Activity</h3>
+                <p class="font-body-sm text-on-surface-variant">Latest updates from the sales and implementation pipeline.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ url_for('export_dashboard_csv', search=search_q, category=category_filter, status=status_filter) }}" 
+                    class="px-4 py-2 border border-outline-variant/40 text-primary font-label-md hover:bg-primary/5 rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap">
+                    <span class="material-symbols-outlined text-[18px]">download</span>
+                    Export CSV
+                </a>
+                <a href="{{ url_for('customers') }}" class="px-4 py-2 bg-primary text-white font-label-md rounded-lg shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap">
+                    View All Activity
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="px-8 py-4 bg-surface-container-low/30 border-b border-outline-variant/10 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 flex-1 max-w-md">
+                <div class="relative w-full">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant text-[18px]">search</span>
+                    <input type="text" id="searchInput" value="{{ search_q }}" placeholder="Search client name or segment..."
+                        onchange="applyFilters()"
+                        class="w-full bg-white border border-outline-variant/30 rounded-lg pl-9 pr-4 py-1.5 text-body-sm focus:ring-2 focus:ring-primary/20 outline-none">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <select id="categorySelect" onchange="applyFilters()" class="bg-white border border-outline-variant/30 rounded-lg px-3 py-1.5 text-body-sm outline-none cursor-pointer">
+                    <option value="all" {% if category_filter == 'all' %}selected{% endif %}>All Segments</option>
+                    <option value="Commercial" {% if category_filter == 'Commercial' %}selected{% endif %}>Commercial</option>
+                    <option value="Residential" {% if category_filter == 'Residential' %}selected{% endif %}>Residential</option>
+                    <option value="Infrastructure" {% if category_filter == 'Infrastructure' %}selected{% endif %}>Infrastructure</option>
+                </select>
+
+                <select id="statusSelect" onchange="applyFilters()" class="bg-white border border-outline-variant/30 rounded-lg px-3 py-1.5 text-body-sm outline-none cursor-pointer">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                    <option value="Proposal Sent" {% if status_filter == 'Proposal Sent' %}selected{% endif %}>Proposal Sent</option>
+                    <option value="Analysis Phase" {% if status_filter == 'Analysis Phase' %}selected{% endif %}>Analysis Phase</option>
+                    <option value="Contract Signed" {% if status_filter == 'Contract Signed' %}selected{% endif %}>Contract Signed</option>
+                    <option value="New Lead" {% if status_filter == 'New Lead' %}selected{% endif %}>New Lead</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto min-h-[220px]">
+            {% if activity_items %}
+            <table class="w-full text-left">
+                <thead class="bg-surface-container-low/50">
+                    <tr>
+                        <th class="px-8 py-4 font-label-md text-outline-variant uppercase cursor-pointer hover:text-primary transition-colors" onclick="sortColumn('name')">
+                            Client / Company
+                            {% if sort_by == 'name' %}{{ '▲' if sort_order == 'asc' else '▼' }}{% endif %}
+                        </th>
+                        <th class="px-8 py-4 font-label-md text-outline-variant uppercase cursor-pointer hover:text-primary transition-colors" onclick="sortColumn('updated_at')">
+                            Updated Date
+                            {% if sort_by == 'updated_at' %}{{ '▲' if sort_order == 'asc' else '▼' }}{% endif %}
+                        </th>
+                        <th class="px-8 py-4 font-label-md text-outline-variant uppercase cursor-pointer hover:text-primary transition-colors" onclick="sortColumn('status')">
+                            Project Status
+                            {% if sort_by == 'status' %}{{ '▲' if sort_order == 'asc' else '▼' }}{% endif %}
+                        </th>
+                        <th class="px-8 py-4 font-label-md text-outline-variant uppercase cursor-pointer hover:text-primary transition-colors" onclick="sortColumn('value')">
+                            Contract Value
+                            {% if sort_by == 'value' %}{{ '▲' if sort_order == 'asc' else '▼' }}{% endif %}
+                        </th>
+                        <th class="px-8 py-4 font-label-md text-outline-variant uppercase text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/10">
+                    {% for item in activity_items %}
+                    <tr class="hover:bg-surface-container-low/30 transition-colors cursor-pointer group"
+                        onclick="window.location.href='{{ url_for('customers', search=item.name) }}'">
+                        <td class="px-8 py-6">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 {% if item.category == 'Commercial' %}bg-primary/10 text-primary{% elif item.category == 'Residential' %}bg-secondary/10 text-secondary{% else %}bg-tertiary/10 text-tertiary{% endif %} rounded flex items-center justify-center font-bold">
+                                    {{ item.initials }}
+                                </div>
+                                <div>
+                                    <div class="font-body-md font-bold text-on-surface">{{ item.name }}</div>
+                                    <div class="text-[12px] text-outline-variant">{{ item.segment }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6 font-body-sm text-on-surface-variant">{{ item.updated_at }}</td>
+                        <td class="px-8 py-6">
+                            <span class="px-3 py-1 text-[12px] font-bold rounded-full border
+                                {% if item.status == 'Proposal Sent' %}bg-primary/10 text-primary border-primary/20
+                                {% elif item.status == 'Analysis Phase' %}bg-secondary/10 text-secondary border-secondary/20
+                                {% elif item.status == 'Contract Signed' %}bg-primary text-white border-primary
+                                {% else %}bg-surface-container-high text-on-surface-variant border-outline-variant/30{% endif %}">
+                                {{ item.status }}
+                            </span>
+                        </td>
+                        <td class="px-8 py-6 font-body-md font-bold text-on-surface">{{ item.value_formatted }}</td>
+                        <td class="px-8 py-6 text-right relative" onclick="event.stopPropagation()">
+                            <button class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors p-2 rounded-lg hover:bg-surface-container-high"
+                                onclick="toggleActionMenu(event, 'dropdown-{{ item.id }}')">
+                                more_vert
+                            </button>
+
+                            <div id="dropdown-{{ item.id }}" class="action-dropdown shadow-lg py-2">
+                                <a href="{{ url_for('customers', search=item.name) }}" class="flex items-center gap-2 px-4 py-2 text-body-sm text-on-surface hover:bg-surface-container-low">
+                                    <span class="material-symbols-outlined text-[18px]">visibility</span> View Details
+                                </a>
+                                <form action="{{ url_for('dashboard_action') }}" method="POST" class="m-0">
+                                    <input type="hidden" name="customer_id" value="{{ item.id }}">
+                                    <input type="hidden" name="status" value="Proposal Sent">
+                                    <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-on-surface hover:bg-surface-container-low">
+                                        <span class="material-symbols-outlined text-[18px]">send</span> Mark Proposal Sent
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('dashboard_action') }}" method="POST" class="m-0">
+                                    <input type="hidden" name="customer_id" value="{{ item.id }}">
+                                    <input type="hidden" name="status" value="Contract Signed">
+                                    <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-primary font-bold hover:bg-surface-container-low">
+                                        <span class="material-symbols-outlined text-[18px]">check_circle</span> Mark Contract Signed
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="py-16 text-center">
+                <span class="material-symbols-outlined text-[48px] text-outline-variant mb-2">find_in_page</span>
+                <h4 class="font-headline-sm text-on-surface font-bold">No Client Activity Found</h4>
+                <p class="text-body-sm text-on-surface-variant mt-1">There are no client activity records available.</p>
+                <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-primary text-white text-body-sm font-bold rounded-lg hover:opacity-90">
+                    Reset Filters
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Pagination Bar -->
+        {% if total_pages > 1 %}
+        <div class="px-8 py-4 bg-surface-container-low/30 border-t border-outline-variant/10 flex items-center justify-between">
+            <span class="text-body-sm text-on-surface-variant">
+                Showing {{ (page - 1) * per_page + 1 }} - {{ [page * per_page, total_count]|min }} of {{ total_count }} activities
+            </span>
+            <div class="flex items-center gap-2">
+                <button onclick="goToPage({{ page - 1 }})" {% if page <= 1 %}disabled class="px-3 py-1.5 rounded border border-outline-variant/30 text-outline-variant cursor-not-allowed"{% else %}class="px-3 py-1.5 rounded border border-outline-variant/50 text-on-surface hover:bg-surface-container-high"{% endif %}>
+                    Previous
+                </button>
+                <span class="px-3 py-1.5 font-bold text-body-sm text-primary">Page {{ page }} of {{ total_pages }}</span>
+                <button onclick="goToPage({{ page + 1 }})" {% if page >= total_pages %}disabled class="px-3 py-1.5 rounded border border-outline-variant/30 text-outline-variant cursor-not-allowed"{% else %}class="px-3 py-1.5 rounded border border-outline-variant/50 text-on-surface hover:bg-surface-container-high"{% endif %}>
+                    Next
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const pipelineData = {{ pipeline_chart|tojson }};
+    const ctx = document.getElementById('pipelineChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: pipelineData.months,
+            datasets: [
+                {
+                    label: 'Residential',
+                    data: pipelineData.residential,
+                    backgroundColor: '#006b1b',
+                    borderRadius: 6,
+                },
+                {
+                    label: 'Commercial',
+                    data: pipelineData.commercial,
+                    backgroundColor: '#ff8f06',
+                    borderRadius: 6,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+                    ticks: { callback: value => value + ' MW', font: { size: 10 } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 } }
+                }
+            }
+        }
+    });
+
+    function getQueryParams() {
+        return new URLSearchParams(window.location.search);
+    }
+
+    function updateDateRange(val) {
+        const params = getQueryParams();
+        params.set('range', val);
+        params.set('page', '1');
+        window.location.search = params.toString();
+    }
+
+    function applyFilters() {
+        const params = getQueryParams();
+        const search = document.getElementById('searchInput').value;
+        const category = document.getElementById('categorySelect').value;
+        const status = document.getElementById('statusSelect').value;
+
+        if (search) params.set('search', search); else params.delete('search');
+        if (category !== 'all') params.set('category', category); else params.delete('category');
+        if (status !== 'all') params.set('status', status); else params.delete('status');
+
+        params.set('page', '1');
+        window.location.search = params.toString();
+    }
+
+    function resetFilters() {
+        window.location.href = "{{ url_for('dashboard') }}";
+    }
+
+    function sortColumn(col) {
+        const params = getQueryParams();
+        const currentSort = params.get('sort') || 'updated_at';
+        const currentOrder = params.get('order') || 'desc';
+
+        if (currentSort === col) {
+            params.set('order', currentOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            params.set('sort', col);
+            params.set('order', 'asc');
+        }
+        window.location.search = params.toString();
+    }
+
+    function goToPage(page) {
+        const params = getQueryParams();
+        params.set('page', page);
+        window.location.search = params.toString();
+    }
+
+    function toggleActionMenu(event, menuId) {
+        event.stopPropagation();
+        document.querySelectorAll('.action-dropdown').forEach(m => {
+            if (m.id !== menuId) m.classList.remove('active');
+        });
+        const target = document.getElementById(menuId);
+        if (target) target.classList.toggle('active');
+    }
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.action-dropdown').forEach(m => m.classList.remove('active'));
+    });
+</script>
+{% endblock %}

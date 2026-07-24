@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Proposal History | Enercore Solar Intelligence{% endblock %}
+{% set active_page = 'proposal_history' %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto p-margin-desktop">
+    <!-- Page Header -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Proposal History</h2>
+            <p class="text-body-md text-on-surface-variant">Review, manage, and download all generated solar installation proposals.</p>
+        </div>
+        <a href="{{ url_for('proposal') }}" class="bg-primary hover:bg-primary-container text-on-primary px-6 py-2.5 rounded-lg font-medium flex items-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-[0.98] whitespace-nowrap">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            New Proposal
+        </a>
+    </div>
+
+    <!-- Filter & Table Container -->
+    <div class="glass-card rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+        <!-- Filter Bar -->
+        <div class="p-6 border-b border-outline-variant/20 flex flex-wrap gap-4 items-center justify-between">
+            <div class="flex gap-4 items-center overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
+                <span class="px-4 py-2 bg-surface-container-high rounded-full text-body-sm font-semibold text-primary flex items-center gap-2 whitespace-nowrap">
+                    All Proposals
+                    <span class="bg-primary text-on-primary text-[10px] px-1.5 py-0.5 rounded-full">{{ proposals|length }}</span>
+                </span>
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ url_for('export_reports') }}" class="p-2 rounded-lg border border-outline-variant/40 hover:bg-surface-container transition-colors" title="Export CSV">
+                    <span class="material-symbols-outlined">download</span>
+                </a>
+            </div>
+        </div>
+
+        {% if proposals %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-surface-container-low/50">
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Proposal ID</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Client Name</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Date Created</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Capacity</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/10">
+                    {% for p in proposals %}
+                    <tr class="hover:bg-surface-container-high/20 transition-colors group">
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-on-surface">{{ p.id }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="font-medium text-on-surface">{{ p.client_name }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-body-sm text-on-surface">{{ p.date_created }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-on-surface">{{ p.capacity }} kWp</p>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{{ url_for('proposal') }}" class="p-2 rounded-lg text-primary transition-colors" title="Edit Proposal">
+                                <span class="material-symbols-outlined">edit</span>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-16 text-center">
+            <span class="material-symbols-outlined text-[48px] text-outline-variant mb-2">description</span>
+            <h4 class="font-headline-sm text-on-surface font-bold">No Proposals Generated Yet</h4>
+            <p class="text-body-sm text-on-surface-variant mt-1 mb-4">Click "New Proposal" to generate your first client solar proposal.</p>
+            <a href="{{ url_for('proposal') }}" class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-lg font-bold hover:opacity-90">
+                <span class="material-symbols-outlined">add</span>
+                Create Proposal
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
