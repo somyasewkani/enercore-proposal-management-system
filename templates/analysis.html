@@ -14,18 +14,17 @@
 
 {% block content %}
 <div class="max-w-[1440px] mx-auto p-margin-desktop">
+    {% if analysis_data %}
     <!-- Breadcrumbs & Header -->
     <div class="mb-10 flex justify-between items-end">
         <div>
             <nav class="flex items-center gap-2 text-outline mb-2">
                 <span class="text-label-md">Pipeline</span>
                 <span class="material-symbols-outlined text-sm">chevron_right</span>
-                <span class="text-label-md">Project Phoenix</span>
-                <span class="material-symbols-outlined text-sm">chevron_right</span>
-                <span class="text-label-md text-primary font-bold">Analysis Results</span>
+                <span class="text-label-md">Analysis Results</span>
             </nav>
             <h2 class="font-headline-lg text-headline-lg text-on-surface">AI Solar Performance Analysis</h2>
-            <p class="text-on-surface-variant font-body-md text-body-md mt-1">Feasibility and ROI results for Site: North-Western Industrial Hub.</p>
+            <p class="text-on-surface-variant font-body-md text-body-md mt-1">Feasibility and ROI results for Bill statement: <span class="font-bold">{{ analysis_data.filename }}</span></p>
         </div>
         <div class="flex gap-4">
             <a href="{{ url_for('export_analysis_data') }}" class="border border-tertiary text-tertiary px-6 py-2.5 rounded-lg font-label-md hover:bg-tertiary/5 transition-colors flex items-center gap-2">
@@ -49,14 +48,14 @@
                     <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-label-md font-bold mb-4 inline-block">AI OPTIMIZED SIZE</span>
                     <h3 class="font-body-lg text-body-lg text-on-surface-variant mt-2">Recommended Plant Size</h3>
                     <div class="flex items-baseline gap-2 mt-4">
-                        <span class="font-display-lg text-display-lg text-primary">250</span>
+                        <span class="font-display-lg text-display-lg text-primary">{{ analysis_data.plant_size }}</span>
                         <span class="font-headline-md text-headline-md text-on-surface-variant">kWp</span>
                     </div>
                 </div>
                 <div class="mt-8 pt-8 border-t border-outline-variant/20">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-label-md text-on-surface-variant">Daily Average Yield</span>
-                        <span class="text-label-md font-bold">1,125 kWh</span>
+                        <span class="text-label-md font-bold">{{ analysis_data.daily_yield }} kWh</span>
                     </div>
                     <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
                         <div class="bg-primary h-full w-3/4 rounded-full"></div>
@@ -76,17 +75,17 @@
                 <div class="grid grid-cols-3 gap-8">
                     <div>
                         <p class="text-on-surface-variant font-label-md mb-2">Est. Annual Savings</p>
-                        <p class="font-headline-md text-headline-md text-secondary-container">$42,500</p>
+                        <p class="font-headline-md text-headline-md text-secondary-container">${{ analysis_data.annual_savings }}</p>
                         <p class="text-[12px] text-primary mt-1 font-bold">↑ 12% vs Local Grid</p>
                     </div>
                     <div class="border-x border-outline-variant/30 px-8">
                         <p class="text-on-surface-variant font-label-md mb-2">Payback Period</p>
-                        <p class="font-headline-md text-headline-md text-on-surface">3.8 Years</p>
+                        <p class="font-headline-md text-headline-md text-on-surface">{{ analysis_data.payback }} Years</p>
                         <p class="text-[12px] text-on-surface-variant mt-1 italic">Accelerated depreciation included</p>
                     </div>
                     <div class="pl-8">
                         <p class="text-on-surface-variant font-label-md mb-2">Project IRR</p>
-                        <p class="font-headline-md text-headline-md text-tertiary">24.6%</p>
+                        <p class="font-headline-md text-headline-md text-tertiary">{{ analysis_data.irr }}</p>
                         <p class="text-[12px] text-on-surface-variant mt-1 font-bold">Risk-Adjusted Index</p>
                     </div>
                 </div>
@@ -161,22 +160,37 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="border border-primary/40 rounded-xl p-6 bg-primary/5 cursor-pointer">
                         <span class="font-label-md text-on-surface-variant">CAPEX</span>
-                        <p class="text-body-lg font-bold text-on-surface my-2">High Yield</p>
+                        <p class="text-[16px] font-bold text-on-surface my-2">High Yield</p>
                         <p class="text-[10px] font-bold text-primary">RECOMMENDED (Score 95/100)</p>
                     </div>
                     <div class="border border-outline-variant/20 rounded-xl p-6 hover:bg-surface-container-highest cursor-pointer">
                         <span class="font-label-md text-on-surface-variant">OPEX / PPA</span>
-                        <p class="text-body-lg font-bold text-on-surface my-2">Zero Capital</p>
+                        <p class="text-[16px] font-bold text-on-surface my-2">Zero Capital</p>
                         <p class="text-[10px] font-bold text-secondary">MODERATE (Score 70/100)</p>
                     </div>
                     <div class="border border-outline-variant/20 rounded-xl p-6 hover:bg-surface-container-highest cursor-pointer">
                         <span class="font-label-md text-on-surface-variant">Open Access</span>
-                        <p class="text-body-lg font-bold text-on-surface my-2">Multi-Site</p>
+                        <p class="text-[16px] font-bold text-on-surface my-2">Multi-Site</p>
                         <p class="text-[10px] font-bold text-tertiary">FEASIBLE (Score 45/100)</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    {% else %}
+    <div class="flex flex-col items-center justify-center min-h-[50vh] text-center">
+        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+            <span class="material-symbols-outlined text-primary text-4xl">analytics</span>
+        </div>
+        <h3 class="font-headline-md text-on-surface font-bold">No Utility Statement Analyzed Yet</h3>
+        <p class="text-body-md text-on-surface-variant max-w-sm mt-2 mb-8">
+            Upload an electricity bill statement under the bill uploader page to generate AI optimized sizing and payback analysis.
+        </p>
+        <a href="{{ url_for('upload_bill') }}" class="bg-primary text-white rounded-lg px-6 py-3 font-bold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+            <span class="material-symbols-outlined">cloud_upload</span>
+            Upload Utility Bill
+        </a>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

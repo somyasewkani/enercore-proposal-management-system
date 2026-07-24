@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Sites Portfolio | Enercore{% endblock %}
+{% set active_page = 'customers' %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-gutter">
+    <!-- Page Header -->
+    <div class="flex justify-between items-end mb-4">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Sites Directory</h2>
+            <p class="text-body-md text-outline">Search and monitor active utility installations across your client portfolio.</p>
+        </div>
+    </div>
+
+    <!-- Filters Row -->
+    <div class="glass-card rounded-xl p-6 flex flex-wrap items-center justify-between gap-4 border border-outline-variant/15">
+        <form method="GET" action="{{ url_for('sites_list_route') }}" class="w-full flex flex-wrap items-center gap-4">
+            <!-- Search bar -->
+            <div class="flex-1 min-w-[280px] relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+                <input name="search" placeholder="Search by site or client name..." 
+                    value="{{ search_q or '' }}"
+                    class="w-full bg-white border border-outline-variant rounded-lg pl-10 pr-4 py-2 outline-none text-body-md focus:ring-2 focus:ring-primary/20">
+            </div>
+
+            <!-- Customer Filter -->
+            <select name="customer" class="bg-white border border-outline-variant rounded-lg px-4 py-2 text-body-md outline-none cursor-pointer">
+                <option value="all">Filter: All Clients</option>
+                {% for c in customers %}
+                <option value="{{ c.id }}" {% if customer_filter == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- State Filter -->
+            <select name="state" class="bg-white border border-outline-variant rounded-lg px-4 py-2 text-body-md outline-none cursor-pointer">
+                <option value="all">Filter: All States</option>
+                {% for st in states %}
+                <option value="{{ st }}" {% if state_filter == st %}selected{% endif %}>{{ st }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Status Filter -->
+            <select name="status" class="bg-white border border-outline-variant rounded-lg px-4 py-2 text-body-md outline-none cursor-pointer">
+                <option value="all">Filter: All Statuses</option>
+                <option value="New" {% if status_filter == 'New' %}selected{% endif %}>New</option>
+                <option value="Bill Uploaded" {% if status_filter == 'Bill Uploaded' %}selected{% endif %}>Bill Uploaded</option>
+                <option value="Survey Scheduled" {% if status_filter == 'Survey Scheduled' %}selected{% endif %}>Survey Scheduled</option>
+                <option value="Survey Completed" {% if status_filter == 'Survey Completed' %}selected{% endif %}>Survey Completed</option>
+                <option value="Proposal Generated" {% if status_filter == 'Proposal Generated' %}selected{% endif %}>Proposal Generated</option>
+                <option value="Proposal Sent" {% if status_filter == 'Proposal Sent' %}selected{% endif %}>Proposal Sent</option>
+                <option value="Project Won" {% if status_filter == 'Project Won' %}selected{% endif %}>Project Won</option>
+                <option value="Project Lost" {% if status_filter == 'Project Lost' %}selected{% endif %}>Project Lost</option>
+                <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+            </select>
+
+            <!-- Action buttons -->
+            <div class="flex gap-2">
+                <button type="submit" class="bg-primary text-on-primary px-6 py-2 rounded-lg font-bold hover:opacity-90 transition-all">
+                    Apply Filters
+                </button>
+                <a href="{{ url_for('sites_list_route') }}" class="border border-outline text-on-surface px-6 py-2 rounded-lg font-bold hover:bg-surface-container transition-all">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sites Table -->
+    <div class="glass-card rounded-xl overflow-hidden shadow-sm border border-outline-variant/20">
+        <div class="overflow-x-auto max-w-full custom-scrollbar">
+            <table class="w-full min-w-[900px] text-left border-collapse">
+                <thead>
+                    <tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Site Name</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Client Name</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Location / State</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Status</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Created Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/20">
+                    {% for s in sites %}
+                    <tr class="hover:bg-surface-container/30 transition-colors cursor-pointer group"
+                        onclick="window.location.href='{{ url_for('site_dashboard', site_id=s.id) }}'">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined">domain</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-on-surface">{{ s.name }}</p>
+                                    <p class="text-[11px] text-outline">ID: {{ s.id }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="font-bold text-on-surface text-body-md">{{ s.customer_name }}</span>
+                        </td>
+                        <td class="px-6 py-5 text-body-sm text-on-surface">
+                            <p class="font-medium">{{ s.address_street }}</p>
+                            <p class="text-outline text-[11px]">{{ s.address_city }}, {{ s.address_state }}</p>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-bold text-[11px]">
+                                <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                {{ s.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="text-body-sm text-on-surface-variant">{{ s.created_at[:10] }}</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-outline">No project sites match the search filters.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

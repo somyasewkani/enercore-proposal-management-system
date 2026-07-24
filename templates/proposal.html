@@ -27,8 +27,7 @@
         <!-- Action Bar -->
         <div class="flex items-center justify-between sticky top-0 bg-background/90 backdrop-blur-sm z-10 pb-4">
             <div class="flex gap-3">
-                <form method="POST" action="{{ url_for('proposal') }}">
-                    <input type="hidden" name="client_name" value="Horizon Green Energy Corp.">
+                <form id="proposalForm" method="POST" action="{{ url_for('proposal') }}">
                     <button type="submit" class="bg-primary text-on-primary px-6 h-[44px] rounded-lg font-bold flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
                         <span class="material-symbols-outlined">send</span>
                         Send to Client
@@ -65,6 +64,16 @@
                 <span class="material-symbols-outlined text-primary">tune</span>
                 Proposal Settings
             </h3>
+            <div class="mb-6">
+                <label class="font-label-md text-label-md text-on-surface-variant block mb-3 uppercase tracking-wider">Target Client / Company</label>
+                <select name="customer_id" form="proposalForm" class="w-full bg-white border border-outline-variant rounded-lg p-3 focus:border-primary focus:ring-primary outline-none text-body-md" required>
+                    {% for c in customers %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% else %}
+                    <option value="">No clients available - Add client first</option>
+                    {% endfor %}
+                </select>
+            </div>
             <div class="grid grid-cols-2 gap-8">
                 <div>
                     <label class="font-label-md text-label-md text-on-surface-variant block mb-3 uppercase tracking-wider">Theme choice</label>

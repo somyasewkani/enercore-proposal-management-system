@@ -175,6 +175,12 @@
                     </a>
                 </li>
                 <li>
+                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'sites' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('sites_list_route') }}">
+                        <span class="material-symbols-outlined">domain</span>
+                        <span class="font-label-md text-label-md">Sites</span>
+                    </a>
+                </li>
+                <li>
                     <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'pipeline' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('pipeline') }}">
                         <span class="material-symbols-outlined">account_tree</span>
                         <span class="font-label-md text-label-md">Pipeline</span>

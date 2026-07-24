@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}{{ site.name }} | Site Dashboard | Enercore{% endblock %}
+{% set active_page = 'customers' %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-gutter">
+    <!-- Breadcrumbs & Header -->
+    <div class="flex justify-between items-end mb-4">
+        <div>
+            <nav class="flex items-center gap-2 text-outline mb-2">
+                <a href="{{ url_for('customers') }}" class="text-label-md hover:text-primary">Client Management</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <a href="{{ url_for('customer_details_route', customer_id=site.customer_id) }}" class="text-label-md hover:text-primary">{{ site.customer_name }}</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="text-label-md text-primary font-bold">{{ site.name }}</span>
+            </nav>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface">{{ site.name }} Site Dashboard</h2>
+            <p class="text-body-md text-outline">Performance metrics, lifecycle tracking, and timeline updates for this facility.</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{{ url_for('customer_details_route', customer_id=site.customer_id) }}" 
+                class="flex items-center justify-center gap-2 h-[44px] px-6 rounded-lg border border-outline text-on-surface hover:bg-surface-container-high transition-all font-label-md">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Back to Client
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Lifecycle Tracker -->
+    <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/15">
+        <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">analytics</span>
+            Site Lifecycle Workflow
+        </h3>
+        
+        <!-- Interactive Lifecycle Steps Progress Bar -->
+        {% set statuses = ['New', 'Bill Uploaded', 'Survey Scheduled', 'Survey Completed', 'Proposal Generated', 'Proposal Sent', 'Project Won', 'Project Lost', 'Completed'] %}
+        {% set current_idx = statuses.index(site.status) if site.status in statuses else 0 %}
+        
+        <div class="grid grid-cols-2 md:grid-cols-9 gap-4 relative">
+            {% for s in statuses %}
+                {% set step_idx = loop.index0 %}
+                <div class="flex flex-col items-center text-center relative z-10">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all
+                        {% if step_idx < current_idx %}
+                            bg-primary text-on-primary shadow-md shadow-primary/20
+                        {% elif step_idx == current_idx %}
+                            bg-secondary text-on-secondary ring-4 ring-secondary/20 shadow-md
+                        {% else %}
+                            bg-surface-container text-outline border border-outline-variant/30
+                        {% endif %}">
+                        {% if step_idx < current_idx %}
+                            <span class="material-symbols-outlined text-[16px]">check</span>
+                        {% else %}
+                            {{ loop.index }}
+                        {% endif %}
+                    </div>
+                    <span class="text-[11px] font-bold mt-2 truncate max-w-full
+                        {% if step_idx == current_idx %}
+                            text-secondary
+                        {% elif step_idx < current_idx %}
+                            text-primary
+                        {% else %}
+                            text-outline
+                        {% endif %}">
+                        {{ s }}
+                    </span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-gutter">
+        <!-- Left: Site Overview and Contact Details -->
+        <div class="col-span-12 lg:col-span-6 space-y-gutter">
+            <div class="glass-card p-8 rounded-xl h-full flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="font-headline-md text-headline-md">Site Information</h3>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-[11px]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                            {{ site.status }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <span class="text-label-md text-outline uppercase tracking-wider block">Customer Account</span>
+                            <span class="font-bold text-on-surface text-body-lg mt-1 block">{{ site.customer_name }}</span>
+                        </div>
+                        <div>
+                            <span class="text-label-md text-outline uppercase tracking-wider block">Created Date</span>
+                            <span class="font-medium text-on-surface text-body-md mt-1 block">{{ site.created_at[:16] }}</span>
+                        </div>
+                        <div class="col-span-2 border-t border-outline-variant/10 pt-4">
+                            <span class="text-label-md text-outline uppercase tracking-wider block mb-1">Installation Address</span>
+                            <p class="font-medium text-on-surface text-body-md">{{ site.address_street }}</p>
+                            <p class="text-outline text-body-sm">{{ site.address_city }}, {{ site.address_state }} {{ site.address_zip }}</p>
+                        </div>
+                        <div class="col-span-2 border-t border-outline-variant/10 pt-4 grid grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-label-md text-outline uppercase tracking-wider block">Contact Person</span>
+                                <span class="font-bold text-on-surface text-body-md mt-1 block">{{ site.contact_person or 'Not specified' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-label-md text-outline uppercase tracking-wider block">Contact Phone</span>
+                                <span class="font-medium text-on-surface text-body-md mt-1 block">{{ site.contact_number or 'Not specified' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-outline-variant/15 pt-6 mt-8 flex gap-3">
+                    {% if site.is_archived %}
+                    <span class="text-body-sm text-outline italic">This site is archived. Restore it to reactivate project operations.</span>
+                    {% else %}
+                    <a href="{{ url_for('upload_bill') }}" class="flex-1 bg-primary text-on-primary rounded-lg font-label-md text-center py-2.5 hover:opacity-90 transition-all shadow-md">
+                        Upload statement
+                    </a>
+                    <a href="{{ url_for('proposal') }}" class="flex-1 border border-primary text-primary rounded-lg font-label-md text-center py-2.5 hover:bg-primary/5 transition-all">
+                        Generate proposal
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Timeline Feed -->
+        <div class="col-span-12 lg:col-span-6">
+            <div class="glass-card p-8 rounded-xl flex flex-col h-full">
+                <h3 class="font-headline-md text-headline-md mb-6 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary">history</span>
+                    Activity Timeline
+                </h3>
+
+                <div class="flex-1 relative border-l border-outline-variant/30 pl-6 ml-3 space-y-6 max-h-[420px] overflow-y-auto custom-scrollbar">
+                    {% for a in activities %}
+                    <div class="relative">
+                        <!-- Bullet indicator -->
+                        <span class="absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm
+                            {% if a.activity_type == 'Site Created' %}
+                                bg-primary
+                            {% elif a.activity_type == 'Site Deleted' %}
+                                bg-error
+                            {% elif a.activity_type == 'Bill Uploaded' %}
+                                bg-secondary
+                            {% else %}
+                                bg-tertiary
+                            {% endif %}">
+                        </span>
+                        
+                        <div>
+                            <span class="text-[11px] font-bold text-outline uppercase tracking-wider">{{ a.created_at[:16] }}</span>
+                            <h4 class="font-bold text-on-surface text-body-md mt-0.5">{{ a.activity_type }}</h4>
+                            <p class="text-body-sm text-on-surface-variant mt-1">{{ a.description }}</p>
+                            <span class="text-[11px] text-outline italic block mt-1">Logged by: {{ a.created_by }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12 text-outline">
+                        <span class="material-symbols-outlined text-[36px] mb-2">history</span>
+                        <p class="text-body-sm">No activity timeline records logged yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

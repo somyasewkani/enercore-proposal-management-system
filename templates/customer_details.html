@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+{% block title %}{{ customer.name }} | Client Details | Enercore{% endblock %}
+{% set active_page = 'customers' %}
+
+{% block extra_styles %}
+<style>
+    .action-menu-dropdown {
+        display: none;
+        position: absolute;
+        right: 1.5rem;
+        margin-top: 0.25rem;
+        width: 180px;
+        background: #ffffff;
+        border: 1px solid rgba(191, 202, 185, 0.4);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        z-index: 50;
+    }
+    .action-menu-dropdown.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-gutter">
+    <!-- Breadcrumbs & Header -->
+    <div class="flex justify-between items-end mb-4">
+        <div>
+            <nav class="flex items-center gap-2 text-outline mb-2">
+                <a href="{{ url_for('customers') }}" class="text-label-md hover:text-primary">Client Management</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="text-label-md text-primary font-bold">{{ customer.name }}</span>
+            </nav>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface">{{ customer.name }} Details</h2>
+            <p class="text-body-md text-outline">Manage sites and solar assets for this client account.</p>
+        </div>
+        <button type="button" onclick="document.getElementById('addSiteForm').classList.toggle('hidden')"
+            class="flex items-center justify-center gap-2 h-[44px] px-6 rounded-lg bg-primary text-on-primary font-label-md hover:bg-primary-container transition-all shadow-md active:scale-95 whitespace-nowrap">
+            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+            Add New Site
+        </button>
+    </div>
+
+    <!-- Add Site Form Container -->
+    <div id="addSiteForm" class="hidden glass-card rounded-xl p-6 border border-primary/20 shadow-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-headline-md text-on-surface">Add New Project Site</h3>
+            <button onclick="document.getElementById('addSiteForm').classList.add('hidden')" class="material-symbols-outlined text-outline">close</button>
+        </div>
+        <form method="POST" action="{{ url_for('add_site', customer_id=customer.id) }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Site Name *</label>
+                <input name="name" placeholder="e.g. North Warehouse" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Person</label>
+                <input name="contact_person" placeholder="Enter contact name" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Number (Phone)</label>
+                <input name="contact_number" placeholder="+1 (555) 010-0001" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Street Address</label>
+                <input name="address_street" placeholder="123 Industry Rd" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">City</label>
+                <input name="address_city" placeholder="City" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">State</label>
+                <input name="address_state" placeholder="State" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Zip Code / Pincode</label>
+                <input name="address_zip" placeholder="Zip code" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full h-[44px] bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all shadow-md">
+                    Create Site
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Client KPI Metrics Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-gutter">
+        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10">
+            <span class="text-label-md text-outline uppercase">Total Sites</span>
+            <p class="font-display-md text-display-md text-on-surface mt-2">{{ stats.total_sites }}</p>
+        </div>
+        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10">
+            <span class="text-label-md text-outline uppercase">Utility Bills</span>
+            <p class="font-display-md text-display-md text-secondary mt-2">{{ stats.total_bills }}</p>
+        </div>
+        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10">
+            <span class="text-label-md text-outline uppercase">Proposals</span>
+            <p class="font-display-md text-display-md text-tertiary mt-2">{{ stats.total_proposals }}</p>
+        </div>
+        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10">
+            <span class="text-label-md text-outline uppercase">Installed MW</span>
+            <p class="font-display-md text-display-md text-primary mt-2">{{ stats.total_capacity_mw }} MW</p>
+        </div>
+        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10 col-span-2 lg:col-span-1">
+            <span class="text-label-md text-outline uppercase">Latest Activity</span>
+            <p class="text-body-sm font-bold text-on-surface mt-3 truncate" title="{{ stats.latest_activity }}">{{ stats.latest_activity }}</p>
+        </div>
+    </div>
+
+    <!-- Edit Site Modal (Hidden by default) -->
+    <div id="editSiteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div class="glass-card rounded-xl p-8 max-w-2xl w-full border border-primary/20 shadow-2xl mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-headline-md text-on-surface">Edit Project Site</h3>
+                <button onclick="document.getElementById('editSiteModal').classList.add('hidden')" class="material-symbols-outlined text-outline">close</button>
+            </div>
+            <form id="editSiteForm" method="POST" action="" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Site Name *</label>
+                    <input id="edit_name" name="name" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Person</label>
+                    <input id="edit_contact_person" name="contact_person" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Number (Phone)</label>
+                    <input id="edit_contact_number" name="contact_number" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Street Address</label>
+                    <input id="edit_address_street" name="address_street" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-outline mb-1 uppercase">City</label>
+                    <input id="edit_address_city" name="address_city" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-outline mb-1 uppercase">State</label>
+                    <input id="edit_address_state" name="address_state" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Zip Code / Pincode</label>
+                    <input id="edit_address_zip" name="address_zip" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Lifecycle Status</label>
+                    <select id="edit_status" name="status" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                        <option>New</option>
+                        <option>Bill Uploaded</option>
+                        <option>Survey Scheduled</option>
+                        <option>Survey Completed</option>
+                        <option>Proposal Generated</option>
+                        <option>Proposal Sent</option>
+                        <option>Project Won</option>
+                        <option>Project Lost</option>
+                        <option>Completed</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full h-[44px] bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all shadow-md">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Active and Archived Sites Table Section -->
+    <div class="glass-card rounded-xl overflow-hidden shadow-sm border border-outline-variant/20">
+        <div class="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/30">
+            <h3 class="font-headline-md text-headline-md">Project Sites</h3>
+            <span class="text-label-md text-outline uppercase tracking-wider">{{ sites|length }} Sites Total</span>
+        </div>
+        
+        <div class="overflow-x-auto max-w-full custom-scrollbar">
+            <table class="w-full min-w-[900px] text-left border-collapse">
+                <thead>
+                    <tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Site Name</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Address & Location</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Contact Person</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Archive Status</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Workflow Status</th>
+                        <th class="px-6 py-4"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/20">
+                    {% for s in sites %}
+                    <tr class="hover:bg-surface-container/30 transition-colors cursor-pointer group"
+                        onclick="window.location.href='{{ url_for('site_dashboard', site_id=s.id) }}'">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined">domain</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-on-surface">{{ s.name }}</p>
+                                    <p class="text-[11px] text-outline">ID: {{ s.id }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5 text-body-sm text-on-surface">
+                            <p class="font-medium">{{ s.address_street }}</p>
+                            <p class="text-outline-variant text-[11px]">{{ s.address_city }}, {{ s.address_state }} {{ s.address_zip }}</p>
+                        </td>
+                        <td class="px-6 py-5 text-body-sm text-on-surface">
+                            <p class="font-medium">{{ s.contact_person }}</p>
+                            <p class="text-outline-variant text-[11px]">{{ s.contact_number }}</p>
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            {% if s.is_archived %}
+                            <span class="px-2 py-0.5 bg-outline-variant/30 text-outline text-[11px] font-bold rounded-full">Archived</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 bg-primary/10 text-primary text-[11px] font-bold rounded-full">Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-bold text-[11px]">
+                                <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                {{ s.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5 text-right relative" onclick="event.stopPropagation()">
+                            <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline opacity-0 group-hover:opacity-100 hover:bg-surface-container-high transition-all"
+                                onclick="toggleSiteMenu(event, 'site-menu-{{ s.id }}')">
+                                <span class="material-symbols-outlined">more_vert</span>
+                            </button>
+                            <div id="site-menu-{{ s.id }}" class="action-menu-dropdown py-2 text-left shadow-lg">
+                                <button type="button" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm hover:bg-surface-container-low"
+                                    onclick="openEditModal('{{ s.id }}', '{{ s.name|escape }}', '{{ s.contact_person|escape }}', '{{ s.contact_number|escape }}', '{{ s.address_street|escape }}', '{{ s.address_city|escape }}', '{{ s.address_state|escape }}', '{{ s.address_zip|escape }}', '{{ s.status|escape }}')">
+                                    <span class="material-symbols-outlined text-[16px]">edit</span> Edit Details
+                                </button>
+                                {% if s.is_archived %}
+                                <form action="{{ url_for('restore_site_route', site_id=s.id) }}" method="POST" class="m-0">
+                                    <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-primary hover:bg-surface-container-low">
+                                        <span class="material-symbols-outlined text-[16px]">settings_backup_restore</span> Restore Active
+                                    </button>
+                                </form>
+                                {% else %}
+                                <form action="{{ url_for('archive_site_route', site_id=s.id) }}" method="POST" class="m-0">
+                                    <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-outline hover:bg-surface-container-low">
+                                        <span class="material-symbols-outlined text-[16px]">archive</span> Archive Site
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <form action="{{ url_for('delete_site_route', site_id=s.id) }}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to soft delete this site?');">
+                                    <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-error hover:bg-surface-container-low">
+                                        <span class="material-symbols-outlined text-[16px]">delete</span> Soft Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-10 text-center text-outline">No sites found for this client. Click "Add New Site" to create one.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSiteMenu(e, menuId) {
+        e.stopPropagation();
+        document.querySelectorAll('.action-menu-dropdown').forEach(m => {
+            if (m.id !== menuId) m.classList.remove('active');
+        });
+        const m = document.getElementById(menuId);
+        if (m) m.classList.toggle('active');
+    }
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.action-menu-dropdown').forEach(m => m.classList.remove('active'));
+    });
+
+    function openEditModal(siteId, name, contact, phone, street, city, state, zip, status) {
+        document.getElementById('editSiteForm').action = "/sites/edit/" + siteId;
+        document.getElementById('edit_name').value = name;
+        document.getElementById('edit_contact_person').value = contact;
+        document.getElementById('edit_contact_number').value = phone;
+        document.getElementById('edit_address_street').value = street;
+        document.getElementById('edit_address_city').value = city;
+        document.getElementById('edit_address_state').value = state;
+        document.getElementById('edit_address_zip').value = zip;
+        document.getElementById('edit_status').value = status;
+        document.getElementById('editSiteModal').classList.remove('hidden');
+    }
+</script>
+{% endblock %}

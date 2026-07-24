@@ -36,6 +36,8 @@ def get_connection():
             print(f"⚠️ PostgreSQL Connection warning: {e}. Falling back to local SQLite.")
 
     conn = sqlite3.connect(str(DB_FILE), check_same_thread=False)
+    # Enable foreign keys on SQLite connection
+    conn.execute("PRAGMA foreign_keys = ON;")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -77,6 +79,160 @@ def init_db(seed_demo: bool = False):
                 );
             """)
 
+            cur.execute("DROP TABLE IF EXISTS site_activities;")
+            cur.execute("DROP TABLE IF EXISTS sites;")
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS sites (
+                    id TEXT PRIMARY KEY,
+                    customer_id TEXT NOT NULL,
+                    name TEXT NOT NULL,
+                    address_street TEXT,
+                    address_city TEXT,
+                    address_state TEXT,
+                    address_zip TEXT,
+                    contact_person TEXT,
+                    contact_number TEXT,
+                    status TEXT DEFAULT 'New',
+                    is_archived INTEGER DEFAULT 0,
+                    is_deleted INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+                    UNIQUE(customer_id, name)
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS site_activities (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    site_id TEXT NOT NULL,
+                    activity_type TEXT NOT NULL,
+                    description TEXT,
+                    created_by TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS electricity_bills (
+                    id TEXT PRIMARY KEY,
+                    site_id TEXT NOT NULL,
+                    billing_period_start TEXT,
+                    billing_period_end TEXT,
+                    energy_consumption_kwh REAL DEFAULT 0,
+                    total_cost REAL DEFAULT 0,
+                    file_path TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS ocr_results (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    bill_id TEXT UNIQUE NOT NULL,
+                    extracted_text TEXT,
+                    json_data TEXT,
+                    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (bill_id) REFERENCES electricity_bills(id) ON DELETE CASCADE
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS proposals (
+                    id TEXT PRIMARY KEY,
+                    customer_id TEXT NOT NULL,
+                    site_id TEXT,
+                    name TEXT NOT NULL,
+                    status TEXT DEFAULT 'Draft',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+                    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS proposal_versions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    proposal_id TEXT NOT NULL,
+                    version_number INTEGER NOT NULL,
+                    system_size_kwp REAL DEFAULT 0,
+                    annual_yield_kwh REAL DEFAULT 0,
+                    project_cost REAL DEFAULT 0,
+                    payback_years REAL DEFAULT 0,
+                    irr REAL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (proposal_id) REFERENCES proposals(id) ON DELETE CASCADE
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS site_surveys (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    site_id TEXT NOT NULL,
+                    surveyor_name TEXT,
+                    survey_date TEXT,
+                    roof_type TEXT,
+                    shading_factor REAL DEFAULT 0,
+                    notes TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS engineering_details (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    proposal_version_id INTEGER NOT NULL,
+                    tilt_degrees REAL DEFAULT 0,
+                    azimuth_degrees REAL DEFAULT 0,
+                    inverter_location TEXT,
+                    grid_coupling TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (proposal_version_id) REFERENCES proposal_versions(id) ON DELETE CASCADE
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS bill_of_materials (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    proposal_version_id INTEGER NOT NULL,
+                    component_type TEXT NOT NULL,
+                    model_name TEXT NOT NULL,
+                    quantity INTEGER DEFAULT 0,
+                    unit_price REAL DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (proposal_version_id) REFERENCES proposal_versions(id) ON DELETE CASCADE
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS documents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    associated_type TEXT NOT NULL,
+                    associated_id TEXT NOT NULL,
+                    file_name TEXT NOT NULL,
+                    file_path TEXT NOT NULL,
+                    category TEXT,
+                    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS accepted_projects (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    proposal_id TEXT UNIQUE NOT NULL,
+                    contract_date TEXT,
+                    target_commission_date TEXT,
+                    assigned_pm_id INTEGER,
+                    status TEXT DEFAULT 'Design',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (proposal_id) REFERENCES proposals(id) ON DELETE CASCADE
+                );
+            """)
+
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS followups (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,6 +254,35 @@ def init_db(seed_demo: bool = False):
                     commercial_mw REAL DEFAULT 0
                 );
             """)
+
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS pipeline_deals (
+                    id TEXT PRIMARY KEY,
+                    company_name TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    value_numeric REAL DEFAULT 0,
+                    stage TEXT NOT NULL,
+                    contact_person TEXT,
+                    time_ago TEXT DEFAULT 'Just now',
+                    avatar_url TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            """)
+
+            # Create indexes on foreign keys and search fields to optimize query execution
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_sites_customer_id ON sites (customer_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_site_activities_site_id ON site_activities (site_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_bills_site_id ON electricity_bills (site_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_ocr_bill_id ON ocr_results (bill_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_proposals_customer_id ON proposals (customer_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_proposals_site_id ON proposals (site_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_proposal_versions_proposal_id ON proposal_versions (proposal_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_site_surveys_site_id ON site_surveys (site_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_engineering_details_proposal_version_id ON engineering_details (proposal_version_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_bill_of_materials_proposal_version_id ON bill_of_materials (proposal_version_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_accepted_projects_proposal_id ON accepted_projects (proposal_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_customers_status ON customers (status);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_pipeline_deals_stage ON pipeline_deals (stage);")
 
             cur.execute("SELECT COUNT(*) FROM customers;")
             row_count = cur.fetchone()[0]
@@ -133,6 +318,127 @@ def init_db(seed_demo: bool = False):
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
                 );
 
+                DROP TABLE IF EXISTS site_activities CASCADE;
+                DROP TABLE IF EXISTS sites CASCADE;
+
+                CREATE TABLE IF NOT EXISTS sites (
+                    id VARCHAR(50) PRIMARY KEY,
+                    customer_id VARCHAR(50) NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+                    name VARCHAR(255) NOT NULL,
+                    address_street VARCHAR(255),
+                    address_city VARCHAR(255),
+                    address_state VARCHAR(255),
+                    address_zip VARCHAR(50),
+                    contact_person VARCHAR(255),
+                    contact_number VARCHAR(50),
+                    status VARCHAR(100) DEFAULT 'New',
+                    is_archived INTEGER DEFAULT 0,
+                    is_deleted INTEGER DEFAULT 0,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(customer_id, name)
+                );
+
+                CREATE TABLE IF NOT EXISTS site_activities (
+                    id SERIAL PRIMARY KEY,
+                    site_id VARCHAR(50) NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+                    activity_type VARCHAR(255) NOT NULL,
+                    description TEXT,
+                    created_by VARCHAR(255),
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS electricity_bills (
+                    id VARCHAR(50) PRIMARY KEY,
+                    site_id VARCHAR(50) NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+                    billing_period_start VARCHAR(100),
+                    billing_period_end VARCHAR(100),
+                    energy_consumption_kwh NUMERIC DEFAULT 0,
+                    total_cost NUMERIC DEFAULT 0,
+                    file_path TEXT,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS ocr_results (
+                    id SERIAL PRIMARY KEY,
+                    bill_id VARCHAR(50) UNIQUE NOT NULL REFERENCES electricity_bills(id) ON DELETE CASCADE,
+                    extracted_text TEXT,
+                    json_data TEXT,
+                    processed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS proposals (
+                    id VARCHAR(50) PRIMARY KEY,
+                    customer_id VARCHAR(50) NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+                    site_id VARCHAR(50) REFERENCES sites(id) ON DELETE SET NULL,
+                    name VARCHAR(255) NOT NULL,
+                    status VARCHAR(50) DEFAULT 'Draft',
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS proposal_versions (
+                    id SERIAL PRIMARY KEY,
+                    proposal_id VARCHAR(50) NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
+                    version_number INTEGER NOT NULL,
+                    system_size_kwp NUMERIC DEFAULT 0,
+                    annual_yield_kwh NUMERIC DEFAULT 0,
+                    project_cost NUMERIC DEFAULT 0,
+                    payback_years NUMERIC DEFAULT 0,
+                    irr NUMERIC DEFAULT 0,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS site_surveys (
+                    id SERIAL PRIMARY KEY,
+                    site_id VARCHAR(50) NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+                    surveyor_name VARCHAR(255),
+                    survey_date VARCHAR(100),
+                    roof_type VARCHAR(100),
+                    shading_factor NUMERIC DEFAULT 0,
+                    notes TEXT,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS engineering_details (
+                    id SERIAL PRIMARY KEY,
+                    proposal_version_id INTEGER NOT NULL REFERENCES proposal_versions(id) ON DELETE CASCADE,
+                    tilt_degrees NUMERIC DEFAULT 0,
+                    azimuth_degrees NUMERIC DEFAULT 0,
+                    inverter_location VARCHAR(255),
+                    grid_coupling VARCHAR(100),
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS bill_of_materials (
+                    id SERIAL PRIMARY KEY,
+                    proposal_version_id INTEGER NOT NULL REFERENCES proposal_versions(id) ON DELETE CASCADE,
+                    component_type VARCHAR(100) NOT NULL,
+                    model_name VARCHAR(255) NOT NULL,
+                    quantity INTEGER DEFAULT 0,
+                    unit_price NUMERIC DEFAULT 0,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS documents (
+                    id SERIAL PRIMARY KEY,
+                    associated_type VARCHAR(100) NOT NULL,
+                    associated_id VARCHAR(100) NOT NULL,
+                    file_name VARCHAR(255) NOT NULL,
+                    file_path TEXT NOT NULL,
+                    category VARCHAR(100),
+                    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS accepted_projects (
+                    id SERIAL PRIMARY KEY,
+                    proposal_id VARCHAR(50) UNIQUE NOT NULL REFERENCES proposals(id) ON DELETE CASCADE,
+                    contract_date VARCHAR(100),
+                    target_commission_date VARCHAR(100),
+                    assigned_pm_id INTEGER,
+                    status VARCHAR(100) DEFAULT 'Design',
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
+
                 CREATE TABLE IF NOT EXISTS followups (
                     id SERIAL PRIMARY KEY,
                     due_when VARCHAR(100) NOT NULL,
@@ -150,7 +456,34 @@ def init_db(seed_demo: bool = False):
                     residential_mw NUMERIC DEFAULT 0,
                     commercial_mw NUMERIC DEFAULT 0
                 );
+
+                CREATE TABLE IF NOT EXISTS pipeline_deals (
+                    id VARCHAR(50) PRIMARY KEY,
+                    company_name VARCHAR(255) NOT NULL,
+                    category VARCHAR(100) NOT NULL,
+                    value_numeric NUMERIC DEFAULT 0,
+                    stage VARCHAR(100) NOT NULL,
+                    contact_person VARCHAR(255),
+                    time_ago VARCHAR(100) DEFAULT 'Just now',
+                    avatar_url TEXT,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                );
             """)
+
+            # Create indexes on foreign keys and search fields in PostgreSQL
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_sites_customer_id ON sites (customer_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_site_activities_site_id ON site_activities (site_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_bills_site_id ON electricity_bills (site_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_ocr_bill_id ON ocr_results (bill_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_proposals_customer_id ON proposals (customer_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_proposals_site_id ON proposals (site_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_proposal_versions_proposal_id ON proposal_versions (proposal_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_site_surveys_site_id ON site_surveys (site_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_engineering_details_proposal_version_id ON engineering_details (proposal_version_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_bill_of_materials_proposal_version_id ON bill_of_materials (proposal_version_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_accepted_projects_proposal_id ON accepted_projects (proposal_id);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_customers_status ON customers (status);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_pipeline_deals_stage ON pipeline_deals (stage);")
 
             cur.execute("SELECT COUNT(*) FROM customers;")
             row = cur.fetchone()

@@ -26,6 +26,7 @@ from services.customer_service import (
     create_customer,
     get_customer_kpis,
     update_customer_status,
+    get_customer,
 )
 from services.dashboard_service import (
     get_dashboard_kpis,
@@ -40,6 +41,10 @@ from services.pipeline_service import (
     create_pipeline_deal,
     update_deal_stage,
     delete_pipeline_deal,
+)
+from services.proposal_service import (
+    create_proposal,
+    get_all_proposals,
 )
 
 app = Flask(__name__)
@@ -223,11 +228,20 @@ def customers():
     status = request.args.get('status', 'all')
 
     customer_list = list_customers(search, category, status)
+
+    from services.proposal_service import get_customer_stats
+    enriched_list = []
+    for c in customer_list:
+        c_dict = dict(c)
+        stats = get_customer_stats(c_dict["id"])
+        c_dict.update(stats)
+        enriched_list.append(c_dict)
+
     kpis = get_customer_kpis()
     return render_template(
         'customers.html',
         active_page='customers',
-        customers=customer_list,
+        customers=enriched_list,
         kpis=kpis,
         search_q=search,
         category_filter=category,
@@ -331,7 +345,16 @@ def delete_deal(deal_id):
 @app.route('/analysis')
 @login_required
 def analysis():
-    return render_template('analysis.html', active_page='analysis')
+    from services.proposal_service import get_bill_analysis_data, get_latest_electricity_bill
+    bill_id = request.args.get('bill_id')
+    if not bill_id:
+        bill_id = get_latest_electricity_bill()
+
+    analysis_data = None
+    if bill_id:
+        analysis_data = get_bill_analysis_data(bill_id)
+
+    return render_template('analysis.html', active_page='analysis', analysis_data=analysis_data)
 
 
 @app.route('/analysis/export')
@@ -349,17 +372,37 @@ def export_analysis_data():
 @login_required
 def proposal():
     if request.method == 'POST':
-        client_name = request.form.get('client_name', 'Horizon Green Energy Corp.')
-        flash(f'Official proposal for "{client_name}" generated and sent to client.', 'success')
+        customer_id = request.form.get('customer_id')
+        if not customer_id:
+            flash('Please select or add a client first before generating a proposal.', 'error')
+            return redirect(url_for('proposal'))
+
+        cust = get_customer(customer_id)
+        if cust:
+            create_proposal({
+                'customer_id': customer_id,
+                'name': f'Solar Integration Proposal - {cust["name"]}',
+                'system_size_kwp': 250.0,
+                'annual_yield_kwh': 1125.0,
+                'project_cost': 34250.0,
+                'payback_years': 7.2,
+                'irr': 15.0
+            })
+            flash(f'Official proposal for "{cust["name"]}" generated and saved in database.', 'success')
+        else:
+            flash('Selected client does not exist.', 'error')
         return redirect(url_for('proposal_history'))
-    return render_template('proposal.html', active_page='proposal')
+
+    customers_list = list_customers()
+    return render_template('proposal.html', active_page='proposal', customers=customers_list)
 
 
 @app.route('/proposal_history')
 @login_required
 def proposal_history():
     category_filter = request.args.get('category', 'all')
-    return render_template('proposal_history.html', active_page='proposal_history', category_filter=category_filter)
+    proposals_list = get_all_proposals()
+    return render_template('proposal_history.html', active_page='proposal_history', proposals=proposals_list, category_filter=category_filter)
 
 
 @app.route('/reports')
@@ -384,22 +427,54 @@ def export_reports():
 @login_required
 def upload_bill():
     if request.method == 'POST':
+        customer_id = request.form.get('customer_id')
         file = request.files.get('bill_file')
         if not file or file.filename == '':
             flash('Please select a valid electricity bill file to upload.', 'error')
+            return redirect(url_for('upload_bill'))
+
+        if not customer_id:
+            flash('Please select a valid client for this bill.', 'error')
             return redirect(url_for('upload_bill'))
 
         if allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
+
+            from services.proposal_service import get_sites_by_customer, create_site, create_electricity_bill, save_ocr_result
+            sites = get_sites_by_customer(customer_id)
+            if sites:
+                site_id = sites[0]['id']
+            else:
+                site_id = create_site({
+                    'customer_id': customer_id,
+                    'name': 'Primary Solar Site'
+                })
+
+            bill_id = create_electricity_bill({
+                'site_id': site_id,
+                'billing_period_start': '2026-01-01',
+                'billing_period_end': '2026-12-31',
+                'energy_consumption_kwh': 120000.0,
+                'total_cost': 42500.0,
+                'file_path': filepath
+            })
+
+            save_ocr_result(
+                bill_id=bill_id,
+                extracted_text="OCR Parsed Utility Bill",
+                json_data='{"plant_size": "250", "daily_yield": "1,125", "annual_savings": "42,500", "payback": "3.8", "irr": "24.6%"}'
+            )
+
             flash(f'Electricity bill "{filename}" uploaded and OCR parsed successfully.', 'success')
-            return redirect(url_for('analysis'))
+            return redirect(url_for('analysis', bill_id=bill_id))
         else:
             flash('Invalid file format. Allowed formats: PDF, JPG, PNG.', 'error')
             return redirect(url_for('upload_bill'))
 
-    return render_template('upload_bill.html', active_page='analysis')
+    customers_list = list_customers()
+    return render_template('upload_bill.html', active_page='analysis', customers=customers_list)
 
 
 @app.route('/settings', methods=['GET'])
@@ -441,6 +516,231 @@ def api_chat():
         reply = f"I've received your query regarding: '{message}'. Enercore AI is ready to assist with tariff analysis, system sizing (kWp), and automated proposal generation!"
 
     return jsonify({'reply': reply})
+
+
+@app.route('/customers/<customer_id>')
+@login_required
+def customer_details_route(customer_id):
+    from services.customer_service import get_customer
+    from services.proposal_service import get_sites_by_customer, get_customer_stats
+    cust = get_customer(customer_id)
+    if not cust:
+        flash("Customer not found.", "error")
+        return redirect(url_for('customers'))
+
+    # We display all active and archived sites (excluding soft deleted ones)
+    sites_list = get_sites_by_customer(customer_id, include_deleted=False)
+    stats = get_customer_stats(customer_id)
+
+    return render_template(
+        'customer_details.html',
+        customer=cust,
+        sites=sites_list,
+        stats=stats
+    )
+
+
+@app.route('/sites/<site_id>')
+@login_required
+def site_dashboard(site_id):
+    from services.proposal_service import get_site_details, get_site_activities
+    site = get_site_details(site_id)
+    if not site:
+        flash("Site not found.", "error")
+        return redirect(url_for('customers'))
+
+    activities = get_site_activities(site_id)
+    return render_template(
+        'site_dashboard.html',
+        site=site,
+        activities=activities
+    )
+
+
+@app.route('/sites/add/<customer_id>', methods=['POST'])
+@login_required
+def add_site(customer_id):
+    from services.proposal_service import create_site
+    import re
+
+    name = request.form.get('name', '').strip()
+    contact_person = request.form.get('contact_person', '').strip()
+    contact_number = request.form.get('contact_number', '').strip()
+    address_street = request.form.get('address_street', '').strip()
+    address_city = request.form.get('address_city', '').strip()
+    address_state = request.form.get('address_state', '').strip()
+    address_zip = request.form.get('address_zip', '').strip()
+
+    if not name:
+        flash("Site Name is a required field.", "error")
+        return redirect(url_for('customer_details_route', customer_id=customer_id))
+
+    # Validate phone format
+    if contact_number:
+        phone_pattern = r'^\+?[\d\s\-\(\)]{7,20}$'
+        if not re.match(phone_pattern, contact_number):
+            flash("Invalid phone number format. Please check the number.", "error")
+            return redirect(url_for('customer_details_route', customer_id=customer_id))
+
+    try:
+        create_site({
+            'customer_id': customer_id,
+            'name': name,
+            'contact_person': contact_person,
+            'contact_number': contact_number,
+            'address_street': address_street,
+            'address_city': address_city,
+            'address_state': address_state,
+            'address_zip': address_zip,
+            'status': 'New',
+            'user': session.get('user', {}).get('full_name', 'System')
+        })
+        flash(f"Site '{name}' successfully created.", "success")
+    except ValueError as val_err:
+        flash(str(val_err), "error")
+    except Exception as e:
+        flash(f"Error creating site: {e}", "error")
+
+    return redirect(url_for('customer_details_route', customer_id=customer_id))
+
+
+@app.route('/sites/edit/<site_id>', methods=['POST'])
+@login_required
+def edit_site(site_id):
+    from services.proposal_service import update_site, get_site_details
+    import re
+
+    site = get_site_details(site_id)
+    if not site:
+        flash("Site not found.", "error")
+        return redirect(url_for('customers'))
+
+    name = request.form.get('name', '').strip()
+    contact_person = request.form.get('contact_person', '').strip()
+    contact_number = request.form.get('contact_number', '').strip()
+    address_street = request.form.get('address_street', '').strip()
+    address_city = request.form.get('address_city', '').strip()
+    address_state = request.form.get('address_state', '').strip()
+    address_zip = request.form.get('address_zip', '').strip()
+    status = request.form.get('status', 'New').strip()
+
+    if not name:
+        flash("Site Name is a required field.", "error")
+        return redirect(url_for('customer_details_route', customer_id=site['customer_id']))
+
+    if contact_number:
+        phone_pattern = r'^\+?[\d\s\-\(\)]{7,20}$'
+        if not re.match(phone_pattern, contact_number):
+            flash("Invalid phone number format.", "error")
+            return redirect(url_for('customer_details_route', customer_id=site['customer_id']))
+
+    try:
+        update_site(site_id, {
+            'name': name,
+            'contact_person': contact_person,
+            'contact_number': contact_number,
+            'address_street': address_street,
+            'address_city': address_city,
+            'address_state': address_state,
+            'address_zip': address_zip,
+            'status': status,
+            'user': session.get('user', {}).get('full_name', 'System')
+        })
+        flash(f"Site '{name}' details updated successfully.", "success")
+    except ValueError as val_err:
+        flash(str(val_err), "error")
+    except Exception as e:
+        flash(f"Error updating site details: {e}", "error")
+
+    return redirect(url_for('customer_details_route', customer_id=site['customer_id']))
+
+
+@app.route('/sites/archive/<site_id>', methods=['POST'])
+@login_required
+def archive_site_route(site_id):
+    from services.proposal_service import archive_site, get_site_details
+    site = get_site_details(site_id)
+    if not site:
+        flash("Site not found.", "error")
+        return redirect(url_for('customers'))
+
+    archive_site(site_id, user=session.get('user', {}).get('full_name', 'System'))
+    flash(f"Site '{site['name']}' has been archived.", "success")
+    return redirect(url_for('customer_details_route', customer_id=site['customer_id']))
+
+
+@app.route('/sites/restore/<site_id>', methods=['POST'])
+@login_required
+def restore_site_route(site_id):
+    from services.proposal_service import restore_site, get_site_details
+    site = get_site_details(site_id)
+    if not site:
+        flash("Site not found.", "error")
+        return redirect(url_for('customers'))
+
+    restore_site(site_id, user=session.get('user', {}).get('full_name', 'System'))
+    flash(f"Site '{site['name']}' has been restored.", "success")
+    return redirect(url_for('customer_details_route', customer_id=site['customer_id']))
+
+
+@app.route('/sites/delete/<site_id>', methods=['POST'])
+@login_required
+def delete_site_route(site_id):
+    from services.proposal_service import delete_site, get_site_details
+    site = get_site_details(site_id)
+    if not site:
+        flash("Site not found.", "error")
+        return redirect(url_for('customers'))
+
+    delete_site(site_id, user=session.get('user', {}).get('full_name', 'System'))
+    flash(f"Site '{site['name']}' has been deleted.", "success")
+    return redirect(url_for('customer_details_route', customer_id=site['customer_id']))
+
+
+@app.route('/sites')
+@login_required
+def sites_list_route():
+    from services.proposal_service import search_sites_db
+    from database.connection import get_connection
+    import sqlite3
+
+    search_q = request.args.get('search', '').strip()
+    customer_filter = request.args.get('customer', 'all')
+    state_filter = request.args.get('state', 'all')
+    status_filter = request.args.get('status', 'all')
+
+    cust_list = list_customers()
+
+    conn = get_connection()
+    is_sqlite = isinstance(conn, sqlite3.Connection)
+    states = []
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT DISTINCT address_state FROM sites WHERE address_state IS NOT NULL AND address_state != '' AND is_deleted = 0;")
+        states = [row[0] for row in cur.fetchall()]
+    except Exception as e:
+        print(f"Error fetching states: {e}")
+    finally:
+        conn.close()
+
+    sites_list = search_sites_db(
+        search_q=search_q,
+        customer_id=customer_filter,
+        state=state_filter,
+        status=status_filter
+    )
+
+    return render_template(
+        'sites.html',
+        active_page='sites',
+        sites=sites_list,
+        customers=cust_list,
+        states=states,
+        search_q=search_q,
+        customer_filter=customer_filter,
+        state_filter=state_filter,
+        status_filter=status_filter
+    )
 
 
 if __name__ == '__main__':

@@ -212,13 +212,16 @@ def get_recent_activity(
 
         where_sql = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
+        # Security Whitelist: Map parameter keys strictly to hardcoded column identifiers
         valid_sorts = {
             "name": "name",
             "updated_at": "updated_at",
             "status": "status",
             "value": "value_numeric",
         }
+        # Whitelisting prevents dynamic query injection since sort_column is verified against standard fields
         sort_column = valid_sorts.get(sort_by.lower(), "updated_at")
+        # Strict fallback to ASC or DESC blocks direction injection vectors
         direction = "ASC" if sort_order.lower() == "asc" else "DESC"
 
         count_sql = f"SELECT COUNT(*) FROM customers{where_sql};"

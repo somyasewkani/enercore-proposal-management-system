@@ -64,6 +64,16 @@
                             Drag and drop PDF or image files (JPG, PNG) of your client's electricity bills. Our AI will extract consumption data automatically.
                         </p>
                     </div>
+                    <div class="max-w-xs mx-auto text-left space-y-1">
+                        <label class="block text-xs font-bold text-outline uppercase">Select Target Client / Company</label>
+                        <select name="customer_id" class="w-full bg-white border border-outline-variant rounded-lg p-2.5 outline-none text-body-sm focus:ring-2 focus:ring-primary/20" required>
+                            {% for c in customers %}
+                            <option value="{{ c.id }}">{{ c.name }}</option>
+                            {% else %}
+                            <option value="">No clients available - Add client first</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="flex flex-col items-center gap-4">
                         <input type="file" name="bill_file" accept=".pdf,.jpg,.jpeg,.png" id="billFileInput" class="hidden" onchange="this.form.submit()">
                         <label for="billFileInput" 

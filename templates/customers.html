@@ -118,17 +118,18 @@
                         <thead>
                             <tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
                                 <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Company Name</th>
-                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Contact Person</th>
-                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Industry</th>
-                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Segment</th>
-                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Status</th>
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Sites</th>
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Bills</th>
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Proposals</th>
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Capacity</th>
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Latest Activity</th>
                                 <th class="px-6 py-4"></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant/20">
                             {% for c in customers %}
                             <tr class="hover:bg-surface-container/30 transition-colors cursor-pointer group"
-                                onclick="window.location.href='{{ url_for('customers', search=c.name) }}'">
+                                onclick="window.location.href='{{ url_for('customer_details_route', customer_id=c.id) }}'">
                                 <td class="px-6 py-5">
                                     <div class="flex items-center gap-3">
                                         <div class="w-10 h-10 rounded bg-tertiary-container/10 flex items-center justify-center text-tertiary">
@@ -136,28 +137,24 @@
                                         </div>
                                         <div>
                                             <p class="font-bold text-on-surface">{{ c.name }}</p>
-                                            <p class="text-[11px] text-outline">ID: {{ c.id }}</p>
+                                            <p class="text-[11px] text-outline">Industry: {{ c.category }}</p>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-6 py-5">
-                                    <p class="text-body-sm text-on-surface">{{ c.contact }}</p>
-                                    <p class="text-[11px] text-outline">{{ c.phone }}</p>
-                                </td>
-                                <td class="px-6 py-5">
-                                    <span class="px-2 py-1 bg-surface-container-high text-on-surface-variant text-[11px] font-bold rounded-full">{{ c.category }}</span>
-                                </td>
-                                <td class="px-6 py-5">
-                                    <div class="flex items-center gap-1 text-body-sm text-on-surface-variant">
-                                        <span class="material-symbols-outlined text-[16px]">location_on</span>
-                                        {{ c.segment }}
-                                    </div>
+                                <td class="px-6 py-5 text-center">
+                                    <span class="font-bold text-on-surface text-body-sm">{{ c.total_sites }}</span>
                                 </td>
                                 <td class="px-6 py-5 text-center">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-[11px]">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                                        {{ c.status }}
-                                    </span>
+                                    <span class="font-bold text-secondary text-body-sm">{{ c.total_bills }}</span>
+                                </td>
+                                <td class="px-6 py-5 text-center">
+                                    <span class="font-bold text-tertiary text-body-sm">{{ c.total_proposals }}</span>
+                                </td>
+                                <td class="px-6 py-5 text-center">
+                                    <span class="font-bold text-primary text-body-sm">{{ c.capacity_mw }} MW</span>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <span class="text-body-sm text-on-surface-variant truncate block max-w-[200px]" title="{{ c.latest_activity }}">{{ c.latest_activity }}</span>
                                 </td>
                                 <td class="px-6 py-5 text-right relative" onclick="event.stopPropagation()">
                                     <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline opacity-0 group-hover:opacity-100 hover:bg-surface-container-high transition-all"
@@ -165,8 +162,8 @@
                                         <span class="material-symbols-outlined">more_vert</span>
                                     </button>
                                     <div id="cust-menu-{{ c.id }}" class="action-menu-dropdown py-2 text-left shadow-lg">
-                                        <a href="{{ url_for('proposal') }}" class="flex items-center gap-2 px-4 py-2 text-body-sm hover:bg-surface-container-low">
-                                            <span class="material-symbols-outlined text-[16px]">description</span> New Proposal
+                                        <a href="{{ url_for('customer_details_route', customer_id=c.id) }}" class="flex items-center gap-2 px-4 py-2 text-body-sm hover:bg-surface-container-low">
+                                            <span class="material-symbols-outlined text-[16px]">visibility</span> View Details
                                         </a>
                                         <form action="{{ url_for('dashboard_action') }}" method="POST" class="m-0">
                                             <input type="hidden" name="customer_id" value="{{ c.id }}">
@@ -180,7 +177,7 @@
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-outline">No clients found in portfolio. Click "Add New Client" to create one.</td>
+                                <td colspan="8" class="px-6 py-10 text-center text-outline">No clients found in portfolio. Click "Add New Client" to create one.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
