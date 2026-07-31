@@ -1,0 +1,41 @@
+<div class="cover-page">
+    <div class="cover-header">
+        <div class="logo-text">ENERCORE</div>
+        <div class="logo-subtext">SOLAR BUSINESS PORTAL</div>
+    </div>
+    
+    <div class="cover-middle">
+        <div class="accent-bar"></div>
+        <h1 class="proposal-title">SOLAR FEASIBILITY PROPOSAL</h1>
+        <h3 class="proposal-subtitle">{{ proposal.proposal_name }}</h3>
+    </div>
+    
+    <div class="cover-metadata">
+        <table class="metadata-table">
+            <tr>
+                <td class="meta-label">Proposal Number</td>
+                <td class="meta-value">: {{ proposal.proposal_number }}</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Version</td>
+                <td class="meta-value">: V{{ proposal.version }}</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Prepared For</td>
+                <td class="meta-value">: {{ proposal.customer_name }}</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Installation Site</td>
+                <td class="meta-value">: {{ proposal.site_name }}</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Prepared By</td>
+                <td class="meta-value">: {{ proposal.prepared_by }}</td>
+            </tr>
+            <tr>
+                <td class="meta-label">Date</td>
+                <td class="meta-value">: {{ proposal.prepared_date }}</td>
+            </tr>
+        </table>
+    </div>
+</div>

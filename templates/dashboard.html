@@ -75,6 +75,35 @@
         {% endfor %}
     </section>
 
+    <!-- Project Execution Overview -->
+    {% if project_kpis %}
+    <div class="mb-6 mt-8">
+        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[24px]">construction</span>
+            Project Execution Overview
+        </h3>
+        <p class="text-on-surface-variant font-body-sm opacity-80">Key metrics for active solar installation projects.</p>
+    </div>
+    <section class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-gutter mb-gutter">
+        {% for kpi in project_kpis %}
+        <div class="glass-card p-5 rounded-xl flex flex-col justify-between hover:border-primary/20 transition-all">
+            <div class="flex justify-between items-start mb-3">
+                <div class="p-2.5 bg-primary/10 text-primary rounded-lg">
+                    <span class="material-symbols-outlined text-[20px]">{{ kpi.icon }}</span>
+                </div>
+                <span class="font-label-sm text-on-surface-variant bg-surface-container-high/50 px-2 py-0.5 rounded-full text-[10px] uppercase font-bold">
+                    {{ kpi.delta }}
+                </span>
+            </div>
+            <div>
+                <h4 class="text-[10px] font-label-md text-on-surface-variant uppercase tracking-wider mb-1">{{ kpi.label }}</h4>
+                <div class="font-display-md text-[20px] font-bold text-on-surface leading-none">{{ kpi.value }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
     <!-- Middle Content: Bento Grid Layout -->
     <section class="grid grid-cols-12 gap-gutter mb-gutter">
         <!-- Pipeline Chart (8 Columns) -->

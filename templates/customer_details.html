@@ -168,100 +168,231 @@
         </div>
     </div>
 
-    <!-- Active and Archived Sites Table Section -->
-    <div class="glass-card rounded-xl overflow-hidden shadow-sm border border-outline-variant/20">
-        <div class="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/30">
-            <h3 class="font-headline-md text-headline-md">Project Sites</h3>
-            <span class="text-label-md text-outline uppercase tracking-wider">{{ sites|length }} Sites Total</span>
-        </div>
-        
-        <div class="overflow-x-auto max-w-full custom-scrollbar">
-            <table class="w-full min-w-[900px] text-left border-collapse">
-                <thead>
-                    <tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Site Name</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Address & Location</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Contact Person</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Archive Status</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Workflow Status</th>
-                        <th class="px-6 py-4"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-outline-variant/20">
-                    {% for s in sites %}
-                    <tr class="hover:bg-surface-container/30 transition-colors cursor-pointer group"
-                        onclick="window.location.href='{{ url_for('site_dashboard', site_id=s.id) }}'">
-                        <td class="px-6 py-5">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
-                                    <span class="material-symbols-outlined">domain</span>
-                                </div>
-                                <div>
-                                    <p class="font-bold text-on-surface">{{ s.name }}</p>
-                                    <p class="text-[11px] text-outline">ID: {{ s.id }}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-5 text-body-sm text-on-surface">
-                            <p class="font-medium">{{ s.address_street }}</p>
-                            <p class="text-outline-variant text-[11px]">{{ s.address_city }}, {{ s.address_state }} {{ s.address_zip }}</p>
-                        </td>
-                        <td class="px-6 py-5 text-body-sm text-on-surface">
-                            <p class="font-medium">{{ s.contact_person }}</p>
-                            <p class="text-outline-variant text-[11px]">{{ s.contact_number }}</p>
-                        </td>
-                        <td class="px-6 py-5 text-center">
-                            {% if s.is_archived %}
-                            <span class="px-2 py-0.5 bg-outline-variant/30 text-outline text-[11px] font-bold rounded-full">Archived</span>
+    <div class="grid grid-cols-12 gap-gutter mt-8">
+        <!-- Left Column: Project Sites Table -->
+        <div class="col-span-12 lg:col-span-8 space-y-gutter">
+            <!-- Active and Archived Sites Table Section -->
+            <div class="glass-card rounded-xl overflow-hidden shadow-sm border border-outline-variant/20">
+                <div class="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/30">
+                    <h3 class="font-headline-md text-headline-md">Project Sites</h3>
+                    <span class="text-label-md text-outline uppercase tracking-wider">{{ sites|length }} Sites Total</span>
+                </div>
+                
+                <div class="overflow-x-auto max-w-full custom-scrollbar">
+                    <table class="w-full min-w-[900px] text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Site Name</th>
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Address & Location</th>
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Contact Person</th>
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Archive Status</th>
+                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Workflow Status</th>
+                                <th class="px-6 py-4"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/20">
+                            {% for s in sites %}
+                            <tr class="hover:bg-surface-container/30 transition-colors cursor-pointer group"
+                                onclick="window.location.href='{{ url_for('site_dashboard', site_id=s.id) }}'">
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
+                                            <span class="material-symbols-outlined">domain</span>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-on-surface">{{ s.name }}</p>
+                                            <p class="text-[11px] text-outline">ID: {{ s.id }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-body-sm text-on-surface">
+                                    <p class="font-medium">{{ s.address_street }}</p>
+                                    <p class="text-outline-variant text-[11px]">{{ s.address_city }}, {{ s.address_state }} {{ s.address_zip }}</p>
+                                </td>
+                                <td class="px-6 py-5 text-body-sm text-on-surface">
+                                    <p class="font-medium">{{ s.contact_person }}</p>
+                                    <p class="text-outline-variant text-[11px]">{{ s.contact_number }}</p>
+                                </td>
+                                <td class="px-6 py-5 text-center">
+                                    {% if s.is_archived %}
+                                    <span class="px-2 py-0.5 bg-outline-variant/30 text-outline text-[11px] font-bold rounded-full">Archived</span>
+                                    {% else %}
+                                    <span class="px-2 py-0.5 bg-primary/10 text-primary text-[11px] font-bold rounded-full">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-5 text-center">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-bold text-[11px]">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                        {{ s.status }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-5 text-right relative" onclick="event.stopPropagation()">
+                                    <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline opacity-0 group-hover:opacity-100 hover:bg-surface-container-high transition-all"
+                                        onclick="toggleSiteMenu(event, 'site-menu-{{ s.id }}')">
+                                        <span class="material-symbols-outlined">more_vert</span>
+                                    </button>
+                                    <div id="site-menu-{{ s.id }}" class="action-menu-dropdown py-2 text-left shadow-lg">
+                                        <button type="button" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm hover:bg-surface-container-low"
+                                            onclick="openEditModal('{{ s.id }}', '{{ s.name|escape }}', '{{ s.contact_person|escape }}', '{{ s.contact_number|escape }}', '{{ s.address_street|escape }}', '{{ s.address_city|escape }}', '{{ s.address_state|escape }}', '{{ s.address_zip|escape }}', '{{ s.status|escape }}')">
+                                            <span class="material-symbols-outlined text-[16px]">edit</span> Edit Details
+                                        </button>
+                                        {% if s.is_archived %}
+                                        <form action="{{ url_for('restore_site_route', site_id=s.id) }}" method="POST" class="m-0">
+                                            <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-primary hover:bg-surface-container-low">
+                                                <span class="material-symbols-outlined text-[16px]">settings_backup_restore</span> Restore Active
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <form action="{{ url_for('archive_site_route', site_id=s.id) }}" method="POST" class="m-0">
+                                            <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-outline hover:bg-surface-container-low">
+                                                <span class="material-symbols-outlined text-[16px]">archive</span> Archive Site
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        <form action="{{ url_for('delete_site_route', site_id=s.id) }}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to soft delete this site?');">
+                                            <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-error hover:bg-surface-container-low">
+                                                <span class="material-symbols-outlined text-[16px]">delete</span> Soft Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
                             {% else %}
-                            <span class="px-2 py-0.5 bg-primary/10 text-primary text-[11px] font-bold rounded-full">Active</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-5 text-center">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-bold text-[11px]">
-                                <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                                {{ s.status }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-5 text-right relative" onclick="event.stopPropagation()">
-                            <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline opacity-0 group-hover:opacity-100 hover:bg-surface-container-high transition-all"
-                                onclick="toggleSiteMenu(event, 'site-menu-{{ s.id }}')">
-                                <span class="material-symbols-outlined">more_vert</span>
-                            </button>
-                            <div id="site-menu-{{ s.id }}" class="action-menu-dropdown py-2 text-left shadow-lg">
-                                <button type="button" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm hover:bg-surface-container-low"
-                                    onclick="openEditModal('{{ s.id }}', '{{ s.name|escape }}', '{{ s.contact_person|escape }}', '{{ s.contact_number|escape }}', '{{ s.address_street|escape }}', '{{ s.address_city|escape }}', '{{ s.address_state|escape }}', '{{ s.address_zip|escape }}', '{{ s.status|escape }}')">
-                                    <span class="material-symbols-outlined text-[16px]">edit</span> Edit Details
-                                </button>
-                                {% if s.is_archived %}
-                                <form action="{{ url_for('restore_site_route', site_id=s.id) }}" method="POST" class="m-0">
-                                    <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-primary hover:bg-surface-container-low">
-                                        <span class="material-symbols-outlined text-[16px]">settings_backup_restore</span> Restore Active
-                                    </button>
-                                </form>
-                                {% else %}
-                                <form action="{{ url_for('archive_site_route', site_id=s.id) }}" method="POST" class="m-0">
-                                    <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-outline hover:bg-surface-container-low">
-                                        <span class="material-symbols-outlined text-[16px]">archive</span> Archive Site
-                                    </button>
-                                </form>
-                                {% endif %}
-                                <form action="{{ url_for('delete_site_route', site_id=s.id) }}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to soft delete this site?');">
-                                    <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-error hover:bg-surface-container-low">
-                                        <span class="material-symbols-outlined text-[16px]">delete</span> Soft Delete
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="px-6 py-10 text-center text-outline">No sites found for this client. Click "Add New Site" to create one.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            <tr>
+                                <td colspan="6" class="px-6 py-10 text-center text-outline">No sites found for this client. Click "Add New Site" to create one.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+
+        <!-- Right Column: Client Profile details card -->
+        <div class="col-span-12 lg:col-span-4 space-y-gutter">
+            <div class="glass-card rounded-xl p-6 shadow-sm border border-outline-variant/20 space-y-6">
+                <div class="border-b border-outline-variant/20 pb-4 flex justify-between items-center bg-surface-container-low/10 -mx-6 px-6 -mt-6 rounded-t-xl pt-5">
+                    <h3 class="font-headline-md text-headline-md">Client Profile</h3>
+                    <span class="px-2.5 py-0.5 bg-primary/10 text-primary text-[11px] font-bold rounded-full uppercase">{{ customer.status }}</span>
+                </div>
+                
+                <div class="space-y-4 text-body-sm text-on-surface">
+                    <div>
+                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">Company Name</span>
+                        <p class="font-bold text-base mt-0.5">{{ customer.name }}</p>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">Industry Class</span>
+                        <p class="font-medium mt-0.5">{{ customer.category }}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <span class="block text-xs font-bold text-outline uppercase tracking-wider">Contact Person</span>
+                            <p class="font-medium mt-0.5">{{ customer.contact or "N/A" }}</p>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-bold text-outline uppercase tracking-wider">Phone Number</span>
+                            <p class="font-medium mt-0.5">{{ customer.phone or "N/A" }}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">Email Address</span>
+                        <p class="font-medium mt-0.5">{{ customer.email or "N/A" }}</p>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">Corporate Address</span>
+                        <p class="font-medium mt-0.5 whitespace-pre-line">{{ customer.address or "N/A" }}</p>
+                    </div>
+                    <div>
+                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">GSTIN Number</span>
+                        <p class="font-medium mt-0.5 code-text font-mono">{{ customer.gstin or "N/A" }}</p>
+                    </div>
+                </div>
+                
+                <div class="border-t border-outline-variant/20 pt-4 flex flex-col gap-3">
+                    <button type="button" onclick="openEditCustomerModal()"
+                        class="flex items-center justify-center gap-2 w-full h-[40px] px-4 rounded-lg bg-primary/10 text-primary font-label-md hover:bg-primary/20 transition-all border border-primary/25 shadow-sm active:scale-95">
+                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                        Edit Profile
+                    </button>
+                    
+                    <div class="flex gap-3">
+                        <form action="{{ url_for('archive_customer_route', customer_id=customer.id) }}" method="POST" class="w-1/2 m-0" onsubmit="return confirm('Are you sure you want to archive this client? Doing so will soft delete them and hide them from general listings.');">
+                            <button type="submit"
+                                class="flex items-center justify-center gap-2 w-full h-[40px] px-2 rounded-lg bg-surface-container-high text-outline font-label-md hover:bg-surface-container-highest transition-all border border-outline-variant/30 shadow-sm active:scale-95">
+                                <span class="material-symbols-outlined text-[18px]">archive</span>
+                                Archive
+                            </button>
+                        </form>
+                        
+                        <form action="{{ url_for('delete_customer_route', customer_id=customer.id) }}" method="POST" class="w-1/2 m-0" onsubmit="return confirm('Are you sure you want to PERMANENTLY delete this client? This can only be done if there are no sites, proposals, or projects.');">
+                            <button type="submit"
+                                class="flex items-center justify-center gap-2 w-full h-[40px] px-2 rounded-lg bg-error/10 text-error hover:bg-error/25 transition-all border border-error/25 shadow-sm active:scale-95">
+                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Customer Modal (Hidden by default) -->
+<div id="editCustomerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="glass-card rounded-xl p-8 max-w-2xl w-full border border-primary/20 shadow-2xl mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-bold text-headline-md text-on-surface">Edit Client Profile</h3>
+            <button onclick="closeEditCustomerModal()" class="material-symbols-outlined text-outline">close</button>
+        </div>
+        <form method="POST" action="{{ url_for('update_customer_route', customer_id=customer.id) }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Company Name *</label>
+                <input name="name" value="{{ customer.name }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Person *</label>
+                <input name="contact" value="{{ customer.contact }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md" required>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Phone Number</label>
+                <input name="phone" value="{{ customer.phone }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Email Address</label>
+                <input name="email" type="email" value="{{ customer.email }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Category / Industry</label>
+                <select name="category" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                    <option {% if customer.category == 'Commercial' %}selected{% endif %}>Commercial</option>
+                    <option {% if customer.category == 'Residential' %}selected{% endif %}>Residential</option>
+                    <option {% if customer.category == 'Infrastructure' %}selected{% endif %}>Infrastructure</option>
+                    <option {% if customer.category == 'Industrial' %}selected{% endif %}>Industrial</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">GSTIN Number</label>
+                <input name="gstin" value="{{ customer.gstin }}" placeholder="22AAAAA0000A1Z5" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Corporate Address</label>
+                <textarea name="address" rows="2" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">{{ customer.address }}</textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Contract Value ($)</label>
+                <input name="value" type="number" step="0.01" value="{{ customer.value_numeric }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Solar Capacity (MW)</label>
+                <input name="capacity_mw" type="number" step="0.01" value="{{ customer.capacity_mw }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div class="md:col-span-2 flex justify-end gap-3 mt-4">
+                <button type="button" onclick="closeEditCustomerModal()" class="h-[44px] px-6 rounded-lg bg-surface-container-high text-outline font-label-md hover:bg-surface-container-highest transition-all">Cancel</button>
+                <button type="submit" class="h-[44px] px-6 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all shadow-md">Save Profile</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -290,6 +421,14 @@
         document.getElementById('edit_address_zip').value = zip;
         document.getElementById('edit_status').value = status;
         document.getElementById('editSiteModal').classList.remove('hidden');
+    }
+
+    function openEditCustomerModal() {
+        document.getElementById('editCustomerModal').classList.remove('hidden');
+    }
+
+    function closeEditCustomerModal() {
+        document.getElementById('editCustomerModal').classList.add('hidden');
     }
 </script>
 {% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block title %}Project Registry | Enercore Solar{% endblock %}
+{% set active_page = 'projects' %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-8">
+    <!-- Header Section -->
+    <div class="flex justify-between items-end">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface">Project Execution Registry</h2>
+            <p class="text-body-lg text-on-surface-variant mt-1">Track and manage active solar installations through the deployment lifecycle.</p>
+        </div>
+    </div>
+
+    <!-- Filters and Search Controls -->
+    <div class="glass-card p-6 rounded-2xl border border-outline-variant/15">
+        <form method="GET" action="{{ url_for('projects_list_route') }}" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            <!-- Search field -->
+            <div class="col-span-12 md:col-span-4 space-y-2">
+                <label for="search" class="text-xs font-bold text-outline uppercase tracking-wider">Search Projects</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant">search</span>
+                    <input type="text" id="search" name="search" value="{{ search_q }}" placeholder="Search by ID, name, customer..."
+                        class="w-full h-11 pl-10 pr-4 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all">
+                </div>
+            </div>
+
+            <!-- Status filter -->
+            <div class="col-span-12 md:col-span-2 space-y-2">
+                <label for="status" class="text-xs font-bold text-outline uppercase tracking-wider">Status</label>
+                <select id="status" name="status" class="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                    <option value="Planning" {% if status_filter == 'Planning' %}selected{% endif %}>Planning</option>
+                    <option value="Site Survey" {% if status_filter == 'Site Survey' %}selected{% endif %}>Site Survey</option>
+                    <option value="Engineering" {% if status_filter == 'Engineering' %}selected{% endif %}>Engineering</option>
+                    <option value="Procurement" {% if status_filter == 'Procurement' %}selected{% endif %}>Procurement</option>
+                    <option value="Installation" {% if status_filter == 'Installation' %}selected{% endif %}>Installation</option>
+                    <option value="Testing & Commissioning" {% if status_filter == 'Testing & Commissioning' %}selected{% endif %}>Testing & Comm.</option>
+                    <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="On Hold" {% if status_filter == 'On Hold' %}selected{% endif %}>On Hold</option>
+                    <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+
+            <!-- Manager filter -->
+            <div class="col-span-12 md:col-span-2 space-y-2">
+                <label for="manager" class="text-xs font-bold text-outline uppercase tracking-wider">Project Manager</label>
+                <select id="manager" name="manager" class="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
+                    <option value="all" {% if manager_filter == 'all' %}selected{% endif %}>All Managers</option>
+                    {% for m in managers %}
+                    <option value="{{ m }}" {% if manager_filter == m %}selected{% endif %}>{{ m }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Sort By -->
+            <div class="col-span-12 md:col-span-2 space-y-2">
+                <label for="sort" class="text-xs font-bold text-outline uppercase tracking-wider">Sort By</label>
+                <select id="sort" name="sort" class="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
+                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Created Date</option>
+                    <option value="project_number" {% if sort_by == 'project_number' %}selected{% endif %}>Project Number</option>
+                    <option value="capacity_kw" {% if sort_by == 'capacity_kw' %}selected{% endif %}>Capacity (kW)</option>
+                    <option value="contract_value" {% if sort_by == 'contract_value' %}selected{% endif %}>Contract Value</option>
+                    <option value="progress_percentage" {% if sort_by == 'progress_percentage' %}selected{% endif %}>Progress %</option>
+                    <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Status</option>
+                </select>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="col-span-12 md:col-span-2 flex gap-2">
+                <button type="submit" class="flex-1 h-11 bg-primary text-on-primary font-bold rounded-lg flex items-center justify-center gap-1.5 hover:opacity-90 transition-all shadow-md">
+                    <span class="material-symbols-outlined text-[20px]">filter_list</span>
+                    Apply
+                </button>
+                <a href="{{ url_for('projects_list_route') }}" class="w-11 h-11 bg-surface-container-high text-outline rounded-lg flex items-center justify-center hover:bg-surface-container-highest transition-all" title="Reset Filters">
+                    <span class="material-symbols-outlined text-[20px]">restart_alt</span>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Registry List -->
+    <div class="glass-card rounded-2xl overflow-hidden border border-outline-variant/15">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-surface-container-low/50 text-outline uppercase font-bold tracking-wider border-b border-outline-variant/20">
+                        <th class="py-4 px-6">Project ID</th>
+                        <th class="py-4 px-6">Project Name / Customer</th>
+                        <th class="py-4 px-6">Status</th>
+                        <th class="py-4 px-6 text-center">Capacity</th>
+                        <th class="py-4 px-6 text-right">Value</th>
+                        <th class="py-4 px-6">Manager</th>
+                        <th class="py-4 px-6">Progress</th>
+                        <th class="py-4 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/10">
+                    {% for p in projects %}
+                    <tr class="hover:bg-surface-container-low/30 transition-all">
+                        <!-- Project ID -->
+                        <td class="py-4 px-6 font-bold text-primary">
+                            <a href="{{ url_for('project_dashboard_route', project_id=p.id) }}" class="hover:underline flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px]">construction</span>
+                                {{ p.project_number }}
+                            </a>
+                        </td>
+                        
+                        <!-- Project Name & Customer -->
+                        <td class="py-4 px-6">
+                            <p class="font-bold text-on-surface text-body-sm leading-tight">{{ p.project_name }}</p>
+                            <p class="text-outline mt-0.5">{{ p.customer_name }}</p>
+                        </td>
+
+                        <!-- Status Badge -->
+                        <td class="py-4 px-6">
+                            {% if p.status == 'Completed' %}
+                                <span class="bg-success-container/20 text-success text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Completed</span>
+                            {% elif p.status == 'Planning' %}
+                                <span class="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Planning</span>
+                            {% elif p.status == 'On Hold' %}
+                                <span class="bg-warning-container/20 text-warning text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">On Hold</span>
+                            {% elif p.status == 'Cancelled' %}
+                                <span class="bg-error-container/20 text-error text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Cancelled</span>
+                            {% else %}
+                                <span class="bg-secondary-container/20 text-secondary text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">{{ p.status }}</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Capacity -->
+                        <td class="py-4 px-6 text-center font-bold text-on-surface-variant">
+                            {{ p.capacity_kw }} kW
+                        </td>
+
+                        <!-- Value -->
+                        <td class="py-4 px-6 text-right font-bold text-on-surface">
+                            ${{ "{:,.2f}".format(p.contract_value) }}
+                        </td>
+
+                        <!-- Manager -->
+                        <td class="py-4 px-6 text-on-surface-variant font-medium">
+                            {{ p.project_manager or 'Unassigned' }}
+                        </td>
+
+                        <!-- Progress Bar -->
+                        <td class="py-4 px-6">
+                            <div class="w-32">
+                                <div class="flex justify-between items-center text-[10px] font-bold text-on-surface mb-1">
+                                    <span>{{ p.progress_percentage|int }}%</span>
+                                </div>
+                                <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary rounded-full transition-all duration-500" style="width: {{ p.progress_percentage|int }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="py-4 px-6 text-right">
+                            <div class="flex justify-end gap-2">
+                                <a href="{{ url_for('project_dashboard_route', project_id=p.id) }}" class="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-all" title="Project Workspace">
+                                    <span class="material-symbols-outlined text-[18px]">dashboard</span>
+                                </a>
+                                <a href="{{ url_for('project_edit_route', project_id=p.id) }}" class="w-8 h-8 rounded-lg bg-surface-container-high text-outline flex items-center justify-center hover:bg-secondary hover:text-white transition-all" title="Edit Settings">
+                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not projects %}
+                    <tr>
+                        <td colspan="8" class="py-12 text-center text-outline italic text-body-md">
+                            No projects found matching the selected filter criteria.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

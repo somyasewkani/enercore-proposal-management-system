@@ -166,5 +166,130 @@
             </div>
         </div>
     </div>
+
+    <!-- Electricity Bill History & Upload Block -->
+    <div class="grid grid-cols-12 gap-gutter">
+        <!-- Left: Upload Bill Form (only if not archived) -->
+        {% if not site.is_archived %}
+        <div class="col-span-12 lg:col-span-4">
+            <div class="glass-card p-6 rounded-xl border border-outline-variant/15">
+                <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-4">Upload Utility Bill</h3>
+                <form method="POST" action="{{ url_for('upload_bill_route') }}" enctype="multipart/form-data" class="space-y-4">
+                    <input type="hidden" name="site_id" value="{{ site.id }}">
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-outline mb-1 uppercase">Bill File *</label>
+                        <input type="file" name="bill_file" accept=".pdf,.png,.jpg,.jpeg" class="w-full text-body-sm text-outline border border-dashed border-outline-variant/40 rounded-lg p-3 bg-surface-container-low" required>
+                        <p class="text-[10px] text-outline mt-1">Supported: PDF, PNG, JPG, JPEG (Max 10MB)</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-outline mb-1 uppercase">Month *</label>
+                            <select name="billing_month" class="w-full bg-white border border-outline-variant/40 rounded-lg px-3 py-2 text-body-sm outline-none" required>
+                                {% for m in range(1, 13) %}
+                                <option value="{{ m }}">{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-outline mb-1 uppercase">Year *</label>
+                            <input name="billing_year" type="number" min="2000" max="2100" value="2026" class="w-full bg-white border border-outline-variant/40 rounded-lg px-3 py-2 text-body-sm outline-none" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-outline mb-1 uppercase">Period Start</label>
+                            <input name="billing_period_start" type="date" class="w-full bg-white border border-outline-variant/40 rounded-lg px-3 py-1.5 text-body-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-outline mb-1 uppercase">Period End</label>
+                            <input name="billing_period_end" type="date" class="w-full bg-white border border-outline-variant/40 rounded-lg px-3 py-1.5 text-body-sm outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-outline mb-1 uppercase">Notes / Comments</label>
+                        <textarea name="notes" placeholder="Optional comments..." rows="2" class="w-full bg-white border border-outline-variant/40 rounded-lg px-3 py-2 text-body-sm outline-none"></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full bg-primary text-on-primary rounded-lg font-label-md py-2 hover:opacity-90 transition-all shadow-md">
+                        Upload & Track Bill
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Right: Bill History Table -->
+        <div class="col-span-12 {% if not site.is_archived %}lg:col-span-8{% else %}lg:col-span-12{% endif %}">
+            <div class="glass-card p-6 rounded-xl border border-outline-variant/15 flex flex-col h-full">
+                <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-4">Electricity Bill History</h3>
+                
+                <div class="overflow-x-auto max-w-full custom-scrollbar flex-1">
+                    <table class="w-full min-w-[600px] text-left border-collapse">
+                        <thead>
+                            <tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
+                                <th class="px-4 py-3 font-label-sm text-outline uppercase">Billing Period</th>
+                                <th class="px-4 py-3 font-label-sm text-outline uppercase">Upload Date</th>
+                                <th class="px-4 py-3 font-label-sm text-outline uppercase">File Type</th>
+                                <th class="px-4 py-3 font-label-sm text-outline uppercase text-center">Status</th>
+                                <th class="px-4 py-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/20">
+                            {% for b in bills %}
+                            <tr class="hover:bg-surface-container/30 transition-colors">
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary">description</span>
+                                        <div>
+                                            <p class="font-bold text-on-surface text-body-sm">{{ b.billing_month }}/{{ b.billing_year }}</p>
+                                            <p class="text-[10px] text-outline">{{ b.original_filename }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-4 text-body-sm text-on-surface-variant">{{ b.upload_date[:10] }}</td>
+                                <td class="px-4 py-4 text-body-sm text-on-surface-variant">{{ b.file_type }}</td>
+                                <td class="px-4 py-4 text-center">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                                        {% if b.bill_status == 'Uploaded' %}
+                                            bg-primary/10 text-primary
+                                        {% elif b.bill_status == 'Verified' %}
+                                            bg-secondary/10 text-secondary
+                                        {% else %}
+                                            bg-tertiary/10 text-tertiary
+                                        {% endif %}">
+                                        {{ b.bill_status }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a href="{{ url_for('site_bill_details', bill_id=b.id) }}" class="text-xs text-primary font-bold hover:underline">
+                                            Open
+                                        </a>
+                                        <a href="{{ url_for('serve_bill_file', site_id=b.site_id, filename=b.stored_filename) }}" download class="text-xs text-outline font-bold hover:underline">
+                                            Download
+                                        </a>
+                                        <form action="{{ url_for('delete_bill_route', bill_id=b.id) }}" method="POST" class="m-0 inline" onsubmit="return confirm('Are you sure you want to soft delete this bill?');">
+                                            <button type="submit" class="text-xs text-error font-bold hover:underline">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-center text-outline">No electricity bills found. Upload a utility statement to begin.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -63,21 +63,33 @@
                 <input name="phone" placeholder="Enter phone number" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md">
             </div>
             <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Email Address</label>
+                <input name="email" type="email" placeholder="client@company.com" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">GSTIN Number</label>
+                <input name="gstin" placeholder="15-char alpha-numeric" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+            </div>
+            <div>
                 <label class="block text-xs font-bold text-outline mb-1 uppercase">Category / Industry</label>
                 <select name="category" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
                     <option>Commercial</option>
+                    <option>Industrial</option>
                     <option>Residential</option>
                     <option>Infrastructure</option>
                 </select>
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-outline mb-1 uppercase">Corporate Address</label>
+                <input name="address" placeholder="Enter corporate address" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
             </div>
             <div>
                 <label class="block text-xs font-bold text-outline mb-1 uppercase">Contract Value ($)</label>
                 <input name="value" type="number" placeholder="0" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
             </div>
-            <div class="flex items-end">
-                <button type="submit" class="w-full h-[44px] bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all shadow-md whitespace-nowrap">
-                    Save Client
-                </button>
+            <div class="flex items-end md:col-span-3 justify-end gap-3 mt-2">
+                <button type="button" onclick="document.getElementById('addCustomerForm').classList.add('hidden')" class="h-[44px] px-6 rounded-lg bg-surface-container-high text-outline font-label-md hover:bg-surface-container-highest transition-all">Cancel</button>
+                <button type="submit" class="h-[44px] px-6 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all shadow-md">Save Client</button>
             </div>
         </form>
     </div>

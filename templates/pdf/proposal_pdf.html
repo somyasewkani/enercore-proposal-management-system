@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    /* xhtml2pdf Page Definitions */
+    @page {
+        size: a4;
+        margin: 2.5cm 2cm 2.5cm 2cm;
+        @frame header_frame {
+            -pdf-frame-content: header_content;
+            top: 1.2cm;
+            left: 2cm;
+            right: 2cm;
+            height: 1cm;
+        }
+        @frame content_frame {
+            top: 2.5cm;
+            left: 2cm;
+            right: 2cm;
+            bottom: 2.5cm;
+        }
+        @frame footer_frame {
+            -pdf-frame-content: footer_content;
+            bottom: 1.2cm;
+            left: 2cm;
+            right: 2cm;
+            height: 1cm;
+        }
+    }
+    
+    @page cover_page {
+        size: a4;
+        margin: 0;
+    }
+
+    /* Core Styles */
+    body {
+        font-family: Helvetica, Arial, sans-serif;
+        color: #2d3748;
+        font-size: 10pt;
+        line-height: 1.6;
+    }
+
+    /* Page Breaks and Layouts */
+    .page-break {
+        page-break-after: always;
+    }
+    
+    .cover-layout {
+        page: cover_page;
+        page-break-after: always;
+    }
+
+    /* Cover Page Formatting */
+    .cover-page {
+        padding: 4cm 2.5cm 2.5cm 2.5cm;
+        background-color: #f7fafc;
+    }
+    .cover-header {
+        margin-bottom: 4cm;
+    }
+    .logo-text {
+        font-size: 26pt;
+        font-weight: bold;
+        color: #006a6a;
+        letter-spacing: 2px;
+    }
+    .logo-subtext {
+        font-size: 9pt;
+        color: #718096;
+        margin-top: 5px;
+        letter-spacing: 1px;
+    }
+    .cover-middle {
+        margin-bottom: 4cm;
+    }
+    .accent-bar {
+        width: 3cm;
+        height: 5px;
+        background-color: #006a6a;
+        margin-bottom: 20px;
+    }
+    .proposal-title {
+        font-size: 28pt;
+        font-weight: bold;
+        color: #1a202c;
+        line-height: 1.2;
+    }
+    .proposal-subtitle {
+        font-size: 14pt;
+        color: #4a5568;
+        margin-top: 10px;
+    }
+    .cover-metadata {
+        border-top: 1px solid #e2e8f0;
+        padding-top: 20px;
+    }
+    .metadata-table {
+        width: 100%;
+    }
+    .metadata-table td {
+        padding: 4px 0;
+        font-size: 10pt;
+    }
+    .meta-label {
+        font-weight: bold;
+        color: #718096;
+        width: 4cm;
+    }
+    .meta-value {
+        color: #2d3748;
+    }
+
+    /* Section Styling */
+    .section-title {
+        font-size: 20pt;
+        color: #006a6a;
+        margin-top: 0;
+        margin-bottom: 25px;
+        border-bottom: 2px solid #006a6a;
+        padding-bottom: 8px;
+    }
+    
+    .subsection-title {
+        font-size: 13pt;
+        color: #1a202c;
+        margin-top: 20px;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    /* Content Cards and Mappings */
+    .info-card {
+        background-color: #f7fafc;
+        border: 1px solid #e2e8f0;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+    
+    .metric-grid {
+        margin: 25px 0;
+    }
+    
+    .metric-box {
+        background-color: #f0fdf4;
+        border-left: 4px solid #006a6a;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .metric-value {
+        font-size: 24pt;
+        font-weight: bold;
+        color: #006a6a;
+    }
+    .metric-label {
+        font-size: 9pt;
+        color: #718096;
+        margin-top: 5px;
+    }
+
+    /* Table Formatting */
+    table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    table.data-table th {
+        background-color: #006a6a;
+        color: #ffffff;
+        padding: 8px 12px;
+        font-weight: bold;
+        text-align: left;
+        font-size: 9pt;
+    }
+    table.data-table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 9pt;
+    }
+    table.data-table tr.alt-row {
+        background-color: #f7fafc;
+    }
+
+    /* Terms and Signature Layout */
+    .terms-content {
+        font-size: 9pt;
+        color: #4a5568;
+        margin-bottom: 30px;
+    }
+    .terms-content p {
+        margin-bottom: 15px;
+    }
+    .signature-section {
+        margin-top: 40px;
+    }
+    .sig-table {
+        margin-top: 20px;
+    }
+    .sig-title {
+        font-size: 9pt;
+        color: #718096;
+        margin-bottom: 50px;
+    }
+    .sig-line {
+        border-bottom: 1px solid #a0aec0;
+        margin-bottom: 5px;
+    }
+    .sig-name {
+        font-weight: bold;
+        font-size: 9pt;
+    }
+    .sig-org {
+        font-size: 8pt;
+        color: #718096;
+    }
+</style>
+</head>
+<body>
+
+    <!-- Static Header Content (used on Page 2-8 by frame definition) -->
+    <div id="header_content" style="display:none; font-size: 8pt; color: #a0aec0; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+        ENERCORE SOLAR REPORT &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ proposal.proposal_number }}
+    </div>
+
+    <!-- Static Footer Content (used on Page 2-8 by frame definition) -->
+    <div id="footer_content" style="display:none; font-size: 8pt; color: #a0aec0; border-top: 1px solid #e2e8f0; padding-top: 4px;">
+        Prepared by Enercore | Confidential &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Page <pdf:pagenumber/> of <pdf:pagecount/>
+    </div>
+
+    <!-- PAGE 1: COVER PAGE -->
+    <div class="cover-layout">
+        {% include 'pdf/cover.html' %}
+    </div>
+
+    <!-- PAGE 2: CLIENT & PROPOSAL SUMMARY -->
+    <div class="page-break">
+        <h2 class="section-title">Customer &amp; Site Information</h2>
+        
+        <div class="info-card">
+            <h3 class="subsection-title" style="margin-top:0;">Client Details</h3>
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 30%;"><strong>Client Name</strong></td>
+                    <td>: {{ proposal.customer_name }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Contact Person</strong></td>
+                    <td>: {{ proposal.customer_contact }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Phone</strong></td>
+                    <td>: {{ proposal.customer_phone or '-' }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Category</strong></td>
+                    <td>: {{ proposal.customer_category }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="info-card">
+            <h3 class="subsection-title" style="margin-top:0;">Site Details</h3>
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 30%;"><strong>Site Location</strong></td>
+                    <td>: {{ proposal.site_name }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Street Address</strong></td>
+                    <td>: {{ proposal.site_street }}</td>
+                </tr>
+                <tr>
+                    <td><strong>City/State/Zip</strong></td>
+                    <td>: {{ proposal.site_city }}, {{ proposal.site_state }} {{ proposal.site_zip }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <h3 class="subsection-title">Proposal Overview</h3>
+        <p>This feasibility proposal details the potential for installing a rooftop solar photovoltaic system at the above-referenced site. Based on historical billing data analysis and mathematical irradiance calculations, the system has been optimized to maximize investment payback while satisfying energy consumption parameters.</p>
+    </div>
+
+    <!-- PAGE 3: ELECTRICITY BILL SUMMARY -->
+    <div class="page-break">
+        <h2 class="section-title">Electricity Bill Summary</h2>
+        <p>A detailed consumption audit has been conducted based on the utility statement provided for the site. Extracted parameters and bill cycle specifications are detailed below.</p>
+        
+        <div class="info-card" style="margin-top:20px;">
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 35%;"><strong>Billing Month/Year</strong></td>
+                    <td>: {{ proposal.billing_month }}/{{ proposal.billing_year }}</td>
+                </tr>
+                {% if proposal.billing_period_start and proposal.billing_period_end %}
+                <tr>
+                    <td><strong>Billing Period</strong></td>
+                    <td>: {{ proposal.billing_period_start }} to {{ proposal.billing_period_end }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td><strong>Extracted Consumption</strong></td>
+                    <td>: {% if ocr_data %}{{ ocr_data.units_consumed }} kWh{% else %}-{% endif %}</td>
+                </tr>
+                <tr>
+                    <td><strong>Average Tariff Rate</strong></td>
+                    <td>: ₹{{ settings.electricity_tariff }}/kWh</td>
+                </tr>
+            </table>
+        </div>
+        
+        <h3 class="subsection-title">Consumption Profile</h3>
+        <p>The system is designed to offset carbon emissions and electricity tariffs by replacing high-cost grid supply with clean, on-site solar generation. Based on local peak irradiance patterns, the rooftop solar array will replace a substantial fraction of the site's utility import requirements.</p>
+    </div>
+
+    <!-- PAGE 4: RECOMMENDED SOLAR SYSTEM -->
+    <div class="page-break">
+        <h2 class="section-title">Recommended Solar System</h2>
+        <p>The proposed solar system capacity has been engineered and capped to avoid excessive export waste, matching the site consumption parameters and local solar irradiance levels.</p>
+        
+        <div class="metric-grid">
+            <div class="metric-box">
+                <div class="metric-value">{{ proposal.plant_size_kw or 0 }} kW</div>
+                <div class="metric-label">Solar PV Array Capacity</div>
+            </div>
+            
+            <div class="metric-box">
+                <div class="metric-value">{{ proposal.recommended_inverter_kw or 0 }} kW</div>
+                <div class="metric-label">Recommended Inverter Rating</div>
+            </div>
+            
+            <div class="metric-box">
+                <div class="metric-value">{{ (proposal.annual_generation or 0)|round|int }} kWh</div>
+                <div class="metric-label">Estimated Annual Generation</div>
+            </div>
+        </div>
+        
+        <h3 class="subsection-title">System Configuration Specifications</h3>
+        <p>The PV module rating and grid-connected inverter systems utilize high-efficiency industrial components. Physical system configurations will be optimized for site-specific conditions such as roof tilt angles, layout orientation, and shading parameters.</p>
+    </div>
+
+    <!-- PAGE 5: FINANCIAL ANALYSIS -->
+    <div class="page-break">
+        <h2 class="section-title">Financial Analysis</h2>
+        <p>Financial parameters have been compiled based on equipment pricing indexes and local solar assumptions. Investment return and capital metrics are detailed below.</p>
+        
+        <div class="metric-grid">
+            <div class="metric-box" style="background-color: #fef3c7; border-left-color: #d97706;">
+                <div class="metric-value" style="color: #b45309;">₹{{ (proposal.system_cost or 0)|round|int }}</div>
+                <div class="metric-label">Total Sizing Installation Cost</div>
+            </div>
+            
+            <div class="metric-box">
+                <div class="metric-value">₹{{ (proposal.annual_savings or 0)|round|int }}</div>
+                <div class="metric-label">Estimated Annual Energy Savings</div>
+            </div>
+            
+            <div class="metric-box" style="background-color: #eff6ff; border-left-color: #2563eb;">
+                <div class="metric-value" style="color: #1d4ed8;">{{ proposal.payback_years or 0 }} Years</div>
+                <div class="metric-label">Simple Payback Period</div>
+            </div>
+        </div>
+        
+        <h3 class="subsection-title">Savings &amp; Payback Assumptions</h3>
+        <p>Simple payback is calculated by dividing the total solar installation cost by the first-year utility savings. Projections do not account for corporate depreciation benefits, tax incentives, or battery backup installation, which may further accelerate return on investment.</p>
+    </div>
+
+    <!-- PAGE 6: ENVIRONMENTAL BENEFITS -->
+    <div class="page-break">
+        <h2 class="section-title">Environmental Benefits</h2>
+        <p>Offsetting grid electricity imports with local solar photovoltaic power dramatically decreases the site's greenhouse gas emissions. The carbon offsets are summarized below.</p>
+        
+        <div class="metric-grid">
+            <div class="metric-box" style="background-color: #ecfdf5; border-left-color: #059669;">
+                <div class="metric-value" style="color: #047857;">{{ (proposal.co2_offset or 0)|round|int }} kg</div>
+                <div class="metric-label">Annual Carbon Dioxide (CO₂) Offset</div>
+            </div>
+            
+            <div class="metric-box" style="background-color: #ecfdf5; border-left-color: #059669;">
+                <div class="metric-value" style="color: #047857;">{{ (proposal.trees_equivalent or 0)|round|int }} Trees</div>
+                <div class="metric-label">Tree-Equivalents Saved per Year</div>
+            </div>
+        </div>
+        
+        <h3 class="subsection-title">Carbon Reduction Summary</h3>
+        <p>Calculations utilize regional grid CO₂ conversion factors. Offsetting carbon emissions represents a direct alignment with clean-energy sustainability targets, environmental stewardship mandates, and corporate net-zero energy compliance targets.</p>
+    </div>
+
+    <!-- PAGE 7: TECHNICAL ASSUMPTIONS -->
+    <div class="page-break">
+        <h2 class="section-title">Technical Assumptions</h2>
+        <p>The solar feasibility calculations are compiled utilizing default solar configuration parameters configured in the system settings registry. These assumptions are detailed below.</p>
+        
+        <table class="data-table" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th style="width: 50%;">Parameter Description</th>
+                    <th style="width: 25%;">Value Used</th>
+                    <th style="width: 25%;">Units</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Peak Sun Hours</td>
+                    <td>{{ settings.peak_sun_hours }}</td>
+                    <td>Hours/Day</td>
+                </tr>
+                <tr class="alt-row">
+                    <td>Performance Ratio (PR)</td>
+                    <td>{{ (settings.performance_ratio|float * 100)|round }}%</td>
+                    <td>Percentage</td>
+                </tr>
+                <tr>
+                    <td>System Losses Factor</td>
+                    <td>{{ (settings.system_loss|float * 100)|round }}%</td>
+                    <td>Percentage</td>
+                </tr>
+                <tr class="alt-row">
+                    <td>Inverter Efficiency Rating</td>
+                    <td>{{ (settings.inverter_efficiency|float * 100)|round }}%</td>
+                    <td>Percentage</td>
+                </tr>
+                <tr>
+                    <td>Electricity Tariff Rate</td>
+                    <td>₹{{ settings.electricity_tariff }}</td>
+                    <td>per kWh</td>
+                </tr>
+                <tr class="alt-row">
+                    <td>Solar Installation Cost Unit</td>
+                    <td>₹{{ settings.installation_cost_per_kw }}</td>
+                    <td>per kW</td>
+                </tr>
+                <tr>
+                    <td>CO₂ Offset Conversion Factor</td>
+                    <td>{{ settings.co2_conversion_factor }}</td>
+                    <td>kg CO₂/kWh</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGE 8: TERMS & CONDITIONS -->
+    <div>
+        {% include 'pdf/terms.html' %}
+    </div>
+
+</body>
+</html>

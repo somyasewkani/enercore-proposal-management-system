@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Bills Portfolio | Enercore{% endblock %}
+{% set active_page = 'bills' %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-gutter">
+    <!-- Page Header -->
+    <div class="flex justify-between items-end mb-4">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Electricity Bills Portfolio</h2>
+            <p class="text-body-md text-outline">Search, filter, and access utility statements and metadata annotations.</p>
+        </div>
+    </div>
+
+    <!-- Filters Row -->
+    <div class="glass-card rounded-xl p-6 flex flex-wrap items-center justify-between gap-4 border border-outline-variant/15">
+        <form method="GET" action="{{ url_for('bills_directory_route') }}" class="w-full flex flex-wrap items-center gap-4">
+            <!-- Search bar -->
+            <div class="flex-1 min-w-[280px] relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+                <input name="search" placeholder="Search by filename, site, or customer..." 
+                    value="{{ search_q or '' }}"
+                    class="w-full bg-white border border-outline-variant rounded-lg pl-10 pr-4 py-2 outline-none text-body-md focus:ring-2 focus:ring-primary/20">
+            </div>
+
+            <!-- Customer Filter -->
+            <select name="customer" class="bg-white border border-outline-variant rounded-lg px-4 py-2 text-body-md outline-none cursor-pointer">
+                <option value="all">Filter: All Clients</option>
+                {% for c in customers %}
+                <option value="{{ c.id }}" {% if customer_filter == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Month Filter -->
+            <select name="month" class="bg-white border border-outline-variant rounded-lg px-4 py-2 text-body-md outline-none cursor-pointer">
+                <option value="all">Filter: Month</option>
+                {% for m in range(1, 13) %}
+                <option value="{{ m }}" {% if month_filter == m|string %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Year Filter -->
+            <select name="year" class="bg-white border border-outline-variant rounded-lg px-4 py-2 text-body-md outline-none cursor-pointer">
+                <option value="all">Filter: Year</option>
+                {% for y in range(2020, 2031) %}
+                <option value="{{ y }}" {% if year_filter == y|string %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- Status Filter -->
+            <select name="status" class="bg-white border border-outline-variant rounded-lg px-4 py-2 text-body-md outline-none cursor-pointer">
+                <option value="all">Filter: All Statuses</option>
+                <option value="Uploaded" {% if status_filter == 'Uploaded' %}selected{% endif %}>Uploaded</option>
+                <option value="Pending OCR" {% if status_filter == 'Pending OCR' %}selected{% endif %}>Pending OCR</option>
+                <option value="OCR Completed" {% if status_filter == 'OCR Completed' %}selected{% endif %}>OCR Completed</option>
+                <option value="Verified" {% if status_filter == 'Verified' %}selected{% endif %}>Verified</option>
+                <option value="Used in Proposal" {% if status_filter == 'Used in Proposal' %}selected{% endif %}>Used in Proposal</option>
+            </select>
+
+            <!-- Action buttons -->
+            <div class="flex gap-2">
+                <button type="submit" class="bg-primary text-on-primary px-6 py-2 rounded-lg font-bold hover:opacity-90 transition-all">
+                    Apply Filters
+                </button>
+                <a href="{{ url_for('bills_directory_route') }}" class="border border-outline text-on-surface px-6 py-2 rounded-lg font-bold hover:bg-surface-container transition-all">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Bills Table -->
+    <div class="glass-card rounded-xl overflow-hidden shadow-sm border border-outline-variant/20">
+        <div class="overflow-x-auto max-w-full custom-scrollbar">
+            <table class="w-full min-w-[900px] text-left border-collapse">
+                <thead>
+                    <tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Billing Period</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Site Name</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Client Name</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Original Filename</th>
+                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Status</th>
+                        <th class="px-6 py-4"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/20">
+                    {% for b in bills %}
+                    <tr class="hover:bg-surface-container/30 transition-colors cursor-pointer group"
+                        onclick="window.location.href='{{ url_for('site_bill_details', bill_id=b.id) }}'">
+                        <td class="px-6 py-5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
+                                    <span class="material-symbols-outlined">description</span>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-on-surface">{{ b.billing_month }}/{{ b.billing_year }}</p>
+                                    <p class="text-[10px] text-outline">Uploaded: {{ b.upload_date[:10] }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="font-bold text-on-surface text-body-md">{{ b.site_name }}</span>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="font-medium text-on-surface-variant text-body-md">{{ b.customer_name }}</span>
+                        </td>
+                        <td class="px-6 py-5 text-body-sm text-outline truncate max-w-[200px]" title="{{ b.original_filename }}">
+                            {{ b.original_filename }}
+                        </td>
+                        <td class="px-6 py-5 text-center">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-bold text-[11px]">
+                                <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                                {{ b.bill_status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5 text-right relative" onclick="event.stopPropagation()">
+                            <div class="flex gap-2 justify-end">
+                                <a href="{{ url_for('site_bill_details', bill_id=b.id) }}" class="text-xs text-primary font-bold hover:underline">
+                                    Open
+                                </a>
+                                <a href="{{ url_for('serve_bill_file', site_id=b.site_id, filename=b.stored_filename) }}" download class="text-xs text-outline font-bold hover:underline">
+                                    Download
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-10 text-center text-outline">No electricity bills match the search filters.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

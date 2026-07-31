@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+{% block title %}Bill Details | {{ bill.original_filename }} | Enercore{% endblock %}
+{% set active_page = 'analysis' %}
+
+{% block content %}
+<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-gutter">
+    <!-- Breadcrumbs & Header -->
+    <div class="flex justify-between items-end mb-4">
+        <div>
+            <nav class="flex items-center gap-2 text-outline mb-2">
+                <a href="{{ url_for('customers') }}" class="text-label-md hover:text-primary">Client Management</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <a href="{{ url_for('site_dashboard', site_id=bill.site_id) }}" class="text-label-md hover:text-primary">{{ bill.site_name }}</a>
+                <span class="material-symbols-outlined text-sm">chevron_right</span>
+                <span class="text-label-md text-primary font-bold">Bill Details</span>
+            </nav>
+            <h2 class="font-headline-lg text-headline-lg text-on-surface">Bill: {{ bill.original_filename }}</h2>
+            <p class="text-body-md text-outline">Manage billing period metadata, annotations, and OCR status.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('site_dashboard', site_id=bill.site_id) }}" 
+                class="flex items-center justify-center gap-2 h-[44px] px-6 rounded-lg border border-outline text-on-surface hover:bg-surface-container transition-all font-label-md">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Back to Site Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-gutter">
+        <!-- Left Column: File Preview -->
+        <div class="col-span-12 lg:col-span-7">
+            <div class="glass-card p-6 rounded-xl border border-outline-variant/15 flex flex-col h-full min-h-[500px]">
+                <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-4">Document Preview</h3>
+                
+                <div class="flex-1 flex items-center justify-center bg-surface-container-low rounded-lg overflow-hidden border border-outline-variant/10">
+                    {% if bill.file_type == 'PDF' %}
+                    <iframe src="{{ url_for('serve_bill_file', site_id=bill.site_id, filename=bill.stored_filename) }}" 
+                        class="w-full h-[650px] border-none" 
+                        title="PDF Utility Statement Preview"></iframe>
+                    {% elif bill.file_type in ['JPG', 'JPEG', 'PNG'] %}
+                    <img src="{{ url_for('serve_bill_file', site_id=bill.site_id, filename=bill.stored_filename) }}" 
+                        alt="Utility Statement Preview Image" 
+                        class="max-w-full max-h-[650px] object-contain rounded">
+                    {% else %}
+                    <div class="text-center p-8 text-outline">
+                        <span class="material-symbols-outlined text-display-md">draft</span>
+                        <p class="text-body-md mt-2">Preview unavailable for this format ({{ bill.file_type }}).</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Metadata & Actions -->
+        <div class="col-span-12 lg:col-span-5 space-y-gutter">
+            <!-- OCR Info Status -->
+            <div class="glass-card p-6 rounded-xl border border-outline-variant/15">
+                <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-secondary">memory</span>
+                    Solar OCR Processing Status
+                </h3>
+                
+                {% if bill.ocr_status == 'Completed' %}
+                <div class="flex items-center gap-4 bg-primary/10 p-4 rounded-lg border border-primary/20">
+                    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined">check_circle</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-primary uppercase tracking-wider block">Extraction State</span>
+                        <span class="font-bold text-on-surface text-body-md">Completed</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 grid grid-cols-2 gap-4 text-xs text-outline border-t border-outline-variant/10 pt-4">
+                    <div>
+                        <span class="block uppercase font-bold text-[10px]">Model Used</span>
+                        <span class="font-bold text-on-surface">{{ bill.ocr_version }}</span>
+                    </div>
+                    <div>
+                        <span class="block uppercase font-bold text-[10px]">Latency / Provider</span>
+                        <span class="font-bold text-on-surface">{{ bill.duration_ms }} ms / {{ bill.ocr_provider }}</span>
+                    </div>
+                </div>
+
+                {% if ocr_warnings %}
+                <div class="mt-4 bg-warning/10 border border-warning/30 rounded-lg p-3 text-xs text-warning">
+                    <span class="font-bold block uppercase mb-1">Extraction Warnings:</span>
+                    <ul class="list-disc pl-4 space-y-1">
+                        {% for w in ocr_warnings %}
+                        <li>{{ w }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('run_ocr_endpoint', bill_id=bill.id) }}">
+                    <button type="submit" class="w-full border border-primary text-primary rounded-lg font-label-md py-2 hover:bg-primary/5 transition-all mt-4 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">refresh</span>
+                        Re-run AI OCR Extraction
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ url_for('calculate_solar_endpoint', bill_id=bill.id) }}">
+                    <button type="submit" class="w-full bg-secondary text-on-secondary rounded-lg font-label-md py-2.5 hover:opacity-90 transition-all shadow-md mt-4 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">calculate</span>
+                        Run Solar Calculations
+                    </button>
+                </form>
+
+                {% elif bill.ocr_status == 'Pending' %}
+                <div class="flex items-center gap-4 bg-secondary/10 p-4 rounded-lg border border-secondary/20">
+                    <div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center text-secondary animate-pulse">
+                        <span class="material-symbols-outlined">sync</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-secondary uppercase tracking-wider block">Extraction State</span>
+                        <span class="font-bold text-on-surface text-body-md">Processing statement...</span>
+                    </div>
+                </div>
+
+                {% elif bill.ocr_status == 'Failed' %}
+                <div class="flex items-center gap-4 bg-error/10 p-4 rounded-lg border border-error/20">
+                    <div class="w-10 h-10 rounded-full bg-error/20 flex items-center justify-center text-error">
+                        <span class="material-symbols-outlined">error</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-error uppercase tracking-wider block">Extraction State</span>
+                        <span class="font-bold text-on-surface text-body-md">Failed</span>
+                    </div>
+                </div>
+
+                {% if ocr_warnings %}
+                <div class="mt-4 bg-error/10 border border-error/30 rounded-lg p-3 text-xs text-error">
+                    <span class="font-bold block uppercase mb-1">Failure Reason:</span>
+                    <p>{{ ocr_warnings[0] }}</p>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('run_ocr_endpoint', bill_id=bill.id) }}">
+                    <button type="submit" class="w-full bg-secondary text-on-secondary rounded-lg font-label-md py-2.5 hover:opacity-90 transition-all shadow-md mt-4 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">refresh</span>
+                        Retry AI OCR Extraction
+                    </button>
+                </form>
+
+                {% else %}
+                <div class="flex items-center gap-4 bg-outline-variant/10 p-4 rounded-lg border border-outline-variant/20">
+                    <div class="w-10 h-10 rounded-full bg-outline-variant/20 flex items-center justify-center text-outline">
+                        <span class="material-symbols-outlined">hourglass_empty</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-outline uppercase tracking-wider block">Extraction State</span>
+                        <span class="font-bold text-on-surface text-body-md">Not Processed</span>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('run_ocr_endpoint', bill_id=bill.id) }}">
+                    <button type="submit" class="w-full bg-secondary text-on-secondary rounded-lg font-label-md py-2.5 hover:opacity-90 transition-all shadow-md mt-4 flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">play_arrow</span>
+                        Run AI OCR Extraction
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <!-- Solar Calculations Sizing & Payback Summary -->
+            {% if bill.plant_size_kw is not none %}
+            <div class="glass-card p-6 rounded-xl border border-outline-variant/15">
+                <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">solar_power</span>
+                    Solar Sizing & Payback Summary
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4 bg-surface-container-low p-4 rounded-lg border border-outline-variant/10">
+                        <div>
+                            <span class="text-[10px] font-bold text-outline uppercase tracking-wider block">Recommended Size</span>
+                            <span class="font-bold text-on-surface text-body-lg">{{ bill.plant_size_kw }} kW</span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-outline uppercase tracking-wider block">Est. Inverter Size</span>
+                            <span class="font-bold text-on-surface text-body-lg">{{ bill.recommended_inverter_kw }} kW</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="border-b border-outline-variant/10 pb-2">
+                            <span class="text-[10px] font-bold text-outline uppercase block">Annual Generation</span>
+                            <span class="font-bold text-on-surface text-body-md">{{ bill.estimated_annual_generation|round|int }} kWh</span>
+                        </div>
+                        <div class="border-b border-outline-variant/10 pb-2">
+                            <span class="text-[10px] font-bold text-outline uppercase block">Annual Savings</span>
+                            <span class="font-bold text-on-surface text-body-md">₹{{ bill.annual_savings|round|int }}</span>
+                        </div>
+                        <div class="border-b border-outline-variant/10 pb-2">
+                            <span class="text-[10px] font-bold text-outline uppercase block">System Cost</span>
+                            <span class="font-bold text-on-surface text-body-md">₹{{ bill.system_cost|round|int }}</span>
+                        </div>
+                        <div class="border-b border-outline-variant/10 pb-2">
+                            <span class="text-[10px] font-bold text-outline uppercase block">Simple Payback</span>
+                            <span class="font-bold text-on-surface text-body-md">{{ bill.payback_years }} Years</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 bg-surface-container-low p-4 rounded-lg border border-outline-variant/10 text-xs">
+                        <div>
+                            <span class="text-[9px] font-bold text-outline uppercase block">CO₂ Offset / Year</span>
+                            <span class="font-bold text-on-surface">{{ bill.co2_offset|round|int }} kg</span>
+                        </div>
+                        <div>
+                            <span class="text-[9px] font-bold text-outline uppercase block">Trees Equivalent</span>
+                            <span class="font-bold text-on-surface">{{ bill.trees_equivalent|round|int }} Trees</span>
+                        </div>
+                    </div>
+
+                    {% if calc_warnings %}
+                        <div class="bg-warning/10 border border-warning/30 rounded-lg p-3 text-xs text-warning mt-2">
+                            <span class="font-bold block uppercase mb-1">Calculation Warnings:</span>
+                            <ul class="list-disc pl-4 space-y-1">
+                                {% for cw in calc_warnings %}
+                                <li>{{ cw }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <!-- Proposal Generator Actions -->
+                    <div class="border-t border-outline-variant/10 pt-4 mt-4">
+                        {% if latest_proposal %}
+                        <div class="flex flex-col gap-3">
+                            <a href="{{ url_for('proposal_preview_route', proposal_id=latest_proposal.id) }}" class="w-full bg-primary text-on-primary rounded-lg font-label-md py-2.5 hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined">description</span>
+                                View Latest Proposal ({{ latest_proposal.proposal_number }})
+                            </a>
+                            <form method="POST" action="{{ url_for('generate_proposal_route', bill_id=bill.id) }}">
+                                <input type="hidden" name="remarks" value="New version generated from calculation dashboard.">
+                                <button type="submit" class="w-full border border-primary text-primary rounded-lg font-label-md py-2 hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
+                                    <span class="material-symbols-outlined">add</span>
+                                    Create New Version (V{{ latest_proposal.version + 1 }})
+                                </button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('generate_proposal_route', bill_id=bill.id) }}">
+                            <div class="mb-3">
+                                <label class="text-[10px] font-bold text-outline uppercase tracking-wider block mb-1">Proposal Remarks</label>
+                                <input name="remarks" type="text" placeholder="e.g. Initial draft solar proposal" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-primary transition-all">
+                            </div>
+                            <button type="submit" class="w-full bg-primary text-on-primary rounded-lg font-label-md py-2.5 hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined">description</span>
+                                Generate Proposal
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Extracted AI Fields -->
+            {% if ocr_data %}
+            <div class="glass-card p-6 rounded-xl border border-outline-variant/15">
+                <h3 class="font-headline-md text-[18px] font-bold text-on-surface mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">analytics</span>
+                    Extracted Consumption Metrics
+                </h3>
+                <div class="overflow-x-auto max-h-[350px] overflow-y-auto custom-scrollbar border border-outline-variant/10 rounded-lg">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
+                                <th class="px-4 py-2 font-label-sm text-outline uppercase">Field Attribute</th>
+                                <th class="px-4 py-2 font-label-sm text-outline uppercase">Extracted Value</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/10">
+                            {% for key, val in ocr_data.items() %}
+                            <tr class="hover:bg-surface-container/30 transition-colors">
+                                <td class="px-4 py-2 font-bold text-outline uppercase tracking-wider text-[10px]">{{ key.replace('_', ' ') }}</td>
+                                <td class="px-4 py-2 text-on-surface font-medium">
+                                    {% if val is none %}
+                                    <span class="text-outline-variant italic">Not Available</span>
+                                    {% else %}
+                                    {{ val }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Bill Details / Metadata Edit Form -->
+            <div class="glass-card p-6 rounded-xl border border-outline-variant/15">
+                <div class="flex justify-between items-center mb-6 border-b border-outline-variant/10 pb-4">
+                    <h3 class="font-headline-md text-[18px] font-bold text-on-surface">Bill Metadata</h3>
+                    <span class="px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-[11px] uppercase tracking-wider">
+                        {{ bill.bill_status }}
+                    </span>
+                </div>
+
+                <form method="POST" action="{{ url_for('edit_bill_route', bill_id=bill.id) }}" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-outline mb-1 uppercase">Billing Month *</label>
+                            <select name="billing_month" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2 outline-none text-body-md" required>
+                                {% for m in range(1, 13) %}
+                                <option value="{{ m }}" {% if bill.billing_month == m %}selected{% endif %}>{{ m }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-outline mb-1 uppercase">Billing Year *</label>
+                            <input name="billing_year" type="number" min="2000" max="2100" value="{{ bill.billing_year }}" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2 outline-none text-body-md" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-outline mb-1 uppercase">Period Start</label>
+                            <input name="billing_period_start" type="date" value="{{ bill.billing_period_start }}" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2 outline-none text-body-md">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-outline mb-1 uppercase">Period End</label>
+                            <input name="billing_period_end" type="date" value="{{ bill.billing_period_end }}" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2 outline-none text-body-md">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-outline mb-1 uppercase">Bill Status</label>
+                        <select name="bill_status" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2 outline-none text-body-md">
+                            <option value="Uploaded" {% if bill.bill_status == 'Uploaded' %}selected{% endif %}>Uploaded</option>
+                            <option value="Pending OCR" {% if bill.bill_status == 'Pending OCR' %}selected{% endif %}>Pending OCR</option>
+                            <option value="OCR Completed" {% if bill.bill_status == 'OCR Completed' %}selected{% endif %}>OCR Completed</option>
+                            <option value="Verified" {% if bill.bill_status == 'Verified' %}selected{% endif %}>Verified</option>
+                            <option value="Used in Proposal" {% if bill.bill_status == 'Used in Proposal' %}selected{% endif %}>Used in Proposal</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-outline mb-1 uppercase">Annotations / Notes</label>
+                        <textarea name="notes" placeholder="Write annotations here..." rows="4" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2 outline-none text-body-md">{{ bill.notes }}</textarea>
+                    </div>
+
+                    <div class="border-t border-outline-variant/10 pt-4 grid grid-cols-2 gap-4 text-xs text-outline">
+                        <div>
+                            <span class="block uppercase font-bold text-[10px]">Uploaded On</span>
+                            <span class="font-medium text-on-surface-variant">{{ bill.upload_date[:16] }}</span>
+                        </div>
+                        <div>
+                            <span class="block uppercase font-bold text-[10px]">File Size / Type</span>
+                            <span class="font-medium text-on-surface-variant">{{ (bill.file_size / 1024)|round(1) }} KB ({{ bill.file_type }})</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex gap-3">
+                        <button type="submit" class="flex-grow bg-primary text-on-primary rounded-lg font-label-md py-2.5 hover:opacity-90 transition-all shadow-md">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

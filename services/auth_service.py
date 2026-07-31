@@ -1,53 +1,71 @@
+"""
+Enercore AI Solar Proposal Generator
+services/auth_service.py
+
+Authentication service verifying user credentials against users table
+supporting hybrid SQLite and PostgreSQL database adapters.
+"""
+
 import os
 import bcrypt
-import psycopg2
-import psycopg2.extras
-from dotenv import load_dotenv
-
-load_dotenv()
+import sqlite3
+from typing import Dict, Any, Optional
+from database.connection import get_connection
 
 
-def get_connection():
-    return psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD"),
-    )
-
-
-def login_user(email: str, password: str):
+def login_user(email: str, password: str) -> Optional[Dict[str, Any]]:
     """
-    Verify credentials against the users table.
-    Returns the user row as a dict on success, None on failure.
+    Verify user credentials against the users table.
+    Returns the user row details as a dict on success, None on failure.
     """
     conn = None
     try:
         conn = get_connection()
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute(
-                "SELECT id, full_name, email, password "
-                "FROM users WHERE email = %s",
-                (email,),
-            )
-            row = cur.fetchone()
-
+        is_sqlite = isinstance(conn, sqlite3.Connection)
+        cur = conn.cursor()
+        
+        query = "SELECT id, full_name, email, password, role FROM users WHERE email = ?;" if is_sqlite else "SELECT id, full_name, email, password, role FROM users WHERE email = %s;"
+        cur.execute(query, (email,))
+        row = cur.fetchone()
+        
         if row is None:
             return None
-
-        stored_hash = row["password"]
+            
+        if is_sqlite:
+            stored_hash = row["password"]
+            user_id = row["id"]
+            full_name = row["full_name"]
+            user_email = row["email"]
+            user_role = row["role"]
+        else:
+            if isinstance(row, dict):
+                stored_hash = row["password"]
+                user_id = row["id"]
+                full_name = row["full_name"]
+                user_email = row["email"]
+                user_role = row["role"]
+            else:
+                user_id = row[0]
+                full_name = row[1]
+                user_email = row[2]
+                stored_hash = row[3]
+                user_role = row[4]
+                
         if isinstance(stored_hash, str):
             stored_hash = stored_hash.encode()
-
+            
         if bcrypt.checkpw(password.encode(), stored_hash):
-            return dict(row)
+            return {
+                "id": user_id,
+                "full_name": full_name,
+                "email": user_email,
+                "role": user_role
+            }
         return None
-
-    except psycopg2.Error as e:
+        
+    except Exception as e:
         print(f"[auth_service] DB error during login: {e}")
         return None
     finally:
         if conn is not None:
             conn.close()
-

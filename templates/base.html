@@ -181,6 +181,12 @@
                     </a>
                 </li>
                 <li>
+                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'bills' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('bills_directory_route') }}">
+                        <span class="material-symbols-outlined">description</span>
+                        <span class="font-label-md text-label-md">Bills</span>
+                    </a>
+                </li>
+                <li>
                     <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'pipeline' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('pipeline') }}">
                         <span class="material-symbols-outlined">account_tree</span>
                         <span class="font-label-md text-label-md">Pipeline</span>
@@ -193,9 +199,15 @@
                     </a>
                 </li>
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'proposal' or active_page == 'proposal_history' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('proposal_history') }}">
+                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'proposals' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('proposals_list_route') }}">
                         <span class="material-symbols-outlined">description</span>
                         <span class="font-label-md text-label-md">Proposals</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'projects' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('projects_list_route') }}">
+                        <span class="material-symbols-outlined">construction</span>
+                        <span class="font-label-md text-label-md">Projects</span>
                     </a>
                 </li>
                 <li>

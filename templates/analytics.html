@@ -86,27 +86,19 @@
                     <p class="text-body-sm text-outline">Pipeline efficiency over the last 6 months</p>
                 </div>
             </div>
-            <div class="h-64 chart-grid flex items-end justify-between px-4 pb-8 relative">
-                <svg class="absolute inset-x-0 bottom-8 w-full h-48" preserveAspectRatio="none" viewBox="0 0 100 100">
-                    <defs>
-                        <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stop-color="#006b1b" stop-opacity="0.3"></stop>
-                            <stop offset="100%" stop-color="#006b1b" stop-opacity="0"></stop>
-                        </linearGradient>
-                    </defs>
-                    <path d="M0 80 Q 20 60, 40 70 T 80 30 T 100 40 L 100 100 L 0 100 Z" fill="url(#areaGradient)"></path>
-                    <path d="M0 80 Q 20 60, 40 70 T 80 30 T 100 40" fill="none" stroke="#006b1b" stroke-width="2"></path>
-                </svg>
+            <div class="h-64 relative">
+                <canvas id="conversionChart"></canvas>
             </div>
         </div>
 
         <!-- Total Capacity -->
-        <div class="col-span-12 lg:col-span-4 glass-card p-8 rounded-3xl flex items-center justify-center">
-            <div class="w-48 h-48 rounded-full border-8 border-primary/20 flex items-center justify-center text-center">
-                <div>
-                    <p class="text-label-md text-outline">Total Capacity</p>
-                    <p class="text-headline-md text-primary font-bold">84.5 MW</p>
-                </div>
+        <div class="col-span-12 lg:col-span-4 glass-card p-8 rounded-3xl flex flex-col justify-between">
+            <div>
+                <h4 class="text-body-lg font-bold text-on-surface">Proposed Capacity Distribution</h4>
+                <p class="text-body-sm text-outline">Proposed MW by client segment</p>
+            </div>
+            <div class="h-52 w-full relative">
+                <canvas id="capacityDoughnutChart"></canvas>
             </div>
         </div>
 
@@ -144,5 +136,261 @@
             </div>
         </div>
     </div>
+
+    <!-- Project Analytics Overview Section -->
+    {% if project_stats %}
+    <div class="border-t border-outline-variant/20 pt-8 mt-8">
+        <div class="mb-6">
+            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-primary text-[24px]">analytics</span>
+                Project Execution Analytics
+            </h3>
+            <p class="text-on-surface-variant font-body-sm opacity-80">Aggregate metrics tracking project status, MW capacity distribution, and contract revenue.</p>
+        </div>
+        
+        <div class="grid grid-cols-12 gap-gutter">
+            <!-- Projects & Revenue by Status (8 columns) -->
+            <div class="col-span-12 lg:col-span-8 glass-card p-8 rounded-3xl">
+                <h4 class="text-body-lg font-bold text-on-surface mb-6">Distribution by Project Status</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="border-b border-outline-variant/20 text-outline uppercase font-bold tracking-wider">
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4 text-center">Project Count</th>
+                                <th class="py-3 px-4">Capacity (MW)</th>
+                                <th class="py-3 px-4 text-right">Contract Value</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant/10">
+                            {% for stat in project_stats.by_status %}
+                            <tr class="hover:bg-surface-container-low/40 transition-all">
+                                <td class="py-3 px-4 font-bold text-on-surface">
+                                    {% if stat.status == 'Completed' %}
+                                        <span class="bg-success-container/20 text-success text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Completed</span>
+                                    {% elif stat.status == 'Planning' %}
+                                        <span class="bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px] font-bold text-on-surface uppercase tracking-wider">Planning</span>
+                                    {% elif stat.status == 'On Hold' %}
+                                        <span class="bg-warning-container/20 text-warning text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">On Hold</span>
+                                    {% elif stat.status == 'Cancelled' %}
+                                        <span class="bg-error-container/20 text-error text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Cancelled</span>
+                                    {% else %}
+                                        <span class="bg-secondary-container/20 text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{{ stat.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 px-4 text-center font-bold text-on-surface-variant">{{ stat.count }}</td>
+                                <td class="py-3 px-4 font-bold text-on-surface">
+                                    <div class="flex items-center gap-2">
+                                        <span>{{ stat.capacity_mw }} MW</span>
+                                        {% set cap_width = (stat.capacity_mw * 10)|int %}
+                                        {% if cap_width > 100 %}{% set cap_width = 100 %}{% endif %}
+                                        <div class="hidden sm:block w-24 bg-surface-container-high h-2 rounded-full overflow-hidden">
+                                            <div class="h-full bg-primary rounded-full" style="width: {{ cap_width }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 px-4 text-right font-bold text-primary">${{ "{:,.2f}".format(stat.revenue) }}</td>
+                            </tr>
+                            {% endfor %}
+                            {% if not project_stats.by_status %}
+                            <tr>
+                                <td colspan="4" class="py-6 text-center text-outline italic">No project stats available.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Monthly Project Creation (4 columns) -->
+            <div class="col-span-12 lg:col-span-4 glass-card p-8 rounded-3xl flex flex-col">
+                <div>
+                    <h4 class="text-body-lg font-bold text-on-surface mb-2">Monthly Project Creation</h4>
+                    <p class="text-body-sm text-outline mb-6">New project conversions timeline</p>
+                </div>
+                <div class="space-y-4 flex-1">
+                    {% for m in project_stats.monthly_creation %}
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+                            <span class="font-bold text-on-surface-variant">{{ m.month }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-on-surface">{{ m.count }} projects</span>
+                            {% set cnt_width = (m.count * 20)|int %}
+                            {% if cnt_width > 100 %}{% set cnt_width = 100 %}{% endif %}
+                            <div class="w-16 bg-surface-container-high h-3 rounded-full overflow-hidden">
+                                <div class="h-full bg-secondary rounded-full" style="width: {{ cnt_width }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Project Execution Status visual chart (12 columns) -->
+            <div class="col-span-12 glass-card p-8 rounded-3xl">
+                <h4 class="text-body-lg font-bold text-on-surface mb-2">Project Sizing & Capacity Distribution</h4>
+                <p class="text-body-sm text-outline mb-6">Execution milestones vs MW capacity</p>
+                <div class="h-64 relative">
+                    <canvas id="projectStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const projectData = {{ project_stats|tojson if project_stats else '{"by_status": [], "monthly_creation": [], "lead_conversion": [], "sector_capacity": []}' }};
+
+        function showNoDataOverlay(canvasId, text = "No Data Available") {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const parent = canvas.parentElement;
+            if (!parent) return;
+            const oldOverlay = parent.querySelector('.no-data-overlay');
+            if (oldOverlay) oldOverlay.remove();
+            
+            canvas.style.display = 'none';
+            const overlay = document.createElement('div');
+            overlay.className = 'no-data-overlay flex flex-col items-center justify-center h-full w-full py-10';
+            overlay.innerHTML = `
+                <span class="material-symbols-outlined text-[48px] mb-2 text-outline/30">analytics</span>
+                <p class="text-label-md text-outline font-semibold">${text}</p>
+            `;
+            parent.appendChild(overlay);
+        }
+
+        // 1. Lead Conversion Trend Chart (Dynamic)
+        const leadLabels = (projectData.lead_conversion && projectData.lead_conversion.length > 0) 
+            ? projectData.lead_conversion.map(l => l.month) 
+            : [];
+        const leadCounts = (projectData.lead_conversion && projectData.lead_conversion.length > 0) 
+            ? projectData.lead_conversion.map(l => l.count) 
+            : [];
+        const totalLeads = leadCounts.reduce((a, b) => a + b, 0);
+
+        if (totalLeads === 0 || leadLabels.length === 0) {
+            showNoDataOverlay('conversionChart', 'No conversion trend data recorded.');
+        } else {
+            const ctxConv = document.getElementById('conversionChart')?.getContext('2d');
+            if (ctxConv) {
+                new Chart(ctxConv, {
+                    type: 'line',
+                    data: {
+                        labels: leadLabels,
+                        datasets: [{
+                            label: 'Leads Converted',
+                            data: leadCounts,
+                            borderColor: '#006b1b',
+                            backgroundColor: 'rgba(0, 107, 27, 0.05)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 2. Capacity Doughnut Chart (Dynamic)
+        const sectorLabels = (projectData.sector_capacity && projectData.sector_capacity.length > 0)
+            ? projectData.sector_capacity.map(s => s.category)
+            : [];
+        const sectorData = (projectData.sector_capacity && projectData.sector_capacity.length > 0)
+            ? projectData.sector_capacity.map(s => s.capacity)
+            : [];
+        const totalSectorCapacity = sectorData.reduce((a, b) => a + b, 0);
+
+        if (totalSectorCapacity === 0 || sectorLabels.length === 0) {
+            showNoDataOverlay('capacityDoughnutChart', 'No solar assets mapped to client sectors.');
+        } else {
+            const ctxCap = document.getElementById('capacityDoughnutChart')?.getContext('2d');
+            if (ctxCap) {
+                new Chart(ctxCap, {
+                    type: 'doughnut',
+                    data: {
+                        labels: sectorLabels,
+                        datasets: [{
+                            data: sectorData,
+                            backgroundColor: ['#006b1b', '#ff8f06', '#0288d1', '#7b1fa2', '#9c27b0', '#009688']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+                    }
+                });
+            }
+        }
+
+        // 3. Project Status Analytics Chart (Dynamic)
+        if (projectData && projectData.by_status && projectData.by_status.length > 0) {
+            const statusLabels = projectData.by_status.map(s => s.status);
+            const statusCounts = projectData.by_status.map(s => s.count);
+            const statusCapacities = projectData.by_status.map(s => s.capacity_mw);
+
+            const ctxStatus = document.getElementById('projectStatusChart')?.getContext('2d');
+            if (ctxStatus) {
+                new Chart(ctxStatus, {
+                    type: 'bar',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [
+                            {
+                                label: 'Projects Count',
+                                data: statusCounts,
+                                backgroundColor: '#ff8f06',
+                                borderRadius: 4,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Capacity (MW)',
+                                data: statusCapacities,
+                                backgroundColor: '#006b1b',
+                                borderRadius: 4,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: { display: true, text: 'Project Count', font: { size: 10 } },
+                                ticks: { precision: 0 }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                grid: { drawOnChartArea: false },
+                                title: { display: true, text: 'Capacity (MW)', font: { size: 10 } }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        } else {
+            showNoDataOverlay('projectStatusChart', 'No project conversion data recorded yet.');
+        }
+    });
+</script>
 {% endblock %}

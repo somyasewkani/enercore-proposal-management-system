@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Update Project Details | {{ project.project_number }}{% endblock %}
+{% set active_page = 'projects' %}
+
+{% block content %}
+<div class="max-w-[800px] mx-auto p-margin-desktop space-y-6">
+    <!-- Back to Project Workspace -->
+    <div>
+        <a href="{{ url_for('project_dashboard_route', project_id=project.id) }}" class="inline-flex items-center gap-2 text-primary font-medium hover:underline text-body-sm">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to Project Workspace
+        </a>
+    </div>
+
+    <!-- Title and Subtitle -->
+    <div>
+        <h2 class="font-headline-lg text-headline-lg text-on-surface">Update Execution Settings</h2>
+        <p class="text-body-md text-on-surface-variant mt-1">Modify scheduling, managers, progress metrics, and transition project status.</p>
+    </div>
+
+    <!-- Edit Form Card -->
+    <div class="glass-card p-8 rounded-2xl border border-outline-variant/15">
+        <form method="POST" action="{{ url_for('project_update_route', project_id=project.id) }}" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Status selection -->
+                <div class="space-y-2">
+                    <label for="status" class="text-xs font-bold text-outline uppercase tracking-wider">Execution Stage Status</label>
+                    <select id="status" name="status" class="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
+                        <option value="Planning" {% if project.status == 'Planning' %}selected{% endif %}>Planning</option>
+                        <option value="Site Survey" {% if project.status == 'Site Survey' %}selected{% endif %}>Site Survey</option>
+                        <option value="Engineering" {% if project.status == 'Engineering' %}selected{% endif %}>Engineering</option>
+                        <option value="Procurement" {% if project.status == 'Procurement' %}selected{% endif %}>Procurement</option>
+                        <option value="Installation" {% if project.status == 'Installation' %}selected{% endif %}>Installation</option>
+                        <option value="Testing & Commissioning" {% if project.status == 'Testing & Commissioning' %}selected{% endif %}>Testing & Commissioning</option>
+                        <option value="Completed" {% if project.status == 'Completed' %}selected{% endif %}>Completed</option>
+                        <option value="On Hold" {% if project.status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                        <option value="Cancelled" {% if project.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+
+                <!-- Progress percentage slider/input -->
+                <div class="space-y-2">
+                    <label for="progress_percentage" class="text-xs font-bold text-outline uppercase tracking-wider">Progress Percentage (0 - 100%)</label>
+                    <div class="flex items-center gap-4">
+                        <input type="range" id="progress_range" min="0" max="100" step="5" value="{{ project.progress_percentage|int }}"
+                            class="flex-1 accent-primary h-2 bg-surface-container-high rounded-lg cursor-pointer"
+                            oninput="document.getElementById('progress_percentage').value = this.value">
+                        <input type="number" id="progress_percentage" name="progress_percentage" min="0" max="100" value="{{ project.progress_percentage|int }}"
+                            class="w-20 h-11 px-3 text-center bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                            oninput="document.getElementById('progress_range').value = this.value">
+                    </div>
+                </div>
+
+                <!-- Assigned Project Manager -->
+                <div class="space-y-2">
+                    <label for="project_manager" class="text-xs font-bold text-outline uppercase tracking-wider">Project Manager</label>
+                    <input type="text" id="project_manager" name="project_manager" value="{{ project.project_manager or '' }}" placeholder="Assign manager name"
+                        class="w-full h-11 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all">
+                </div>
+
+                <!-- Expected Completion Date -->
+                <div class="space-y-2">
+                    <label for="expected_completion" class="text-xs font-bold text-outline uppercase tracking-wider">Expected Completion Date</label>
+                    <input type="date" id="expected_completion" name="expected_completion" value="{{ project.expected_completion }}"
+                        class="w-full h-11 px-4 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Remarks notes description -->
+            <div class="space-y-2">
+                <label for="remarks" class="text-xs font-bold text-outline uppercase tracking-wider">Execution Progress Notes / Remarks</label>
+                <textarea id="remarks" name="remarks" rows="4" placeholder="Enter status updates, remarks, blockages or notes here..."
+                    class="w-full p-4 bg-surface-container-lowest border border-outline-variant/30 rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all leading-relaxed">{{ project.remarks or '' }}</textarea>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex justify-end gap-3 border-t border-outline-variant/15 pt-6">
+                <a href="{{ url_for('project_dashboard_route', project_id=project.id) }}"
+                    class="h-11 px-6 rounded-lg bg-surface-container-high text-outline font-bold flex items-center justify-center hover:bg-surface-container-highest transition-all">
+                    Cancel
+                </a>
+                <button type="submit"
+                    class="h-11 px-8 bg-primary text-on-primary font-bold rounded-lg flex items-center justify-center gap-1.5 hover:opacity-90 transition-all shadow-md">
+                    <span class="material-symbols-outlined text-[20px]">save</span>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
