@@ -2,154 +2,253 @@
 {% block title %}Enercore | Settings{% endblock %}
 {% set active_page = 'settings' %}
 
-{% block content %}
-<div class="max-w-[1440px] mx-auto p-margin-desktop">
-    <!-- Page Header -->
-    <div class="mb-8">
-        <h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Settings</h2>
-        <p class="text-body-md text-on-surface-variant">Manage your account preferences and system configuration.</p>
-    </div>
+{% block extra_styles %}
+<style>
+    .sidebar-active {
+        background: rgba(0, 107, 27, 0.08);
+        border-left: 4px solid #006b1b;
+        color: #006b1b;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
 
-    <div class="grid grid-cols-12 gap-gutter">
-        <!-- Sidebar Navigation -->
-        <div class="col-span-12 md:col-span-4">
-            <div class="glass-card rounded-xl p-4">
+{% block content %}
+<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-6">
+    <!-- Page Header -->
+    <section class="flex flex-col justify-start gap-1">
+        <h2 class="text-2xl font-bold text-on-surface tracking-tight">Settings</h2>
+        <p class="text-sm text-on-surface-variant opacity-80">Manage your account preferences and system configuration.</p>
+    </section>
+
+    <!-- Two Column Grid -->
+    <div class="grid grid-cols-12 gap-6 items-start">
+        <!-- Left Sidebar Navigation -->
+        <div class="col-span-12 lg:col-span-3">
+            <div class="bg-white border border-outline-variant/10 rounded-2xl p-4 shadow-sm">
                 <nav class="space-y-1">
-                    <a class="flex items-center gap-3 px-4 py-3 sidebar-active rounded-lg transition-colors" href="{{ url_for('settings') }}#profile">
-                        <span class="material-symbols-outlined">account_circle</span>
-                        <span class="font-label-md text-label-md">Profile Settings</span>
+                    <a id="tab-profile" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary/5 border-l-4 border-primary text-primary font-bold text-xs transition-all" href="#profile">
+                        <span class="material-symbols-outlined text-[18px]">account_circle</span>
+                        <span>Profile Settings</span>
                     </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="{{ url_for('settings') }}#notifications">
-                        <span class="material-symbols-outlined">notifications</span>
-                        <span class="font-label-md text-label-md">Notifications</span>
+                    <a id="tab-notifications" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant/80 font-medium hover:bg-surface-container-low border-l-4 border-transparent text-xs transition-all" href="#notifications">
+                        <span class="material-symbols-outlined text-[18px]">notifications</span>
+                        <span>Notifications</span>
                     </a>
-                    <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors" href="{{ url_for('settings') }}#security">
-                        <span class="material-symbols-outlined">security</span>
-                        <span class="font-label-md text-label-md">Security & Privacy</span>
+                    <a id="tab-security" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant/80 font-medium hover:bg-surface-container-low border-l-4 border-transparent text-xs transition-all" href="#security">
+                        <span class="material-symbols-outlined text-[18px]">security</span>
+                        <span>Security & Privacy</span>
+                    </a>
+                    <a id="tab-system" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant/80 font-medium hover:bg-surface-container-low border-l-4 border-transparent text-xs transition-all" href="#system">
+                        <span class="material-symbols-outlined text-[18px]">settings</span>
+                        <span>System Configuration</span>
                     </a>
                 </nav>
             </div>
         </div>
 
-        <!-- Main Settings Content -->
-        <div class="col-span-12 md:col-span-8">
-            <form method="POST" action="{{ url_for('save_settings') }}" class="glass-card rounded-xl p-8 space-y-8">
-                <div>
-                    <h3 class="font-headline-md text-headline-md mb-6">Profile Information</h3>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase">Full Name</label>
-                            <input name="full_name" placeholder="Enter full name" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ session.user.full_name if session.get('user') else '' }}" type="text" required>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase">Email Address</label>
-                            <input name="email" placeholder="Enter email address" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ session.user.email if session.get('user') else '' }}" type="email" required>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase">Role</label>
-                            <select name="role" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none">
-                                <option value="Sales Engineer" {% if session.get('user') and session.user.role == 'Sales Engineer' %}selected{% endif %}>Sales Engineer</option>
-                                <option value="Executive Director" {% if session.get('user') and session.user.role == 'Executive Director' %}selected{% endif %}>Executive Director</option>
-                                <option value="Project Manager" {% if session.get('user') and session.user.role == 'Project Manager' %}selected{% endif %}>Project Manager</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase">Phone</label>
-                            <input name="phone" placeholder="Enter phone number" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ session.user.phone if (session.get('user') and session.user.phone) else '' }}" type="tel">
+        <!-- Right Content Area -->
+        <div class="col-span-12 lg:col-span-9">
+            <form method="POST" action="{{ url_for('save_settings') }}" class="bg-white border border-outline-variant/10 rounded-2xl p-6 shadow-sm space-y-6">
+                <!-- Profile Information Section -->
+                <div id="section-profile" class="space-y-6">
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-on-surface tracking-tight">Profile Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Full Name</label>
+                                <input name="full_name" placeholder="Enter full name" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ session.user.full_name if session.get('user') else '' }}" type="text" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Email Address</label>
+                                <input name="email" placeholder="Enter email address" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ session.user.email if session.get('user') else '' }}" type="email" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Role</label>
+                                <select name="role" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all cursor-pointer">
+                                    <option value="Sales Engineer" {% if session.get('user') and session.user.role == 'Sales Engineer' %}selected{% endif %}>Sales Engineer</option>
+                                    <option value="Executive Director" {% if session.get('user') and session.user.role == 'Executive Director' %}selected{% endif %}>Executive Director</option>
+                                    <option value="Project Manager" {% if session.get('user') and session.user.role == 'Project Manager' %}selected{% endif %}>Project Manager</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Phone</label>
+                                <input name="phone" placeholder="Enter phone number" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ session.user.phone if (session.get('user') and session.user.phone) else '' }}" type="tel">
+                            </div>
                         </div>
                     </div>
-                </div>
+                    
+                    <hr class="border-outline-variant/10">
 
-                <hr class="border-outline-variant/20">
-
-                <div>
-                    <h3 class="font-headline-md text-headline-md mb-6">Display Preferences</h3>
                     <div class="space-y-4">
-                        <div class="flex items-center justify-between py-3">
+                        <h3 class="text-sm font-bold text-on-surface tracking-tight">Display Preferences</h3>
+                        <div class="flex items-center justify-between py-1 font-body-sm">
                             <div>
-                                <p class="font-body-md font-bold text-on-surface">Dark Mode</p>
-                                <p class="text-body-sm text-on-surface-variant">Toggle dark theme for reduced eye strain</p>
+                                <p class="text-xs font-bold text-on-surface">Dark Mode</p>
+                                <p class="text-[10px] text-on-surface-variant opacity-80 mt-0.5">Toggle dark theme for reduced eye strain</p>
                             </div>
-                            <button type="button" onclick="document.documentElement.classList.toggle('dark')" class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary">
-                                <span class="inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform translate-x-6"></span>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-between py-3">
-                            <div>
-                                <p class="font-body-md font-bold text-on-surface">Email Notifications</p>
-                                <p class="text-body-sm text-on-surface-variant">Receive updates on proposal status changes</p>
-                            </div>
-                            <button type="button" class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary">
-                                <span class="inline-block h-4 w-4 rounded-full bg-white shadow-lg ring-0 transition-transform translate-x-6"></span>
+                            <button type="button" onclick="document.documentElement.classList.toggle('dark'); this.firstElementChild.classList.toggle('translate-x-5'); this.firstElementChild.classList.toggle('translate-x-0'); this.classList.toggle('bg-primary'); this.classList.toggle('bg-outline-variant/30')" class="relative inline-flex h-5 w-10 items-center rounded-full bg-primary transition-colors focus:outline-none shrink-0">
+                                <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow-md transition-transform translate-x-5"></span>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <hr class="border-outline-variant/20">
-
-                <div>
-                    <h3 class="font-headline-md text-headline-md mb-6">System Preferences</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between py-3">
+                <!-- Notifications Section -->
+                <div id="section-notifications" class="space-y-4">
+                    <h3 class="text-sm font-bold text-on-surface tracking-tight">Notification Preferences</h3>
+                    <div class="divide-y divide-outline-variant/10">
+                        <div class="flex items-center justify-between py-3 font-body-sm">
                             <div>
-                                <p class="font-body-md font-bold text-on-surface">Default Currency</p>
-                                <p class="text-body-sm text-on-surface-variant">Change currency display format</p>
+                                <p class="text-xs font-bold text-on-surface">Email Notifications</p>
+                                <p class="text-[10px] text-on-surface-variant opacity-80 mt-0.5">Receive weekly summaries and report exports</p>
                             </div>
-                            <select name="currency" class="bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-2 outline-none">
-                                <option>USD ($)</option>
-                                <option>EUR (€)</option>
-                                <option>GBP (£)</option>
+                            <button type="button" onclick="this.firstElementChild.classList.toggle('translate-x-5'); this.firstElementChild.classList.toggle('translate-x-0'); this.classList.toggle('bg-primary'); this.classList.toggle('bg-outline-variant/30')" class="relative inline-flex h-5 w-10 items-center rounded-full bg-primary transition-colors focus:outline-none shrink-0">
+                                <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow-md transition-transform translate-x-5"></span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between py-3 font-body-sm">
+                            <div>
+                                <p class="text-xs font-bold text-on-surface">Proposal Status Updates</p>
+                                <p class="text-[10px] text-on-surface-variant opacity-80 mt-0.5">Alert when a proposal is approved or signed</p>
+                            </div>
+                            <button type="button" onclick="this.firstElementChild.classList.toggle('translate-x-5'); this.firstElementChild.classList.toggle('translate-x-0'); this.classList.toggle('bg-primary'); this.classList.toggle('bg-outline-variant/30')" class="relative inline-flex h-5 w-10 items-center rounded-full bg-primary transition-colors focus:outline-none shrink-0">
+                                <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow-md transition-transform translate-x-5"></span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between py-3 font-body-sm">
+                            <div>
+                                <p class="text-xs font-bold text-on-surface">New Lead Notifications</p>
+                                <p class="text-[10px] text-on-surface-variant opacity-80 mt-0.5">Get notified when a new lead enters the pipeline</p>
+                            </div>
+                            <button type="button" onclick="this.firstElementChild.classList.toggle('translate-x-5'); this.firstElementChild.classList.toggle('translate-x-0'); this.classList.toggle('bg-primary'); this.classList.toggle('bg-outline-variant/30')" class="relative inline-flex h-5 w-10 items-center rounded-full bg-primary transition-colors focus:outline-none shrink-0">
+                                <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow-md transition-transform translate-x-5"></span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between py-3 font-body-sm">
+                            <div>
+                                <p class="text-xs font-bold text-on-surface">Project/Execution Updates</p>
+                                <p class="text-[10px] text-on-surface-variant opacity-80 mt-0.5">Receive status updates on active solar installations</p>
+                            </div>
+                            <button type="button" onclick="this.firstElementChild.classList.toggle('translate-x-5'); this.firstElementChild.classList.toggle('translate-x-0'); this.classList.toggle('bg-primary'); this.classList.toggle('bg-outline-variant/30')" class="relative inline-flex h-5 w-10 items-center rounded-full bg-primary transition-colors focus:outline-none shrink-0">
+                                <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow-md transition-transform translate-x-5"></span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between py-3 font-body-sm">
+                            <div>
+                                <p class="text-xs font-bold text-on-surface">System Alerts</p>
+                                <p class="text-[10px] text-on-surface-variant opacity-80 mt-0.5">Alert on critical system changes and settings updates</p>
+                            </div>
+                            <button type="button" onclick="this.firstElementChild.classList.toggle('translate-x-5'); this.firstElementChild.classList.toggle('translate-x-0'); this.classList.toggle('bg-primary'); this.classList.toggle('bg-outline-variant/30')" class="relative inline-flex h-5 w-10 items-center rounded-full bg-primary transition-colors focus:outline-none shrink-0">
+                                <span class="inline-block h-3.5 w-3.5 rounded-full bg-white shadow-md transition-transform translate-x-5"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security & Privacy Section -->
+                <div id="section-security" class="space-y-6">
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-on-surface tracking-tight">Security Preferences</h3>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Current Password</label>
+                                <input type="password" placeholder="••••••••" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">New Password</label>
+                                    <input type="password" placeholder="••••••••" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Confirm New Password</label>
+                                    <input type="password" placeholder="••••••••" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="border-outline-variant/10">
+
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-on-surface tracking-tight">Session Management</h3>
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 p-4 bg-surface-container-low/20 border border-outline-variant/10 rounded-xl">
+                            <div>
+                                <p class="text-xs font-bold text-on-surface">Active Sessions</p>
+                                <p class="text-[10px] text-on-surface-variant opacity-80 mt-0.5">Currently logged in on Windows 11 (This Device) in Gurugram, India.</p>
+                            </div>
+                            <button type="button" class="px-4 py-2 border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container-low rounded-lg text-xs font-bold transition-all shrink-0">
+                                Logout from other sessions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Configuration Section -->
+                <div id="section-system" class="space-y-6">
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-on-surface tracking-tight">System Preferences</h3>
+                        <div class="flex items-center justify-between py-2 font-body-sm">
+                            <div>
+                                <p class="text-xs font-bold text-on-surface">Default Currency</p>
+                                <p class="text-[10px] text-on-surface-variant opacity-80 mt-0.5">Change currency display format</p>
+                            </div>
+                            <select name="currency" class="bg-white border border-[#DDE3DD] rounded-xl px-4 py-2 text-xs font-semibold text-on-surface outline-none cursor-pointer">
+                                <option value="INR" selected>INR (₹)</option>
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
                             </select>
                         </div>
                     </div>
-                </div>
 
-                <hr class="border-outline-variant/20">
+                    <hr class="border-outline-variant/10">
 
-                <div>
-                    <h3 class="font-headline-md text-headline-md mb-6">Solar System Assumptions</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase text-[11px] font-bold">Peak Sun Hours (hrs/day)</label>
-                            <input name="peak_sun_hours" type="number" step="0.1" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ settings.peak_sun_hours }}" required>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase text-[11px] font-bold">Performance Ratio (0.0 - 1.0)</label>
-                            <input name="performance_ratio" type="number" step="0.01" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ settings.performance_ratio }}" required>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase text-[11px] font-bold">Inverter Efficiency (0.0 - 1.0)</label>
-                            <input name="inverter_efficiency" type="number" step="0.01" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ settings.inverter_efficiency }}" required>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase text-[11px] font-bold">System Loss (0.0 - 1.0)</label>
-                            <input name="system_loss" type="number" step="0.01" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ settings.system_loss }}" required>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase text-[11px] font-bold">Electricity Tariff Rate (per kWh)</label>
-                            <input name="electricity_tariff" type="number" step="0.1" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ settings.electricity_tariff }}" required>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase text-[11px] font-bold">Installation Cost Per kW</label>
-                            <input name="installation_cost_per_kw" type="number" step="1" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ settings.installation_cost_per_kw }}" required>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase text-[11px] font-bold">CO₂ Conversion Factor (kg/kWh)</label>
-                            <input name="co2_conversion_factor" type="number" step="0.01" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ settings.co2_conversion_factor }}" required>
-                        </div>
-                        <div>
-                            <label class="font-label-md text-label-md text-on-surface-variant block mb-2 uppercase text-[11px] font-bold">Tree Equivalent Factor (trees/kg CO₂)</label>
-                            <input name="tree_conversion_factor" type="number" step="0.001" class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary transition-all outline-none" value="{{ settings.tree_conversion_factor }}" required>
+                    <div class="space-y-4">
+                        <h3 class="text-sm font-bold text-on-surface tracking-tight">Solar System Assumptions</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Peak Sun Hours (hrs/day)</label>
+                                <input name="peak_sun_hours" type="number" step="0.1" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ settings.peak_sun_hours }}" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Performance Ratio (0.0 - 1.0)</label>
+                                <input name="performance_ratio" type="number" step="0.01" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ settings.performance_ratio }}" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Inverter Efficiency (0.0 - 1.0)</label>
+                                <input name="inverter_efficiency" type="number" step="0.01" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ settings.inverter_efficiency }}" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">System Loss (0.0 - 1.0)</label>
+                                <input name="system_loss" type="number" step="0.01" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ settings.system_loss }}" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Electricity Tariff Rate (per kWh)</label>
+                                <input name="electricity_tariff" type="number" step="0.1" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ settings.electricity_tariff }}" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Installation Cost Per kW</label>
+                                <input name="installation_cost_per_kw" type="number" step="1" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ settings.installation_cost_per_kw }}" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">CO₂ Conversion Factor (kg/kWh)</label>
+                                <input name="co2_conversion_factor" type="number" step="0.01" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ settings.co2_conversion_factor }}" required>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-outline-variant uppercase tracking-wider block mb-1.5">Tree Equivalent Factor (trees/kg CO₂)</label>
+                                <input name="tree_conversion_factor" type="number" step="0.001" class="w-full h-[52px] bg-white border border-[#DDE3DD] rounded-xl px-4 text-xs font-semibold text-on-surface focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all" value="{{ settings.tree_conversion_factor }}" required>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-3 pt-4">
-                    <a href="{{ url_for('settings') }}" class="px-6 py-2 rounded-lg border border-outline-variant/40 text-on-surface-variant font-label-md hover:bg-surface-container-high transition-colors">
+                <!-- Actions -->
+                <div class="flex justify-end gap-3 pt-4 border-t border-outline-variant/10 sm:pr-16 md:pr-20">
+                    <a href="{{ url_for('settings') }}" class="flex items-center justify-center h-[36px] px-5 rounded-lg border border-outline-variant/30 text-on-surface-variant/80 text-xs font-bold hover:bg-surface-container-low transition-all">
                         Cancel
                     </a>
-                    <button type="submit" class="px-6 py-2 rounded-lg bg-primary text-on-primary font-label-md hover:bg-primary-container transition-colors shadow-md">
+                    <button type="submit" class="flex items-center justify-center h-[36px] px-5 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-all shadow-sm">
                         Save Changes
                     </button>
                 </div>
@@ -157,4 +256,61 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const profileTab = document.getElementById("tab-profile");
+        const notificationsTab = document.getElementById("tab-notifications");
+        const securityTab = document.getElementById("tab-security");
+        const systemTab = document.getElementById("tab-system");
+
+        const sectionProfile = document.getElementById("section-profile");
+        const sectionNotifications = document.getElementById("section-notifications");
+        const sectionSecurity = document.getElementById("section-security");
+        const sectionSystem = document.getElementById("section-system");
+
+        function updateActiveTab() {
+            const hash = window.location.hash || "#profile";
+            
+            // Profile tab state
+            if (hash === "#profile") {
+                profileTab.className = "flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary/5 border-l-4 border-primary text-primary font-bold text-xs transition-all";
+                sectionProfile.style.display = "block";
+            } else {
+                profileTab.className = "flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant/80 font-medium hover:bg-surface-container-low border-l-4 border-transparent text-xs transition-all";
+                sectionProfile.style.display = "none";
+            }
+
+            // Notifications tab state
+            if (hash === "#notifications") {
+                notificationsTab.className = "flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary/5 border-l-4 border-primary text-primary font-bold text-xs transition-all";
+                sectionNotifications.style.display = "block";
+            } else {
+                notificationsTab.className = "flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant/80 font-medium hover:bg-surface-container-low border-l-4 border-transparent text-xs transition-all";
+                sectionNotifications.style.display = "none";
+            }
+
+            // Security tab state
+            if (hash === "#security") {
+                securityTab.className = "flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary/5 border-l-4 border-primary text-primary font-bold text-xs transition-all";
+                sectionSecurity.style.display = "block";
+            } else {
+                securityTab.className = "flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant/80 font-medium hover:bg-surface-container-low border-l-4 border-transparent text-xs transition-all";
+                sectionSecurity.style.display = "none";
+            }
+
+            // System tab state
+            if (hash === "#system") {
+                systemTab.className = "flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary/5 border-l-4 border-primary text-primary font-bold text-xs transition-all";
+                sectionSystem.style.display = "block";
+            } else {
+                systemTab.className = "flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant/80 font-medium hover:bg-surface-container-low border-l-4 border-transparent text-xs transition-all";
+                sectionSystem.style.display = "none";
+            }
+        }
+
+        window.addEventListener("hashchange", updateActiveTab);
+        updateActiveTab();
+    });
+</script>
 {% endblock %}

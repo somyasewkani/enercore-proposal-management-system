@@ -2,130 +2,138 @@
 {% block title %}Enercore | Proposals{% endblock %}
 {% set active_page = 'proposals' %}
 
+{% block extra_styles %}
+<style>
+    .prop-action-dropdown {
+        display: none;
+        position: absolute;
+        right: 1.5rem;
+        margin-top: 0.25rem;
+        width: 140px;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        z-index: 99;
+    }
+    .prop-action-dropdown.active {
+        display: block;
+    }
+    .sidebar-active {
+        background: rgba(0, 107, 27, 0.08);
+        border-left: 4px solid #006b1b;
+        color: #006b1b;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="max-w-[1440px] mx-auto p-margin-desktop">
-    <!-- Page Header -->
-    <div class="mb-8">
-        <h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Proposal Registry</h2>
-        <p class="text-body-md text-on-surface-variant">Search, review, and manage all generated client solar proposals.</p>
-    </div>
+<div class="p-6 space-y-6">
+    <!-- Header Section -->
+    <section class="flex flex-col gap-1">
+        <h2 class="text-2xl font-bold text-on-surface tracking-tight">Proposals</h2>
+        <p class="text-sm text-on-surface-variant opacity-80">Create, review, and manage client proposals.</p>
+    </section>
 
-    <!-- Filter & Registry Table -->
-    <div class="glass-card rounded-2xl border border-outline-variant/15 overflow-hidden">
-        <!-- Search and Filter Form -->
-        <form method="GET" action="{{ url_for('proposals_list_route') }}" class="p-6 border-b border-outline-variant/10 flex flex-wrap gap-4 items-end bg-surface-container-low/30">
-            <!-- Search Query -->
-            <div class="flex-1 min-w-[240px]">
-                <label class="text-[10px] font-bold text-outline uppercase tracking-wider block mb-1.5">Search Query</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[20px]">search</span>
-                    <input name="search" type="text" placeholder="Search number, client, or site..." class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg pl-10 pr-4 py-2.5 text-body-sm outline-none focus:ring-2 focus:ring-primary transition-all" value="{{ search_q or '' }}">
-                </div>
+    <!-- Toolbar Row -->
+    <div class="glass-card rounded-lg p-4 flex flex-wrap lg:flex-nowrap items-center justify-between gap-4 bg-white border border-outline-variant/10 shadow-sm">
+        <form method="GET" action="{{ url_for('proposals_list_route') }}" id="proposalsFilterForm" class="flex items-center gap-3 flex-wrap lg:flex-nowrap flex-1 min-w-0">
+            <!-- Search -->
+            <div class="relative max-w-[320px] w-full min-w-[240px]">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline-variant text-[16px]">search</span>
+                <input type="text" name="search" value="{{ search_q or '' }}" placeholder="Search proposals, clients, or sites..."
+                    onchange="document.getElementById('proposalsFilterForm').submit()"
+                    class="w-full bg-white border border-outline-variant/30 rounded-lg pl-8 pr-3 py-1.5 text-xs focus:ring-2 focus:ring-primary/20 outline-none transition-all">
             </div>
 
-            <!-- Customer Filter -->
-            <div class="min-w-[180px]">
-                <label class="text-[10px] font-bold text-outline uppercase tracking-wider block mb-1.5">Customer</label>
-                <select name="customer" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2.5 text-body-sm outline-none focus:ring-2 focus:ring-primary transition-all">
-                    <option value="all">All Clients</option>
-                    {% for c in customers %}
-                    <option value="{{ c.id }}" {% if customer_filter == c.id %}selected{% endif %}>{{ c.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+            <!-- Client Filter -->
+            <select name="customer" onchange="document.getElementById('proposalsFilterForm').submit()" class="bg-white border border-outline-variant/30 rounded-lg px-3 py-1.5 text-xs outline-none cursor-pointer font-medium text-on-surface-variant">
+                <option value="all">Client: All</option>
+                {% for c in customers %}
+                <option value="{{ c.id }}" {% if customer_filter == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
 
             <!-- Status Filter -->
-            <div class="min-w-[150px]">
-                <label class="text-[10px] font-bold text-outline uppercase tracking-wider block mb-1.5">Lifecycle Status</label>
-                <select name="status" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2.5 text-body-sm outline-none focus:ring-2 focus:ring-primary transition-all">
-                    <option value="all">All Statuses</option>
-                    <option value="Draft" {% if status_filter == 'Draft' %}selected{% endif %}>Draft</option>
-                    <option value="Under Review" {% if status_filter == 'Under Review' %}selected{% endif %}>Under Review</option>
-                    <option value="Approved" {% if status_filter == 'Approved' %}selected{% endif %}>Approved</option>
-                    <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
-                    <option value="Expired" {% if status_filter == 'Expired' %}selected{% endif %}>Expired</option>
-                </select>
-            </div>
+            <select name="status" onchange="document.getElementById('proposalsFilterForm').submit()" class="bg-white border border-outline-variant/30 rounded-lg px-3 py-1.5 text-xs outline-none cursor-pointer font-medium text-on-surface-variant">
+                <option value="all">Status: All</option>
+                <option value="Draft" {% if status_filter == 'Draft' %}selected{% endif %}>Draft</option>
+                <option value="Under Review" {% if status_filter == 'Under Review' %}selected{% endif %}>Under Review</option>
+                <option value="Approved" {% if status_filter == 'Approved' %}selected{% endif %}>Approved</option>
+                <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+                <option value="Expired" {% if status_filter == 'Expired' %}selected{% endif %}>Expired</option>
+            </select>
 
             <!-- Sort By -->
-            <div class="min-w-[150px]">
-                <label class="text-[10px] font-bold text-outline uppercase tracking-wider block mb-1.5">Sort Order</label>
-                <select name="sort" class="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-lg px-3 py-2.5 text-body-sm outline-none focus:ring-2 focus:ring-primary transition-all">
-                    <option value="newest" {% if sort_order == 'newest' %}selected{% endif %}>Newest First</option>
-                    <option value="oldest" {% if sort_order == 'oldest' %}selected{% endif %}>Oldest First</option>
-                </select>
-            </div>
+            <select name="sort" onchange="document.getElementById('proposalsFilterForm').submit()" class="bg-white border border-outline-variant/30 rounded-lg px-3 py-1.5 text-xs outline-none cursor-pointer font-medium text-on-surface-variant">
+                <option value="newest" {% if sort_order == 'newest' %}selected{% endif %}>Sort: Newest First</option>
+                <option value="oldest" {% if sort_order == 'oldest' %}selected{% endif %}>Sort: Oldest First</option>
+            </select>
 
-            <!-- Action Buttons -->
-            <div class="flex gap-2">
-                <button type="submit" class="bg-primary hover:bg-primary-container text-on-primary px-5 py-2.5 rounded-lg font-label-md transition-all">
-                    Filter
-                </button>
-                <a href="{{ url_for('proposals_list_route') }}" class="border border-outline-variant/50 text-on-surface-variant hover:bg-surface-container-high px-5 py-2.5 rounded-lg font-label-md transition-all">
-                    Reset
-                </a>
-            </div>
+            {% if search_q or customer_filter != 'all' or status_filter != 'all' or sort_order != 'newest' %}
+            <a href="{{ url_for('proposals_list_route') }}" class="text-primary text-xs font-bold hover:underline">Reset</a>
+            {% endif %}
         </form>
+    </div>
 
-        <!-- Registry Table List -->
+    <!-- Proposals Table -->
+    <div class="glass-card rounded-xl overflow-hidden border border-outline-variant/10 shadow-sm relative bg-white">
         {% if proposals %}
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+        <div class="overflow-x-auto max-w-full custom-scrollbar">
+            <table class="w-full text-left">
                 <thead>
-                    <tr class="bg-surface-container-low/50">
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Proposal Num</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Client Name</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Location / Site</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Version</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Active</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Prepared Date</th>
-                        <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-right">Actions</th>
+                    <tr class="border-b border-outline-variant/10 text-outline-variant text-[11px] font-bold uppercase tracking-wider bg-surface-container-low/10">
+                        <th class="px-6 py-3">Proposal</th>
+                        <th class="px-6 py-3">Client</th>
+                        <th class="px-6 py-3">Site</th>
+                        <th class="px-6 py-3 text-center">Version</th>
+                        <th class="px-6 py-3">Status</th>
+                        <th class="px-6 py-3">Prepared</th>
+                        <th class="px-6 py-3 text-right">Action</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-outline-variant/10 text-body-sm">
+                <tbody class="divide-y divide-outline-variant/10 text-xs">
                     {% for p in proposals %}
-                    <tr class="hover:bg-surface-container-high/15 transition-colors group {% if p.is_active %}font-medium{% endif %}">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                    <tr class="hover:bg-surface-container-low/20 transition-colors cursor-pointer group {% if p.is_active %}font-semibold{% endif %}"
+                        onclick="window.location.href='{{ url_for('proposal_preview_route', proposal_id=p.id) }}'">
+                        <td class="px-6 py-3">
                             <span class="text-primary font-bold">{{ p.proposal_number }}</span>
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="text-on-surface block">{{ p.customer_name }}</span>
+                        <td class="px-6 py-3 text-on-surface">
+                            {{ p.customer_name }}
                         </td>
-                        <td class="px-6 py-4">
-                            <span class="text-on-surface-variant block">{{ p.site_name }}</span>
+                        <td class="px-6 py-3 text-on-surface-variant">
+                            {{ p.site_name }}
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="bg-surface-container-highest px-2 py-0.5 rounded text-xs">V{{ p.version }}</span>
+                        <td class="px-6 py-3 text-center">
+                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md border inline-block
+                                {% if p.is_active %}bg-primary/5 text-primary border-primary/20
+                                {% else %}bg-surface-container text-on-surface-variant border-outline-variant/30{% endif %}">
+                                V{{ p.version }}{% if p.is_active %} (Active){% endif %}
+                            </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {% if p.status == 'Approved' %}
-                                <span class="bg-success-container/20 text-success text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Approved</span>
-                            {% elif p.status == 'Rejected' %}
-                                <span class="bg-error-container/20 text-error text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Rejected</span>
-                            {% elif p.status == 'Under Review' %}
-                                <span class="bg-warning-container/20 text-warning text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Under Review</span>
-                            {% elif p.status == 'Expired' %}
-                                <span class="bg-outline-variant/20 text-outline text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Expired</span>
-                            {% else %}
-                                <span class="bg-secondary-container/20 text-secondary text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Draft</span>
-                            {% endif %}
+                        <td class="px-6 py-3">
+                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md border inline-block
+                                {% if p.status == 'Approved' or p.status == 'Signed' %}bg-primary/5 text-primary border-primary/20
+                                {% elif p.status == 'Draft' or p.status == 'Under Review' or p.status == 'Sent' %}bg-amber-500/10 text-amber-700 border-amber-500/20
+                                {% else %}bg-surface-container text-on-surface-variant border-outline-variant/30{% endif %}">
+                                {{ p.status }}
+                            </span>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            {% if p.is_active %}
-                                <span class="material-symbols-outlined text-primary text-[20px]" title="Active/Latest version">check_circle</span>
-                            {% else %}
-                                <span class="text-outline text-xs">-</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-on-surface-variant">
+                        <td class="px-6 py-3 text-on-surface-variant">
                             {{ p.prepared_date }}
                         </td>
-                        <td class="px-6 py-4 text-right whitespace-nowrap">
-                            <a href="{{ url_for('proposal_preview_route', proposal_id=p.id) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant/60 text-on-surface hover:bg-surface-container-high rounded-md transition-all text-xs" title="Preview Proposal">
-                                <span class="material-symbols-outlined text-[16px]">visibility</span>
-                                Preview
-                            </a>
+                        <td class="px-6 py-3 text-right relative" onclick="event.stopPropagation()">
+                            <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline-variant hover:bg-surface-container-high transition-all ml-auto"
+                                onclick="toggleProposalMenu(event, 'prop-menu-{{ p.id }}')">
+                                <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                            </button>
+                            <div id="prop-menu-{{ p.id }}" class="prop-action-dropdown py-2 text-left shadow-lg">
+                                <a href="{{ url_for('proposal_preview_route', proposal_id=p.id) }}" class="flex items-center gap-2 px-4 py-2 text-xs text-on-surface hover:bg-surface-container-low font-medium">
+                                    <span class="material-symbols-outlined text-[16px]">visibility</span> View Details
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -141,4 +149,19 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+    function toggleProposalMenu(e, menuId) {
+        e.stopPropagation();
+        document.querySelectorAll('.prop-action-dropdown').forEach(m => {
+            if (m.id !== menuId) m.classList.remove('active');
+        });
+        const m = document.getElementById(menuId);
+        if (m) m.classList.toggle('active');
+    }
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.prop-action-dropdown').forEach(m => m.classList.remove('active'));
+    });
+</script>
 {% endblock %}

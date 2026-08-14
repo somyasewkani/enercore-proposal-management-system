@@ -3,369 +3,458 @@
 {% set active_page = 'customers' %}
 
 {% block extra_styles %}
-<style>
-    .action-menu-dropdown {
-        display: none;
-        position: absolute;
-        right: 1.5rem;
-        margin-top: 0.25rem;
-        width: 180px;
-        background: #ffffff;
-        border: 1px solid rgba(191, 202, 185, 0.4);
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        z-index: 50;
-    }
-    .action-menu-dropdown.active {
-        display: block;
-    }
-</style>
+.action-menu-dropdown {
+    display: none !important;
+    position: absolute;
+    right: 0.5rem;
+    margin-top: 0.25rem;
+    width: 180px;
+    background: #ffffff;
+    border: 1px solid rgba(191, 202, 185, 0.2);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 50;
+}
+.action-menu-dropdown.active {
+    display: block !important;
+}
+.timeline-dot {
+    position: absolute;
+    left: -21px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #006b1b;
+    border: 2px solid #ffffff;
+}
+.timeline-dot-prev {
+    position: absolute;
+    left: -21px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #94a3b8;
+    border: 2px solid #ffffff;
+}
 {% endblock %}
 
 {% block content %}
-<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-gutter">
-    <!-- Breadcrumbs & Header -->
-    <div class="flex justify-between items-end mb-4">
-        <div>
-            <nav class="flex items-center gap-2 text-outline mb-2">
-                <a href="{{ url_for('customers') }}" class="text-label-md hover:text-primary">Client Management</a>
-                <span class="material-symbols-outlined text-sm">chevron_right</span>
-                <span class="text-label-md text-primary font-bold">{{ customer.name }}</span>
-            </nav>
-            <h2 class="font-headline-lg text-headline-lg text-on-surface">{{ customer.name }} Details</h2>
-            <p class="text-body-md text-outline">Manage sites and solar assets for this client account.</p>
+<div class="p-6 space-y-6 max-w-6xl mx-auto">
+
+    <!-- Client Header -->
+    <section class="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-outline-variant/10 pb-6">
+        <div class="flex items-center gap-4 min-w-0">
+            <div class="w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg {% if customer.category == 'Commercial' %}bg-primary/10 text-primary{% elif customer.category == 'Residential' %}bg-secondary/10 text-secondary{% else %}bg-tertiary/10 text-tertiary{% endif %} shrink-0">
+                {{ customer.name[:2]|upper }}
+            </div>
+            <div class="min-w-0">
+                <h2 class="text-2xl font-bold text-on-surface tracking-tight flex items-center gap-3 flex-wrap">
+                    <span>{{ customer.name }}</span>
+                    {% if customer.is_deleted %}
+                    <span class="px-2 py-0.5 bg-outline-variant/30 text-outline text-[10px] font-bold rounded uppercase">Archived</span>
+                    {% else %}
+                    <span class="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase">{{ customer.status }}</span>
+                    {% endif %}
+                </h2>
+                <p class="text-xs text-on-surface-variant/75 font-normal mt-1 flex items-center gap-2 flex-wrap">
+                    <span>{{ customer.category }}</span>
+                    <span class="text-outline-variant/50">•</span>
+                    <span>Contact: {{ customer.contact or "N/A" }}</span>
+                    {% if customer.phone %}
+                    <span class="text-outline-variant/50">•</span>
+                    <span>{{ customer.phone }}</span>
+                    {% endif %}
+                </p>
+            </div>
         </div>
-        <button type="button" onclick="document.getElementById('addSiteForm').classList.toggle('hidden')"
-            class="flex items-center justify-center gap-2 h-[44px] px-6 rounded-lg bg-primary text-on-primary font-label-md hover:bg-primary-container transition-all shadow-md active:scale-95 whitespace-nowrap">
-            <span class="material-symbols-outlined text-[20px]">add_circle</span>
-            Add New Site
-        </button>
-    </div>
+
+        <!-- Header Actions -->
+        <div class="flex items-center gap-3 relative shrink-0">
+            <button type="button" onclick="document.getElementById('addSiteForm').classList.toggle('hidden')"
+                class="flex items-center justify-center gap-2 h-[32px] px-4 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-all shadow-sm active:scale-95 whitespace-nowrap">
+                <span class="material-symbols-outlined text-[16px]">add_circle</span>
+                Add New Site
+            </button>
+            <button type="button" onclick="openEditCustomerModal()"
+                class="flex items-center justify-center gap-2 h-[32px] px-4 rounded-lg border border-outline-variant/30 text-on-surface-variant text-xs font-semibold hover:bg-surface-container-high transition-all whitespace-nowrap">
+                <span class="material-symbols-outlined text-[16px]">edit</span>
+                Edit Client
+            </button>
+            
+            <!-- Three-dot menu for dangerous actions -->
+            <div class="relative">
+                <button type="button" onclick="toggleCustHeaderMenu(event)"
+                    class="w-8 h-8 rounded-full flex items-center justify-center border border-outline-variant/30 text-outline-variant hover:bg-surface-container-high transition-all">
+                    <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                </button>
+                <div id="custHeaderMenu" class="action-menu-dropdown py-2 text-left shadow-lg right-0">
+                    {% if customer.is_deleted %}
+                    <form action="{{ url_for('restore_customer_route', customer_id=customer.id) }}" method="POST" class="m-0">
+                        <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-primary font-bold hover:bg-surface-container-low">
+                            <span class="material-symbols-outlined text-[16px]">settings_backup_restore</span> Restore Client
+                        </button>
+                    </form>
+                    {% else %}
+                    <form action="{{ url_for('archive_customer_route', customer_id=customer.id) }}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to archive this client?');">
+                        <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-on-surface-variant hover:bg-surface-container-low font-medium">
+                            <span class="material-symbols-outlined text-[16px]">archive</span> Archive Client
+                        </button>
+                    </form>
+                    {% endif %}
+                    <form action="{{ url_for('delete_customer_route', customer_id=customer.id) }}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to PERMANENTLY delete this client?');">
+                        <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-error hover:bg-surface-container-low font-bold">
+                            <span class="material-symbols-outlined text-[16px]">delete</span> Delete Permanently
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Add Site Form Container -->
-    <div id="addSiteForm" class="hidden glass-card rounded-xl p-6 border border-primary/20 shadow-md">
+    <div id="addSiteForm" class="hidden glass-card rounded-lg p-5 border border-outline-variant/15 shadow-sm bg-white">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-headline-md text-on-surface">Add New Project Site</h3>
-            <button onclick="document.getElementById('addSiteForm').classList.add('hidden')" class="material-symbols-outlined text-outline">close</button>
+            <h3 class="text-xs font-bold text-on-surface">Add New Project Site</h3>
+            <button onclick="document.getElementById('addSiteForm').classList.add('hidden')" class="material-symbols-outlined text-outline text-[18px]">close</button>
         </div>
         <form method="POST" action="{{ url_for('add_site', customer_id=customer.id) }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Site Name *</label>
-                <input name="name" placeholder="e.g. North Warehouse" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md" required>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Site Name *</label>
+                <input name="name" placeholder="e.g. North Warehouse" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none focus:ring-2 focus:ring-primary/20 text-xs" required>
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Person</label>
-                <input name="contact_person" placeholder="Enter contact name" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Contact Person</label>
+                <input name="contact_person" placeholder="Enter contact name" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Number (Phone)</label>
-                <input name="contact_number" placeholder="+1 (555) 010-0001" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Contact Number (Phone)</label>
+                <input name="contact_number" placeholder="+1 (555) 010-0001" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
             <div class="md:col-span-2">
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Street Address</label>
-                <input name="address_street" placeholder="123 Industry Rd" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Street Address</label>
+                <input name="address_street" placeholder="123 Industry Rd" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">City</label>
-                <input name="address_city" placeholder="City" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">City</label>
+                <input name="address_city" placeholder="City" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">State</label>
-                <input name="address_state" placeholder="State" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">State</label>
+                <input name="address_state" placeholder="State" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Zip Code / Pincode</label>
-                <input name="address_zip" placeholder="Zip code" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Zip Code / Pincode</label>
+                <input name="address_zip" placeholder="Zip code" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
             <div class="flex items-end">
-                <button type="submit" class="w-full h-[44px] bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all shadow-md">
+                <button type="submit" class="w-full h-[32px] bg-primary text-white rounded-lg text-xs font-bold hover:opacity-90 transition-opacity shadow-sm">
                     Create Site
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- Client KPI Metrics Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-5 gap-gutter">
-        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10">
-            <span class="text-label-md text-outline uppercase">Total Sites</span>
-            <p class="font-display-md text-display-md text-on-surface mt-2">{{ stats.total_sites }}</p>
-        </div>
-        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10">
-            <span class="text-label-md text-outline uppercase">Utility Bills</span>
-            <p class="font-display-md text-display-md text-secondary mt-2">{{ stats.total_bills }}</p>
-        </div>
-        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10">
-            <span class="text-label-md text-outline uppercase">Proposals</span>
-            <p class="font-display-md text-display-md text-tertiary mt-2">{{ stats.total_proposals }}</p>
-        </div>
-        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10">
-            <span class="text-label-md text-outline uppercase">Installed MW</span>
-            <p class="font-display-md text-display-md text-primary mt-2">{{ stats.total_capacity_mw }} MW</p>
-        </div>
-        <div class="glass-card p-6 rounded-xl shadow-sm border border-outline-variant/10 col-span-2 lg:col-span-1">
-            <span class="text-label-md text-outline uppercase">Latest Activity</span>
-            <p class="text-body-sm font-bold text-on-surface mt-3 truncate" title="{{ stats.latest_activity }}">{{ stats.latest_activity }}</p>
-        </div>
-    </div>
-
-    <!-- Edit Site Modal (Hidden by default) -->
-    <div id="editSiteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-        <div class="glass-card rounded-xl p-8 max-w-2xl w-full border border-primary/20 shadow-2xl mx-4">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-bold text-headline-md text-on-surface">Edit Project Site</h3>
-                <button onclick="document.getElementById('editSiteModal').classList.add('hidden')" class="material-symbols-outlined text-outline">close</button>
+    <!-- 3 Summary KPI Cards -->
+    <section class="grid gap-4 grid-cols-1 md:grid-cols-3">
+        <!-- Sites -->
+        <div class="glass-card rounded-lg p-4 border border-outline-variant/10 shadow-sm flex flex-col justify-between h-[84px] bg-white">
+            <div class="flex justify-between items-center text-outline-variant/70">
+                <span class="text-xs font-normal text-on-surface-variant">Total Sites</span>
+                <span class="material-symbols-outlined text-[16px] text-outline-variant opacity-50">domain</span>
             </div>
-            <form id="editSiteForm" method="POST" action="" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Site Name *</label>
-                    <input id="edit_name" name="name" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md" required>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Person</label>
-                    <input id="edit_contact_person" name="contact_person" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Number (Phone)</label>
-                    <input id="edit_contact_number" name="contact_number" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Street Address</label>
-                    <input id="edit_address_street" name="address_street" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-outline mb-1 uppercase">City</label>
-                    <input id="edit_address_city" name="address_city" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-outline mb-1 uppercase">State</label>
-                    <input id="edit_address_state" name="address_state" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Zip Code / Pincode</label>
-                    <input id="edit_address_zip" name="address_zip" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-outline mb-1 uppercase">Lifecycle Status</label>
-                    <select id="edit_status" name="status" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
-                        <option>New</option>
-                        <option>Bill Uploaded</option>
-                        <option>Survey Scheduled</option>
-                        <option>Survey Completed</option>
-                        <option>Proposal Generated</option>
-                        <option>Proposal Sent</option>
-                        <option>Project Won</option>
-                        <option>Project Lost</option>
-                        <option>Completed</option>
-                    </select>
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="w-full h-[44px] bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all shadow-md">
-                        Save Changes
-                    </button>
-                </div>
-            </form>
+            <div class="text-[26px] text-on-surface font-bold leading-none tracking-tight">{{ stats.total_sites }}</div>
         </div>
-    </div>
 
-    <div class="grid grid-cols-12 gap-gutter mt-8">
-        <!-- Left Column: Project Sites Table -->
-        <div class="col-span-12 lg:col-span-8 space-y-gutter">
-            <!-- Active and Archived Sites Table Section -->
-            <div class="glass-card rounded-xl overflow-hidden shadow-sm border border-outline-variant/20">
-                <div class="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/30">
-                    <h3 class="font-headline-md text-headline-md">Project Sites</h3>
-                    <span class="text-label-md text-outline uppercase tracking-wider">{{ sites|length }} Sites Total</span>
-                </div>
+        <!-- Utility Bills -->
+        <div class="glass-card rounded-lg p-4 border border-outline-variant/10 shadow-sm flex flex-col justify-between h-[84px] bg-white">
+            <div class="flex justify-between items-center text-outline-variant/70">
+                <span class="text-xs font-normal text-on-surface-variant">Utility Bills</span>
+                <span class="material-symbols-outlined text-[16px] text-outline-variant opacity-50">receipt_long</span>
+            </div>
+            <div class="text-[26px] text-on-surface font-bold leading-none tracking-tight">{{ stats.total_bills }}</div>
+        </div>
+
+        <!-- Proposals -->
+        <div class="glass-card rounded-lg p-4 border border-outline-variant/10 shadow-sm flex flex-col justify-between h-[84px] bg-white">
+            <div class="flex justify-between items-center text-outline-variant/70">
+                <span class="text-xs font-normal text-on-surface-variant">Proposals</span>
+                <span class="material-symbols-outlined text-[16px] text-outline-variant opacity-50">assignment</span>
+            </div>
+            <div class="text-[26px] text-on-surface font-bold leading-none tracking-tight">{{ stats.total_proposals }}</div>
+        </div>
+    </section>
+
+    <!-- Project Sites Section -->
+    <section id="sites-section" class="space-y-4">
+        <div class="flex justify-between items-center border-b border-outline-variant/10 pb-2">
+            <h3 class="text-sm font-bold text-on-surface">Project Sites</h3>
+            <span class="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded text-xs font-semibold">{{ sites|length }} Sites</span>
+        </div>
+
+        <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+            {% for s in sites %}
+            <!-- Site Card (Height bounded around 220px maximum with proper SaaS spacing) -->
+            <div class="glass-card rounded-lg p-4 border border-outline-variant/10 shadow-sm hover:border-primary/20 transition-all flex flex-col justify-between h-[210px] bg-white {% if s.is_archived %}opacity-75 grayscale-[20%]{% endif %}"
+                onclick="window.location.href='{{ url_for('site_dashboard', site_id=s.id) }}'">
                 
-                <div class="overflow-x-auto max-w-full custom-scrollbar">
-                    <table class="w-full min-w-[900px] text-left border-collapse">
-                        <thead>
-                            <tr class="bg-surface-container-high/30 border-b border-outline-variant/30">
-                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Site Name</th>
-                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Address & Location</th>
-                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider">Contact Person</th>
-                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Archive Status</th>
-                                <th class="px-6 py-4 font-label-md text-outline uppercase tracking-wider text-center">Workflow Status</th>
-                                <th class="px-6 py-4"></th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-outline-variant/20">
-                            {% for s in sites %}
-                            <tr class="hover:bg-surface-container/30 transition-colors cursor-pointer group"
-                                onclick="window.location.href='{{ url_for('site_dashboard', site_id=s.id) }}'">
-                                <td class="px-6 py-5">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
-                                            <span class="material-symbols-outlined">domain</span>
-                                        </div>
-                                        <div>
-                                            <p class="font-bold text-on-surface">{{ s.name }}</p>
-                                            <p class="text-[11px] text-outline">ID: {{ s.id }}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-5 text-body-sm text-on-surface">
-                                    <p class="font-medium">{{ s.address_street }}</p>
-                                    <p class="text-outline-variant text-[11px]">{{ s.address_city }}, {{ s.address_state }} {{ s.address_zip }}</p>
-                                </td>
-                                <td class="px-6 py-5 text-body-sm text-on-surface">
-                                    <p class="font-medium">{{ s.contact_person }}</p>
-                                    <p class="text-outline-variant text-[11px]">{{ s.contact_number }}</p>
-                                </td>
-                                <td class="px-6 py-5 text-center">
-                                    {% if s.is_archived %}
-                                    <span class="px-2 py-0.5 bg-outline-variant/30 text-outline text-[11px] font-bold rounded-full">Archived</span>
-                                    {% else %}
-                                    <span class="px-2 py-0.5 bg-primary/10 text-primary text-[11px] font-bold rounded-full">Active</span>
-                                    {% endif %}
-                                </td>
-                                <td class="px-6 py-5 text-center">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-bold text-[11px]">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                                        {{ s.status }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-5 text-right relative" onclick="event.stopPropagation()">
-                                    <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline opacity-0 group-hover:opacity-100 hover:bg-surface-container-high transition-all"
-                                        onclick="toggleSiteMenu(event, 'site-menu-{{ s.id }}')">
-                                        <span class="material-symbols-outlined">more_vert</span>
-                                    </button>
-                                    <div id="site-menu-{{ s.id }}" class="action-menu-dropdown py-2 text-left shadow-lg">
-                                        <button type="button" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm hover:bg-surface-container-low"
-                                            onclick="openEditModal('{{ s.id }}', '{{ s.name|escape }}', '{{ s.contact_person|escape }}', '{{ s.contact_number|escape }}', '{{ s.address_street|escape }}', '{{ s.address_city|escape }}', '{{ s.address_state|escape }}', '{{ s.address_zip|escape }}', '{{ s.status|escape }}')">
-                                            <span class="material-symbols-outlined text-[16px]">edit</span> Edit Details
-                                        </button>
-                                        {% if s.is_archived %}
-                                        <form action="{{ url_for('restore_site_route', site_id=s.id) }}" method="POST" class="m-0">
-                                            <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-primary hover:bg-surface-container-low">
-                                                <span class="material-symbols-outlined text-[16px]">settings_backup_restore</span> Restore Active
-                                            </button>
-                                        </form>
-                                        {% else %}
-                                        <form action="{{ url_for('archive_site_route', site_id=s.id) }}" method="POST" class="m-0">
-                                            <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-outline hover:bg-surface-container-low">
-                                                <span class="material-symbols-outlined text-[16px]">archive</span> Archive Site
-                                            </button>
-                                        </form>
-                                        {% endif %}
-                                        <form action="{{ url_for('delete_site_route', site_id=s.id) }}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to soft delete this site?');">
-                                            <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-body-sm text-error hover:bg-surface-container-low">
-                                                <span class="material-symbols-outlined text-[16px]">delete</span> Soft Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
+                <!-- Top -->
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <span class="material-symbols-outlined text-[16px]">domain</span>
+                        </div>
+                        <div class="min-w-0">
+                            <h4 class="text-xs font-bold text-on-surface truncate max-w-[180px]">{{ s.name }}</h4>
+                            <p class="text-[9px] text-outline mt-0.5">ID: {{ s.id }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Actions menu -->
+                    <div class="relative" onclick="event.stopPropagation()">
+                        <button class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-all"
+                            onclick="toggleSiteMenu(event, 'site-menu-{{ s.id }}')">
+                            <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                        </button>
+                        <div id="site-menu-{{ s.id }}" class="action-menu-dropdown py-2 text-left shadow-lg">
+                            <button type="button" class="w-full text-left flex items-center gap-2 px-4 py-2 text-xs hover:bg-surface-container-low font-medium text-on-surface"
+                                onclick="openEditModal('{{ s.id }}', '{{ s.name|escape }}', '{{ s.contact_person|escape }}', '{{ s.contact_number|escape }}', '{{ s.address_street|escape }}', '{{ s.address_city|escape }}', '{{ s.address_state|escape }}', '{{ s.address_zip|escape }}', '{{ s.status|escape }}')">
+                                <span class="material-symbols-outlined text-[16px]">edit</span> Edit Details
+                            </button>
+                            {% if s.is_archived %}
+                            <form action="{{ url_for('restore_site_route', site_id=s.id) }}" method="POST" class="m-0">
+                                <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-primary hover:bg-surface-container-low font-medium">
+                                    <span class="material-symbols-outlined text-[16px]">settings_backup_restore</span> Restore Active
+                                </button>
+                            </form>
                             {% else %}
-                            <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-outline">No sites found for this client. Click "Add New Site" to create one.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            <form action="{{ url_for('archive_site_route', site_id=s.id) }}" method="POST" class="m-0">
+                                <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-on-surface-variant hover:bg-surface-container-low font-medium">
+                                    <span class="material-symbols-outlined text-[16px]">archive</span> Archive Site
+                                </button>
+                            </form>
+                            {% endif %}
+                            <form action="{{ url_for('delete_site_route', site_id=s.id) }}" method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to soft delete this site?');">
+                                <button type="submit" class="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-error hover:bg-surface-container-low font-bold">
+                                    <span class="material-symbols-outlined text-[16px]">delete</span> Soft Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Middle Details -->
+                <div class="space-y-1.5 text-xs text-on-surface-variant">
+                    <div>
+                        <span class="text-[9px] text-outline-variant uppercase tracking-wider block font-semibold">Address</span>
+                        <p class="font-medium text-on-surface truncate">{{ s.address_street }}</p>
+                        <p class="text-outline-variant text-[10px] truncate">{{ s.address_city }}, {{ s.address_state }} {{ s.address_zip }}</p>
+                    </div>
+                    {% if s.contact_person %}
+                    <div class="flex justify-between items-center gap-2">
+                        <div>
+                            <span class="text-[9px] text-outline-variant uppercase tracking-wider block font-semibold">Contact</span>
+                            <p class="font-medium text-on-surface truncate">{{ s.contact_person }}</p>
+                        </div>
+                        {% if s.contact_number %}
+                        <div class="text-right">
+                            <span class="text-[9px] text-outline-variant uppercase tracking-wider block font-semibold">Phone</span>
+                            <p class="font-medium text-on-surface truncate">{{ s.contact_number }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Bottom -->
+                <div class="pt-2 border-t border-outline-variant/10 flex justify-between items-center text-xs">
+                    <span class="text-[9px] text-outline-variant uppercase font-semibold">Workflow Status</span>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary/10 text-secondary font-semibold text-[10px]">
+                        <span class="w-1 h-1 rounded-full bg-secondary"></span>
+                        {{ s.status }}
+                    </span>
+                </div>
+
             </div>
+            {% else %}
+            <div class="col-span-2 glass-card rounded-lg p-12 text-center border border-outline-variant/10 shadow-sm bg-white">
+                <span class="material-symbols-outlined text-[36px] text-outline-variant mb-2">find_in_page</span>
+                <h4 class="text-xs text-on-surface font-bold">No Sites Found</h4>
+                <p class="text-xs text-on-surface-variant mt-1">No sites found for this client. Click "Add New Site" to create one.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Compact Dashboard cards for Bills & Proposals -->
+    <section class="grid gap-4 grid-cols-1 md:grid-cols-2">
+        <!-- Compact Utility Bills Card -->
+        <div class="glass-card rounded-lg p-4 border border-outline-variant/10 shadow-sm bg-white flex items-center justify-between h-[110px]">
+            <div class="space-y-1">
+                <h3 class="text-xs font-bold text-on-surface">Utility Bills</h3>
+                <p class="text-xs text-on-surface-variant font-medium">{{ stats.total_bills }} Uploaded</p>
+            </div>
+            <a href="#sites-section" class="text-primary text-xs font-bold hover:underline flex items-center gap-1">
+                View Bills <span class="material-symbols-outlined text-sm">arrow_right_alt</span>
+            </a>
         </div>
 
-        <!-- Right Column: Client Profile details card -->
-        <div class="col-span-12 lg:col-span-4 space-y-gutter">
-            <div class="glass-card rounded-xl p-6 shadow-sm border border-outline-variant/20 space-y-6">
-                <div class="border-b border-outline-variant/20 pb-4 flex justify-between items-center bg-surface-container-low/10 -mx-6 px-6 -mt-6 rounded-t-xl pt-5">
-                    <h3 class="font-headline-md text-headline-md">Client Profile</h3>
-                    <span class="px-2.5 py-0.5 bg-primary/10 text-primary text-[11px] font-bold rounded-full uppercase">{{ customer.status }}</span>
+        <!-- Compact Generated Proposals Card -->
+        <div class="glass-card rounded-lg p-4 border border-outline-variant/10 shadow-sm bg-white flex items-center justify-between h-[110px]">
+            <div class="space-y-1">
+                <h3 class="text-xs font-bold text-on-surface">Generated Proposals</h3>
+                <p class="text-xs text-on-surface-variant font-medium">{{ stats.total_proposals }} Generated</p>
+            </div>
+            <a href="#sites-section" class="text-primary text-xs font-bold hover:underline flex items-center gap-1">
+                View Proposals <span class="material-symbols-outlined text-sm">arrow_right_alt</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Recent Activity Timeline Section -->
+    <section class="glass-card rounded-lg p-5 border border-outline-variant/10 shadow-sm bg-white">
+        <h3 class="text-xs font-bold text-on-surface mb-4">Recent Activity</h3>
+        <div class="relative pl-4 border-l border-outline-variant/20 space-y-4">
+            <!-- Latest Activity -->
+            <div class="relative">
+                <span class="timeline-dot"></span>
+                <div>
+                    <span class="text-[9px] font-semibold text-outline-variant uppercase">Latest Activity</span>
+                    <p class="text-xs text-on-surface font-semibold mt-0.5">{{ stats.latest_activity }}</p>
                 </div>
-                
-                <div class="space-y-4 text-body-sm text-on-surface">
-                    <div>
-                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">Company Name</span>
-                        <p class="font-bold text-base mt-0.5">{{ customer.name }}</p>
-                    </div>
-                    <div>
-                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">Industry Class</span>
-                        <p class="font-medium mt-0.5">{{ customer.category }}</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <span class="block text-xs font-bold text-outline uppercase tracking-wider">Contact Person</span>
-                            <p class="font-medium mt-0.5">{{ customer.contact or "N/A" }}</p>
-                        </div>
-                        <div>
-                            <span class="block text-xs font-bold text-outline uppercase tracking-wider">Phone Number</span>
-                            <p class="font-medium mt-0.5">{{ customer.phone or "N/A" }}</p>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">Email Address</span>
-                        <p class="font-medium mt-0.5">{{ customer.email or "N/A" }}</p>
-                    </div>
-                    <div>
-                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">Corporate Address</span>
-                        <p class="font-medium mt-0.5 whitespace-pre-line">{{ customer.address or "N/A" }}</p>
-                    </div>
-                    <div>
-                        <span class="block text-xs font-bold text-outline uppercase tracking-wider">GSTIN Number</span>
-                        <p class="font-medium mt-0.5 code-text font-mono">{{ customer.gstin or "N/A" }}</p>
-                    </div>
-                </div>
-                
-                <div class="border-t border-outline-variant/20 pt-4 flex flex-col gap-3">
-                    <button type="button" onclick="openEditCustomerModal()"
-                        class="flex items-center justify-center gap-2 w-full h-[40px] px-4 rounded-lg bg-primary/10 text-primary font-label-md hover:bg-primary/20 transition-all border border-primary/25 shadow-sm active:scale-95">
-                        <span class="material-symbols-outlined text-[18px]">edit</span>
-                        Edit Profile
-                    </button>
-                    
-                    <div class="flex gap-3">
-                        <form action="{{ url_for('archive_customer_route', customer_id=customer.id) }}" method="POST" class="w-1/2 m-0" onsubmit="return confirm('Are you sure you want to archive this client? Doing so will soft delete them and hide them from general listings.');">
-                            <button type="submit"
-                                class="flex items-center justify-center gap-2 w-full h-[40px] px-2 rounded-lg bg-surface-container-high text-outline font-label-md hover:bg-surface-container-highest transition-all border border-outline-variant/30 shadow-sm active:scale-95">
-                                <span class="material-symbols-outlined text-[18px]">archive</span>
-                                Archive
-                            </button>
-                        </form>
-                        
-                        <form action="{{ url_for('delete_customer_route', customer_id=customer.id) }}" method="POST" class="w-1/2 m-0" onsubmit="return confirm('Are you sure you want to PERMANENTLY delete this client? This can only be done if there are no sites, proposals, or projects.');">
-                            <button type="submit"
-                                class="flex items-center justify-center gap-2 w-full h-[40px] px-2 rounded-lg bg-error/10 text-error hover:bg-error/25 transition-all border border-error/25 shadow-sm active:scale-95">
-                                <span class="material-symbols-outlined text-[18px]">delete</span>
-                                Delete
-                            </button>
-                        </form>
-                    </div>
+            </div>
+            
+            <!-- Contextual History -->
+            <div class="relative opacity-60">
+                <span class="timeline-dot-prev"></span>
+                <div>
+                    <span class="text-[9px] font-semibold text-outline-variant uppercase">Previous State</span>
+                    <p class="text-xs text-on-surface font-medium mt-0.5">Account profile updated or site synced.</p>
                 </div>
             </div>
         </div>
+    </section>
+
+    <!-- Collapsible Additional Information Section -->
+    <section class="glass-card rounded-lg p-5 border border-outline-variant/10 shadow-sm bg-white">
+        <details class="group">
+            <summary class="flex justify-between items-center font-bold text-xs text-on-surface cursor-pointer outline-none list-none">
+                <span>Additional Information</span>
+                <span class="material-symbols-outlined transition-transform group-open:rotate-180 text-outline-variant text-[16px]">expand_more</span>
+            </summary>
+            <div class="mt-4 pt-4 border-t border-outline-variant/10 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-on-surface-variant">
+                <div class="space-y-1">
+                    <span class="block text-[9px] text-outline-variant uppercase font-semibold">GSTIN Number</span>
+                    <p class="font-mono text-on-surface font-semibold">{{ customer.gstin or "N/A" }}</p>
+                </div>
+                <div class="space-y-1">
+                    <span class="block text-[9px] text-outline-variant uppercase font-semibold">Email Address</span>
+                    <p class="font-semibold text-on-surface">{{ customer.email or "N/A" }}</p>
+                </div>
+                <div class="space-y-1">
+                    <span class="block text-[9px] text-outline-variant uppercase font-semibold">Corporate Address</span>
+                    <p class="font-semibold text-on-surface whitespace-pre-line">{{ customer.address or "N/A" }}</p>
+                </div>
+                <div class="space-y-1">
+                    <span class="block text-[9px] text-outline-variant uppercase font-semibold">Industry Class</span>
+                    <p class="font-semibold text-on-surface">{{ customer.category or "N/A" }}</p>
+                </div>
+                <div class="space-y-1 md:col-span-2">
+                    <span class="block text-[9px] text-outline-variant uppercase font-semibold">Contact Person</span>
+                    <p class="font-semibold text-on-surface">{{ customer.contact or "N/A" }}</p>
+                </div>
+            </div>
+        </details>
+    </section>
+</div>
+
+<!-- Edit Site Modal (Hidden by default) -->
+<div id="editSiteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="glass-card rounded-xl p-8 max-w-2xl w-full border border-outline-variant/15 shadow-2xl mx-4 bg-white">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-bold text-xs text-on-surface">Edit Project Site</h3>
+            <button onclick="document.getElementById('editSiteModal').classList.add('hidden')" class="material-symbols-outlined text-outline text-[18px]">close</button>
+        </div>
+        <form id="editSiteForm" method="POST" action="" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Site Name *</label>
+                <input id="edit_name" name="name" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none focus:ring-2 focus:ring-primary/20 text-xs" required>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Contact Person</label>
+                <input id="edit_contact_person" name="contact_person" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Contact Number (Phone)</label>
+                <input id="edit_contact_number" name="contact_number" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
+            </div>
+            <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Street Address</label>
+                <input id="edit_address_street" name="address_street" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">City</label>
+                <input id="edit_address_city" name="address_city" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">State</label>
+                <input id="edit_address_state" name="address_state" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Zip Code / Pincode</label>
+                <input id="edit_address_zip" name="address_zip" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Lifecycle Status</label>
+                <select id="edit_status" name="status" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs text-on-surface-variant">
+                    <option>New</option>
+                    <option>Bill Uploaded</option>
+                    <option>Survey Scheduled</option>
+                    <option>Survey Completed</option>
+                    <option>Proposal Generated</option>
+                    <option>Proposal Sent</option>
+                    <option>Project Won</option>
+                    <option>Project Lost</option>
+                    <option>Completed</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full h-[32px] bg-primary text-white rounded-lg text-xs font-bold hover:opacity-90 transition-opacity shadow-sm">
+                    Save Changes
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- Edit Customer Modal (Hidden by default) -->
 <div id="editCustomerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div class="glass-card rounded-xl p-8 max-w-2xl w-full border border-primary/20 shadow-2xl mx-4">
+    <div class="glass-card rounded-xl p-8 max-w-2xl w-full border border-outline-variant/15 shadow-2xl mx-4 bg-white">
         <div class="flex justify-between items-center mb-6">
-            <h3 class="font-bold text-headline-md text-on-surface">Edit Client Profile</h3>
-            <button onclick="closeEditCustomerModal()" class="material-symbols-outlined text-outline">close</button>
+            <h3 class="font-bold text-base text-on-surface">Edit Client Profile</h3>
+            <button onclick="closeEditCustomerModal()" class="material-symbols-outlined text-outline text-[18px]">close</button>
         </div>
         <form method="POST" action="{{ url_for('update_customer_route', customer_id=customer.id) }}" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Company Name *</label>
-                <input name="name" value="{{ customer.name }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md" required>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Company Name *</label>
+                <input name="name" value="{{ customer.name }}" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none focus:ring-2 focus:ring-primary/20 text-xs" required>
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Contact Person *</label>
-                <input name="contact" value="{{ customer.contact }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md" required>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Contact Person *</label>
+                <input name="contact" value="{{ customer.contact }}" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none focus:ring-2 focus:ring-primary/20 text-xs" required>
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Phone Number</label>
-                <input name="phone" value="{{ customer.phone }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Phone Number</label>
+                <input name="phone" value="{{ customer.phone }}" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none focus:ring-2 focus:ring-primary/20 text-xs">
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Email Address</label>
-                <input name="email" type="email" value="{{ customer.email }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Email Address</label>
+                <input name="email" type="email" value="{{ customer.email }}" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none focus:ring-2 focus:ring-primary/20 text-xs">
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Category / Industry</label>
-                <select name="category" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Category / Industry</label>
+                <select name="category" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white text-xs text-on-surface-variant cursor-pointer">
                     <option {% if customer.category == 'Commercial' %}selected{% endif %}>Commercial</option>
                     <option {% if customer.category == 'Residential' %}selected{% endif %}>Residential</option>
                     <option {% if customer.category == 'Infrastructure' %}selected{% endif %}>Infrastructure</option>
@@ -373,34 +462,43 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">GSTIN Number</label>
-                <input name="gstin" value="{{ customer.gstin }}" placeholder="22AAAAA0000A1Z5" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">GSTIN Number</label>
+                <input name="gstin" value="{{ customer.gstin }}" placeholder="22AAAAA0000A1Z5" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
             <div class="md:col-span-2">
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Corporate Address</label>
-                <textarea name="address" rows="2" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">{{ customer.address }}</textarea>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Corporate Address</label>
+                <textarea name="address" rows="2" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">{{ customer.address }}</textarea>
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Contract Value ($)</label>
-                <input name="value" type="number" step="0.01" value="{{ customer.value_numeric }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Contract Value ($)</label>
+                <input name="value" type="number" step="0.01" value="{{ customer.value_numeric }}" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Solar Capacity (MW)</label>
-                <input name="capacity_mw" type="number" step="0.01" value="{{ customer.capacity_mw }}" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Solar Capacity (MW)</label>
+                <input name="capacity_mw" type="number" step="0.01" value="{{ customer.capacity_mw }}" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
             <div class="md:col-span-2 flex justify-end gap-3 mt-4">
-                <button type="button" onclick="closeEditCustomerModal()" class="h-[44px] px-6 rounded-lg bg-surface-container-high text-outline font-label-md hover:bg-surface-container-highest transition-all">Cancel</button>
-                <button type="submit" class="h-[44px] px-6 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all shadow-md">Save Profile</button>
+                <button type="button" onclick="closeEditCustomerModal()" class="h-[32px] px-4 rounded-lg bg-surface-container-high text-outline text-xs font-bold hover:bg-surface-container-highest transition-all">Cancel</button>
+                <button type="submit" class="h-[32px] px-4 bg-primary text-white rounded-lg text-xs font-bold hover:opacity-90 transition-opacity shadow-sm">Save Profile</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
+    function toggleCustHeaderMenu(e) {
+        e.stopPropagation();
+        document.querySelectorAll('.action-menu-dropdown').forEach(m => {
+            if (m.id !== 'custHeaderMenu') m.classList.remove('active');
+        });
+        const m = document.getElementById('custHeaderMenu');
+        if (m) m.classList.toggle('active');
+    }
+
     function toggleSiteMenu(e, menuId) {
         e.stopPropagation();
         document.querySelectorAll('.action-menu-dropdown').forEach(m => {
-            if (m.id !== menuId) m.classList.remove('active');
+            if (m.id !== menuId && m.id !== 'custHeaderMenu') m.classList.remove('active');
         });
         const m = document.getElementById(menuId);
         if (m) m.classList.toggle('active');
@@ -408,6 +506,12 @@
 
     document.addEventListener('click', () => {
         document.querySelectorAll('.action-menu-dropdown').forEach(m => m.classList.remove('active'));
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.action-menu-dropdown').forEach(m => m.classList.remove('active'));
+        }
     });
 
     function openEditModal(siteId, name, contact, phone, street, city, state, zip, status) {

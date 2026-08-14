@@ -446,15 +446,13 @@ def get_customer_stats(customer_id: str) -> Dict[str, Any]:
 
         # 4. Total Capacity (Installed/Won)
         q4 = """
-            SELECT COALESCE(SUM(v.system_size_kwp), 0)
-            FROM proposals p
-            JOIN proposal_versions v ON p.id = v.proposal_id AND v.version_number = 1
-            WHERE p.customer_id = ? AND p.status = 'Won';
+            SELECT COALESCE(SUM(plant_size_kw), 0)
+            FROM proposals
+            WHERE customer_id = ? AND status = 'Won';
         """ if is_sqlite else """
-            SELECT COALESCE(SUM(v.system_size_kwp), 0)
-            FROM proposals p
-            JOIN proposal_versions v ON p.id = v.proposal_id AND v.version_number = 1
-            WHERE p.customer_id = %s AND p.status = 'Won';
+            SELECT COALESCE(SUM(plant_size_kw), 0)
+            FROM proposals
+            WHERE customer_id = %s AND status = 'Won';
         """
         cur.execute(q4, (customer_id,))
         total_capacity_kwp = cur.fetchone()[0]
@@ -1133,10 +1131,9 @@ def get_all_proposals() -> List[Dict[str, Any]]:
     try:
         cur = conn.cursor()
         query = """
-            SELECT p.id, p.name, p.status, p.created_at, c.name as client_name, v.system_size_kwp, v.project_cost
+            SELECT p.id, p.name, p.status, p.created_at, c.name as client_name, p.plant_size_kw, p.system_cost
             FROM proposals p
             JOIN customers c ON p.customer_id = c.id
-            LEFT JOIN proposal_versions v ON p.id = v.proposal_id AND v.version_number = 1
             ORDER BY p.created_at DESC;
         """
         cur.execute(query)
@@ -1147,8 +1144,8 @@ def get_all_proposals() -> List[Dict[str, Any]]:
                 "name": r["name"],
                 "client_name": r["client_name"],
                 "status": r["status"],
-                "capacity": r["system_size_kwp"] or 0.0,
-                "total_cost": f"${r['project_cost']:,.2f}" if r["project_cost"] else "$0.00",
+                "capacity": r["plant_size_kw"] or 0.0,
+                "total_cost": f"${r['system_cost']:,.2f}" if r["system_cost"] else "$0.00",
                 "date_created": r["created_at"]
             })
         return results
@@ -1166,13 +1163,15 @@ def get_bill_analysis_data(bill_id: str) -> Optional[Dict[str, Any]]:
     try:
         cur = conn.cursor()
         query = """
-            SELECT b.id, b.file_path, o.extracted_text, o.json_data
+            SELECT b.id, b.file_path, o.extracted_text, o.json_data, s.customer_id
             FROM electricity_bills b
+            JOIN sites s ON b.site_id = s.id
             LEFT JOIN ocr_results o ON b.id = o.bill_id
             WHERE b.id = ?;
         """ if is_sqlite else """
-            SELECT b.id, b.file_path, o.extracted_text, o.json_data
+            SELECT b.id, b.file_path, o.extracted_text, o.json_data, s.customer_id
             FROM electricity_bills b
+            JOIN sites s ON b.site_id = s.id
             LEFT JOIN ocr_results o ON b.id = o.bill_id
             WHERE b.id = %s;
         """
@@ -1181,17 +1180,21 @@ def get_bill_analysis_data(bill_id: str) -> Optional[Dict[str, Any]]:
         if not r:
             return None
 
+        # Convert row to dict for cross-compatibility
+        r_dict = dict(r) if is_sqlite else r
+
         ocr_json = {}
-        if r["json_data"]:
+        if r_dict["json_data"]:
             try:
-                ocr_json = json.loads(r["json_data"])
+                ocr_json = json.loads(r_dict["json_data"])
             except Exception:
                 pass
 
-        filename = os.path.basename(r["file_path"] or "statement.pdf")
+        filename = os.path.basename(r_dict["file_path"] or "statement.pdf")
         return {
             'filename': filename,
-            'bill_id': r["id"],
+            'bill_id': r_dict["id"],
+            'customer_id': r_dict["customer_id"],
             'plant_size': ocr_json.get('plant_size', '250'),
             'daily_yield': ocr_json.get('daily_yield', '1,125'),
             'annual_savings': ocr_json.get('annual_savings', '42,500'),

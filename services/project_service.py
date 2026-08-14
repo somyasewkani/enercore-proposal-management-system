@@ -11,8 +11,75 @@ import uuid
 import sqlite3
 import json
 from datetime import datetime
-from typing import Dict, List, Any, Tuple, Optional
+from enum import Enum
+from typing import Dict, List, Any, Tuple, Optional, Union
 from database.connection import get_connection
+
+class ProjectStatus(str, Enum):
+    """Centralized enum for project lifecycle execution statuses."""
+    PLANNING = "Planning"
+    COMPLETED = "Completed"
+    ON_HOLD = "On Hold"
+    CANCELLED = "Cancelled"
+
+# Compatibility constants to prevent breaking legacy modules
+STATUS_PLANNING = ProjectStatus.PLANNING.value
+STATUS_COMPLETED = ProjectStatus.COMPLETED.value
+STATUS_ON_HOLD = ProjectStatus.ON_HOLD.value
+STATUS_CANCELLED = ProjectStatus.CANCELLED.value
+
+# Reusable Presentation Formatting Helpers
+def format_currency(val: Optional[Union[float, int]]) -> str:
+    """Format numeric value into standard currency display ($75,000,000.00).
+    
+    Args:
+        val: The numeric currency amount.
+        
+    Returns:
+        Formatted currency string.
+    """
+    if val is None:
+        return "$0.00"
+    try:
+        return f"${float(val):,.2f}"
+    except (ValueError, TypeError):
+        return "$0.00"
+
+def format_mw(val: Optional[Union[float, int]]) -> str:
+    """Format MW capacity display dynamically (e.g., 1.5 MW or 0.25 MW) without trailing zeros.
+    
+    Args:
+        val: MW capacity value.
+        
+    Returns:
+        Formatted capacity string.
+    """
+    if val is None or val == 0.0:
+        return "0.0 MW"
+    try:
+        float_val = float(val)
+        s = f"{float_val:.2f}"
+        if s.endswith(".00") or s.endswith("0"):
+            return f"{float_val:.1f} MW"
+        return f"{s} MW"
+    except (ValueError, TypeError):
+        return "0.0 MW"
+
+def format_project_count(val: Optional[int]) -> str:
+    """Format project count integer into string.
+    
+    Args:
+        val: Project count.
+        
+    Returns:
+        String count.
+    """
+    if val is None:
+        return "0"
+    try:
+        return str(int(val))
+    except (ValueError, TypeError):
+        return "0"
 
 
 def convert_proposal_to_project(
@@ -24,6 +91,8 @@ def convert_proposal_to_project(
     execution_model: str = "EPC"
 ) -> Tuple[bool, str]:
     """Validate and convert an approved proposal into an executable project."""
+    from services.pipeline_service import init_pipeline_db
+    init_pipeline_db(seed_demo=False)
     conn = get_connection()
     is_sqlite = isinstance(conn, sqlite3.Connection)
     try:
@@ -61,7 +130,8 @@ def convert_proposal_to_project(
             WHERE proposal_id = %s AND status != 'Cancelled';
         """
         cur.execute(query_proj, (proposal_id,))
-        count_proj = cur.fetchone()[0] if is_sqlite else (cur.fetchone()['count'] if isinstance(cur.fetchone(), dict) else cur.fetchone()[0])
+        row_proj = cur.fetchone()
+        count_proj = row_proj[0] if is_sqlite else (row_proj['count'] if isinstance(row_proj, dict) else row_proj[0])
         
         if count_proj > 0:
             return False, "An active project already exists for this approved proposal."
@@ -169,6 +239,9 @@ def convert_proposal_to_project(
         # Update customer pipeline status to 'Contract Signed'
         cust_update = "UPDATE customers SET status = 'Contract Signed' WHERE id = ?;" if is_sqlite else "UPDATE customers SET status = 'Contract Signed' WHERE id = %s;"
         cur.execute(cust_update, (c_id,))
+        
+        # Sync pipeline deal stage to 'Won'
+        cur.execute("UPDATE pipeline_deals SET stage = 'Won' WHERE customer_id = ?;" if is_sqlite else "UPDATE pipeline_deals SET stage = 'Won' WHERE customer_id = %s;", (c_id,))
         
         conn.commit()
         return True, proj_id
@@ -563,89 +636,172 @@ def get_project_documents(project_id: str) -> List[Dict[str, Any]]:
         conn.close()
 
 
-def get_project_dashboard_kpis() -> List[Dict[str, Any]]:
-    """Compiles operational project metrics for the main executive insights feed."""
+def get_project_execution_overview(date_range: str = "all") -> Dict[str, Any]:
+    """Compiles operational project metrics for the main executive insights feed in a single query within date range.
+    
+    This function aggregates status counts, installed and pipeline MW capacities, and aggregate
+    contract values across all projects of active (non-deleted) customers.
+    
+    Returns:
+        A dictionary containing:
+            - active_projects (int): Count of projects currently in progress
+            - completed_projects (int): Count of commissioned projects
+            - projects_on_hold (int): Count of projects on hold
+            - installed_capacity_mw (float): Aggregate MW of commissioned projects
+            - pipeline_capacity_mw (float): Aggregate MW of projects currently in progress
+            - project_revenue (float): Total contract value of active/completed projects
+    """
+    import logging
     conn = get_connection()
     is_sqlite = isinstance(conn, sqlite3.Connection)
     try:
         cur = conn.cursor()
+        placeholder = "?" if is_sqlite else "%s"
         
-        # Active Projects (status not Completed or Cancelled)
-        cur.execute("SELECT COUNT(*) FROM projects WHERE status NOT IN ('Completed', 'Cancelled');")
-        active_cnt = cur.fetchone()[0] if is_sqlite else (cur.fetchone()['count'] if isinstance(cur.fetchone(), dict) else cur.fetchone()[0])
+        from services.dashboard_service import get_date_filter
+        _, _, date_clause, date_params = get_date_filter(date_range, "p.created_at", placeholder)
         
-        # Completed Projects
-        cur.execute("SELECT COUNT(*) FROM projects WHERE status = 'Completed';")
-        comp_cnt = cur.fetchone()[0] if is_sqlite else (cur.fetchone()['count'] if isinstance(cur.fetchone(), dict) else cur.fetchone()[0])
+        # Single-pass optimized aggregate SQL query using parameterized placeholders
+        query = f"""
+            SELECT 
+                COALESCE(COUNT(DISTINCT CASE WHEN p.status NOT IN ({placeholder}, {placeholder}) THEN p.id END), 0) as active_projects,
+                COALESCE(COUNT(DISTINCT CASE WHEN p.status = {placeholder} THEN p.id END), 0) as completed_projects,
+                COALESCE(COUNT(DISTINCT CASE WHEN p.status = {placeholder} THEN p.id END), 0) as projects_on_hold,
+                COALESCE(SUM(CASE WHEN p.status = {placeholder} THEN p.capacity_kw ELSE 0 END), 0) as installed_capacity_kw,
+                COALESCE(SUM(CASE WHEN p.status NOT IN ({placeholder}, {placeholder}, {placeholder}) THEN p.capacity_kw ELSE 0 END), 0) as pipeline_capacity_kw,
+                COALESCE(SUM(CASE WHEN p.status != {placeholder} THEN p.contract_value ELSE 0 END), 0) as project_revenue
+            FROM projects p
+            JOIN customers c ON p.customer_id = c.id
+            WHERE c.is_deleted = 0 AND {date_clause};
+        """
         
-        # Projects on Hold
-        cur.execute("SELECT COUNT(*) FROM projects WHERE status = 'On Hold';")
-        hold_cnt = cur.fetchone()[0] if is_sqlite else (cur.fetchone()['count'] if isinstance(cur.fetchone(), dict) else cur.fetchone()[0])
+        params = (
+            ProjectStatus.COMPLETED.value, ProjectStatus.CANCELLED.value,
+            ProjectStatus.COMPLETED.value,
+            ProjectStatus.ON_HOLD.value,
+            ProjectStatus.COMPLETED.value,
+            ProjectStatus.COMPLETED.value, ProjectStatus.CANCELLED.value, ProjectStatus.ON_HOLD.value,
+            ProjectStatus.CANCELLED.value,
+        ) + tuple(date_params)
         
-        # Installed Capacity (Completed project MW capacity)
-        # Convert capacity_kw to MW
-        cur.execute("SELECT COALESCE(SUM(capacity_kw), 0) FROM projects WHERE status = 'Completed';")
-        inst_kw = cur.fetchone()[0] if is_sqlite else (cur.fetchone()['sum'] if isinstance(cur.fetchone(), dict) else cur.fetchone()[0])
-        inst_mw = round(float(inst_kw) / 1000.0, 2)
+        cur.execute(query, params)
+        row = cur.fetchone()
         
-        # Pipeline Capacity (Active projects capacity in MW)
-        cur.execute("SELECT COALESCE(SUM(capacity_kw), 0) FROM projects WHERE status NOT IN ('Completed', 'Cancelled', 'On Hold');")
-        pipe_kw = cur.fetchone()[0] if is_sqlite else (cur.fetchone()['sum'] if isinstance(cur.fetchone(), dict) else cur.fetchone()[0])
-        pipe_mw = round(float(pipe_kw) / 1000.0, 2)
-        
-        # Project Revenue (Total contract values of active & completed projects)
-        cur.execute("SELECT COALESCE(SUM(contract_value), 0) FROM projects WHERE status != 'Cancelled';")
-        rev_val = cur.fetchone()[0] if is_sqlite else (cur.fetchone()['sum'] if isinstance(cur.fetchone(), dict) else cur.fetchone()[0])
-        
-        return [
-            {
-                "label": "Active Projects",
-                "value": str(active_cnt),
-                "delta": "In Progress",
-                "tone": "up" if active_cnt > 0 else "neutral",
-                "icon": "construction",
-            },
-            {
-                "label": "Completed Projects",
-                "value": str(comp_cnt),
-                "delta": "Commissioned",
-                "tone": "up" if comp_cnt > 0 else "neutral",
-                "icon": "task_alt",
-            },
-            {
-                "label": "Projects On Hold",
-                "value": str(hold_cnt),
-                "delta": "Attention Needed",
-                "tone": "down" if hold_cnt > 0 else "neutral",
-                "icon": "pause_circle",
-            },
-            {
-                "label": "Installed Capacity",
-                "value": f"{inst_mw} MW",
-                "delta": "Online Grid",
-                "tone": "up" if inst_mw > 0 else "neutral",
-                "icon": "electric_bolt",
-            },
-            {
-                "label": "Pipeline Capacity",
-                "value": f"{pipe_mw} MW",
-                "delta": "Active Builds",
-                "tone": "up" if pipe_mw > 0 else "neutral",
-                "icon": "pending_actions",
-            },
-            {
-                "label": "Project Revenue",
-                "value": f"${float(rev_val):,.2f}" if rev_val else "$0.00",
-                "delta": "Contract Value",
-                "tone": "up" if rev_val > 0 else "neutral",
-                "icon": "monetization_on",
+        if not row:
+            logging.warning("get_project_execution_overview: Database returned no rows.")
+            return {
+                "active_projects": 0,
+                "completed_projects": 0,
+                "projects_on_hold": 0,
+                "installed_capacity_mw": 0.0,
+                "pipeline_capacity_mw": 0.0,
+                "project_revenue": 0.0
             }
-        ]
+            
+        if isinstance(row, dict):
+            active_projects = int(row.get("active_projects", 0) or 0)
+            completed_projects = int(row.get("completed_projects", 0) or 0)
+            projects_on_hold = int(row.get("projects_on_hold", 0) or 0)
+            installed_capacity_kw = float(row.get("installed_capacity_kw", 0.0) or 0.0)
+            pipeline_capacity_kw = float(row.get("pipeline_capacity_kw", 0.0) or 0.0)
+            project_revenue = float(row.get("project_revenue", 0.0) or 0.0)
+        else:
+            active_projects = int(row[0] or 0)
+            completed_projects = int(row[1] or 0)
+            projects_on_hold = int(row[2] or 0)
+            installed_capacity_kw = float(row[3] or 0.0)
+            pipeline_capacity_kw = float(row[4] or 0.0)
+            project_revenue = float(row[5] or 0.0)
+            
+        return {
+            "active_projects": active_projects,
+            "completed_projects": completed_projects,
+            "projects_on_hold": projects_on_hold,
+            "installed_capacity_mw": round(installed_capacity_kw / 1000.0, 2),
+            "pipeline_capacity_mw": round(pipeline_capacity_kw / 1000.0, 2),
+            "project_revenue": project_revenue
+        }
+    except sqlite3.Error as se:
+        import logging
+        logging.error(f"Database engine error in get_project_execution_overview: {se}", exc_info=True)
+        return {
+            "active_projects": 0,
+            "completed_projects": 0,
+            "projects_on_hold": 0,
+            "installed_capacity_mw": 0.0,
+            "pipeline_capacity_mw": 0.0,
+            "project_revenue": 0.0
+        }
     except Exception as e:
-        print(f"Error compiling project dashboard KPIs: {e}")
-        return []
+        import logging
+        logging.error(f"Unexpected operational error in get_project_execution_overview: {e}", exc_info=True)
+        return {
+            "active_projects": 0,
+            "completed_projects": 0,
+            "projects_on_hold": 0,
+            "installed_capacity_mw": 0.0,
+            "pipeline_capacity_mw": 0.0,
+            "project_revenue": 0.0
+        }
     finally:
         conn.close()
+
+
+def get_project_dashboard_kpis() -> List[Dict[str, Any]]:
+    """Legacy helper returning a list of KPI dictionaries for backward compatibility with QA test assertions."""
+    overview = get_project_execution_overview()
+    
+    active_cnt = overview["active_projects"]
+    comp_cnt = overview["completed_projects"]
+    hold_cnt = overview["projects_on_hold"]
+    inst_mw = overview["installed_capacity_mw"]
+    pipe_mw = overview["pipeline_capacity_mw"]
+    rev_val = overview["project_revenue"]
+    
+    return [
+        {
+            "label": "Active Projects",
+            "value": format_project_count(active_cnt),
+            "delta": "In Progress",
+            "tone": "up" if active_cnt > 0 else "neutral",
+            "icon": "construction",
+        },
+        {
+            "label": "Completed Projects",
+            "value": format_project_count(comp_cnt),
+            "delta": "Commissioned",
+            "tone": "up" if comp_cnt > 0 else "neutral",
+            "icon": "task_alt",
+        },
+        {
+            "label": "Projects On Hold",
+            "value": format_project_count(hold_cnt),
+            "delta": "Attention Needed",
+            "tone": "down" if hold_cnt > 0 else "neutral",
+            "icon": "pause_circle",
+        },
+        {
+            "label": "Installed Capacity",
+            "value": format_mw(inst_mw),
+            "delta": "Online Grid",
+            "tone": "up" if inst_mw > 0 else "neutral",
+            "icon": "electric_bolt",
+        },
+        {
+            "label": "Pipeline Capacity",
+            "value": format_mw(pipe_mw),
+            "delta": "Active Builds",
+            "tone": "up" if pipe_mw > 0 else "neutral",
+            "icon": "pending_actions",
+        },
+        {
+            "label": "Project Revenue",
+            "value": format_currency(rev_val),
+            "delta": "Contract Value",
+            "tone": "up" if rev_val > 0 else "neutral",
+            "icon": "monetization_on",
+        }
+    ]
 
 
 def get_project_reports_stats() -> Dict[str, Any]:

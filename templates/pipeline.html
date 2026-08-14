@@ -1,80 +1,86 @@
 {% extends "base.html" %}
-{% block title %}Enercore | CRM Pipeline{% endblock %}
+{% block title %}Enercore | Pipeline{% endblock %}
 {% set active_page = 'pipeline' %}
 
 {% block extra_styles %}
 <style>
     .kanban-column {
-        min-width: 320px;
-        width: 320px;
+        min-width: 280px;
+        width: 280px;
     }
     .custom-scrollbar::-webkit-scrollbar {
-        height: 8px;
-        width: 8px;
+        height: 4px;
+        width: 4px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
         background: transparent;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #e2e8f0;
-        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.08);
+        border-radius: 4px;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #cbd5e1;
+        background: rgba(0, 0, 0, 0.16);
     }
     .deal-action-dropdown {
         display: none;
         position: absolute;
-        right: 1rem;
+        right: 0.5rem;
         margin-top: 0.25rem;
-        width: 180px;
+        width: 160px;
         background: #ffffff;
-        border: 1px solid rgba(191, 202, 185, 0.4);
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        z-index: 50;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        z-index: 99;
     }
     .deal-action-dropdown.active {
         display: block;
+    }
+    .sidebar-active {
+        background: rgba(0, 107, 27, 0.08);
+        border-left: 4px solid #006b1b;
+        color: #006b1b;
+        font-weight: 700;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-[1440px] mx-auto p-margin-desktop">
+<div class="p-6 space-y-6">
     <!-- Page Header Actions -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-surface">CRM Pipeline</h2>
-            <p class="font-body-md text-on-surface-variant">Manage and track your solar project opportunities across all stages.</p>
+            <h2 class="text-2xl font-bold text-on-surface tracking-tight">Pipeline</h2>
+            <p class="text-sm text-on-surface-variant opacity-80">Manage and track your solar project opportunities across all stages.</p>
         </div>
         <div class="flex items-center gap-3">
-            <div class="px-4 py-2 bg-surface-container rounded-lg border border-outline-variant/20">
-                <p class="font-label-md text-on-surface-variant">Total Pipeline Value</p>
-                <p class="font-headline-md text-primary">{{ total_pipeline_value }}</p>
+            <div class="px-4 py-1.5 bg-white rounded-lg border border-outline-variant/10 shadow-sm flex flex-col justify-center h-[44px]">
+                <span class="text-[10px] font-semibold text-outline-variant uppercase tracking-wider">Total Pipeline Value</span>
+                <span class="text-sm font-bold text-primary leading-tight">{{ total_pipeline_value }}</span>
             </div>
             <button onclick="document.getElementById('addLeadModal').classList.toggle('hidden')" 
-                class="flex items-center justify-center gap-2 h-[44px] px-6 rounded-lg bg-primary text-on-primary font-label-md hover:bg-primary-container transition-all shadow-md active:scale-95 whitespace-nowrap">
-                <span class="material-symbols-outlined text-[20px]">add</span>
+                class="flex items-center justify-center gap-2 h-[32px] px-4 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-all shadow-sm active:scale-95 whitespace-nowrap">
+                <span class="material-symbols-outlined text-[16px]">add_circle</span>
                 Add New Lead
             </button>
         </div>
     </div>
 
     <!-- Add Lead Modal -->
-    <div id="addLeadModal" class="hidden glass-card rounded-xl p-6 mb-8 border border-primary/20 shadow-lg">
+    <div id="addLeadModal" class="hidden glass-card rounded-lg p-6 mb-6 border border-outline-variant/15 shadow-sm bg-white">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-headline-md text-on-surface">Add New Pipeline Deal</h3>
-            <button onclick="document.getElementById('addLeadModal').classList.add('hidden')" class="material-symbols-outlined text-outline">close</button>
+            <h3 class="text-base font-bold text-on-surface">Add New Pipeline Deal</h3>
+            <button onclick="document.getElementById('addLeadModal').classList.add('hidden')" class="material-symbols-outlined text-outline text-[18px]">close</button>
         </div>
         <form method="POST" action="{{ url_for('add_pipeline_deal') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Company Name *</label>
-                <input name="company_name" placeholder="Horizon Solar" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary/20 text-body-md" required>
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Company Name *</label>
+                <input name="company_name" placeholder="Horizon Solar" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none focus:ring-2 focus:ring-primary/20 text-xs" required>
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Category</label>
-                <select name="category" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Category</label>
+                <select name="category" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs cursor-pointer text-on-surface-variant">
                     <option value="COMMERCIAL">COMMERCIAL</option>
                     <option value="INDUSTRIAL">INDUSTRIAL</option>
                     <option value="RETAIL">RETAIL</option>
@@ -82,64 +88,92 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-bold text-outline mb-1 uppercase">Value ($)</label>
-                <input name="value_numeric" type="number" placeholder="450000" class="w-full border border-outline-variant/40 rounded-lg px-3 py-2 bg-surface-container-lowest outline-none text-body-md">
+                <label class="block text-xs font-semibold text-on-surface-variant mb-1">Value ($)</label>
+                <input name="value_numeric" type="number" placeholder="450000" class="w-full border border-outline-variant/30 rounded-lg px-3 py-1.5 bg-white outline-none text-xs">
             </div>
-            <div class="flex items-end">
-                <button type="submit" class="w-full h-[44px] bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-all shadow-md whitespace-nowrap">
-                    Create Deal
-                </button>
+            <div class="flex items-end justify-end">
+                <button type="submit" class="w-full h-[32px] px-4 bg-primary text-white rounded-lg text-xs font-bold hover:opacity-90 transition-opacity shadow-sm">Create Deal</button>
             </div>
         </form>
     </div>
 
     <!-- Kanban Board Container -->
-    <div class="overflow-x-auto max-w-full pb-8 custom-scrollbar">
-        <div class="flex gap-gutter min-w-max">
+    <div class="overflow-x-auto max-w-full pb-4 custom-scrollbar">
+        <div class="flex gap-4 min-w-max">
             {% for stage_name, data in deals_by_stage.items() %}
-            <div class="kanban-column flex flex-col gap-4">
-                <div class="flex items-center justify-between px-2">
-                    <h3 class="font-label-md uppercase tracking-wider text-on-surface-variant flex items-center gap-2">
-                        {{ stage_name }} <span class="bg-surface-container-high px-2 py-0.5 rounded-full text-[10px]">{{ data.count }}</span>
-                    </h3>
-                    <span class="text-primary font-bold text-body-sm">{{ data.total_formatted }}</span>
+            <div class="kanban-column flex flex-col gap-3 bg-surface-container-low/20 border border-outline-variant/10 rounded-2xl p-3">
+                <!-- Stage Header -->
+                <div class="flex flex-col gap-1 px-1 mb-1">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                            {{ stage_name }}
+                            <span class="bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded-full text-[10px] font-semibold">{{ data.count }}</span>
+                        </h3>
+                    </div>
+                    <span class="text-primary font-bold text-[11px]">{{ data.total_formatted }}</span>
                 </div>
-                <div class="space-y-4 min-h-[300px]">
-                    {% for deal in data.deals %}
-                    <div class="glass-card p-5 rounded-xl shadow-sm hover:shadow-md transition-all cursor-grab active:scale-[0.98] relative">
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="bg-secondary-container/20 text-on-secondary-container text-[10px] font-bold px-2 py-0.5 rounded">{{ deal.category }}</span>
-                            <button class="text-on-surface-variant p-1 rounded hover:bg-surface-container-high" onclick="toggleDealMenu(event, 'deal-menu-{{ deal.id }}')">
-                                <span class="material-symbols-outlined text-[18px]">more_horiz</span>
-                            </button>
 
-                            <div id="deal-menu-{{ deal.id }}" class="deal-action-dropdown py-2 shadow-lg text-left">
-                                <form action="{{ url_for('move_pipeline_deal') }}" method="POST" class="m-0">
-                                    <input type="hidden" name="deal_id" value="{{ deal.id }}">
-                                    <input type="hidden" name="new_stage" value="Proposal Sent">
-                                    <button type="submit" class="w-full text-left px-4 py-1.5 text-xs text-on-surface hover:bg-surface-container-low">Move to Proposal Sent</button>
-                                </form>
-                                <form action="{{ url_for('move_pipeline_deal') }}" method="POST" class="m-0">
-                                    <input type="hidden" name="deal_id" value="{{ deal.id }}">
-                                    <input type="hidden" name="new_stage" value="Won">
-                                    <button type="submit" class="w-full text-left px-4 py-1.5 text-xs text-primary font-bold hover:bg-surface-container-low">Mark as Won</button>
-                                </form>
-                                <form action="{{ url_for('delete_deal', deal_id=deal.id) }}" method="POST" class="m-0">
-                                    <button type="submit" class="w-full text-left px-4 py-1.5 text-xs text-error hover:bg-surface-container-low">Delete Deal</button>
-                                </form>
+                <!-- Deal List -->
+                <div class="space-y-3 min-h-[120px]">
+                    {% for deal in data.deals %}
+                    <div class="bg-white border border-outline-variant/10 rounded-xl p-4 shadow-sm hover:shadow transition-all relative flex flex-col gap-2.5">
+                        <div class="flex justify-between items-start">
+                            <span class="px-2 py-0.5 text-[9px] font-bold rounded-md bg-secondary/5 text-secondary border border-secondary/15 inline-block uppercase">
+                                {{ deal.category }}
+                            </span>
+                            <div class="relative" onclick="event.stopPropagation()">
+                                <button class="w-7 h-7 rounded-full flex items-center justify-center text-outline-variant hover:bg-surface-container-high transition-all"
+                                    onclick="toggleDealMenu(event, 'deal-menu-{{ deal.id }}')">
+                                    <span class="material-symbols-outlined text-[16px]">more_vert</span>
+                                </button>
+                                <div id="deal-menu-{{ deal.id }}" class="deal-action-dropdown py-2 shadow-lg text-left rounded-lg border border-outline-variant/10 absolute right-0 mt-1 bg-white z-[90]">
+                                    {% for next_stage in deal.allowed_transitions %}
+                                    <form action="{{ url_for('move_pipeline_deal') }}" method="POST" class="m-0">
+                                        <input type="hidden" name="deal_id" value="{{ deal.id }}">
+                                        <input type="hidden" name="new_stage" value="{{ next_stage }}">
+                                        <button type="submit" class="w-full text-left px-4 py-1.5 text-xs {% if next_stage == 'Won' %}text-primary font-bold{% elif next_stage == 'Lost' %}text-error{% else %}text-on-surface{% endif %} hover:bg-surface-container-low font-medium">
+                                            Move to {{ next_stage }}
+                                        </button>
+                                    </form>
+                                    {% endfor %}
+                                    <form action="{{ url_for('delete_deal', deal_id=deal.id) }}" method="POST" class="m-0 border-t border-outline-variant/20 mt-1 pt-1">
+                                        <button type="submit" class="w-full text-left px-4 py-1.5 text-xs text-error hover:bg-surface-container-low font-medium">Delete Deal</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                        <h4 class="font-headline-md text-[18px] mb-1 text-on-surface font-bold">{{ deal.company_name }}</h4>
-                        <p class="text-primary font-bold mb-4">{{ deal.value_formatted }}</p>
-                        <div class="flex items-center justify-between pt-4 border-t border-outline-variant/20">
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-[16px] text-on-surface-variant">schedule</span>
-                                <span class="text-[12px] text-on-surface-variant">{{ deal.time_ago }}</span>
+
+                        <div>
+                            <h4 class="text-sm font-bold text-on-surface tracking-tight leading-snug">{{ deal.company_name }}</h4>
+                            <p class="text-primary font-bold text-xs mt-1">{{ deal.value_formatted }}</p>
+                        </div>
+
+                        <!-- Latest Proposal Integration -->
+                        {% if deal.latest_proposal_id %}
+                        <div class="text-[10px] bg-surface-container-low/30 p-2.5 rounded-lg border border-outline-variant/10 flex flex-col gap-1.5">
+                            <div class="flex justify-between items-center gap-2">
+                                <span class="text-outline-variant font-medium">Proposal Status</span>
+                                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded border
+                                    {% if deal.latest_proposal_status == 'Approved' or deal.latest_proposal_status == 'Signed' %}bg-primary/5 text-primary border-primary/20
+                                    {% elif deal.latest_proposal_status == 'Draft' %}bg-surface-container text-on-surface-variant border-outline-variant/30
+                                    {% else %}bg-amber-500/10 text-amber-700 border-amber-500/20{% endif %}">
+                                    {{ deal.latest_proposal_status }}
+                                </span>
                             </div>
+                            <div class="flex justify-between items-center gap-2 font-medium">
+                                <span class="text-outline-variant">Proposal Value</span>
+                                <span class="text-on-surface font-bold ml-auto">{{ deal.latest_proposal_value }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="flex items-center gap-1.5 text-[10px] text-outline-variant font-medium pt-2 border-t border-outline-variant/10 mt-0.5">
+                            <span class="material-symbols-outlined text-[13px]">schedule</span>
+                            <span>Updated {{ deal.time_ago }}</span>
                         </div>
                     </div>
                     {% else %}
-                    <div class="p-4 border border-dashed border-outline-variant/40 rounded-xl text-center text-xs text-outline">
+                    <div class="p-3 border border-dashed border-outline-variant/20 rounded-xl text-center text-[10px] text-outline-variant bg-surface-container-lowest/10">
                         No deals in this stage
                     </div>
                     {% endfor %}

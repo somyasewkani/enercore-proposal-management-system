@@ -1,200 +1,213 @@
 {% extends "base.html" %}
-{% block title %}Enercore Analytics | Solar Intelligence{% endblock %}
+{% block title %}Enercore | Reports & Analytics{% endblock %}
 {% set active_page = 'reports' %}
 
 {% block extra_styles %}
 <style>
-    .chart-grid {
-        background-image: radial-gradient(circle, #E2E8F0 1px, transparent 1px);
-        background-size: 24px 24px;
+    .sidebar-active {
+        background: rgba(0, 107, 27, 0.08);
+        border-left: 4px solid #006b1b;
+        color: #006b1b;
+        font-weight: 700;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-[1440px] mx-auto p-margin-desktop space-y-8">
+<div class="p-6 pb-20 space-y-5">
     <!-- Header Section -->
-    <div class="flex justify-between items-end">
+    <section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-surface">Intelligence Dashboard</h2>
-            <p class="text-body-lg text-on-surface-variant mt-1">Real-time solar performance metrics and predictive growth insights.</p>
+            <h2 class="text-2xl font-bold text-on-surface tracking-tight">Reports & Analytics</h2>
+            <p class="text-sm text-on-surface-variant opacity-80">Track business performance, proposal activity, project execution and revenue insights.</p>
         </div>
-        <div class="flex gap-3">
-            <select id="analyticsRange" onchange="window.location.search = '?range=' + this.value" class="bg-surface-container-lowest border border-outline-variant/50 px-4 py-2.5 rounded-lg font-label-md text-label-md text-on-surface outline-none cursor-pointer">
-                <option value="30" {% if date_range == '30' %}selected{% endif %}>LAST 30 DAYS</option>
-                <option value="90" {% if date_range == '90' %}selected{% endif %}>LAST 90 DAYS</option>
-                <option value="365" {% if date_range == '365' %}selected{% endif %}>THIS YEAR</option>
+        <div class="flex items-center gap-3">
+            <select id="analyticsRange" onchange="window.location.search = '?range=' + this.value" class="bg-white border border-outline-variant/30 rounded-lg px-3 py-1.5 text-xs outline-none cursor-pointer font-medium text-on-surface-variant">
+                <option value="30" {% if date_range == '30' %}selected{% endif %}>Last 30 Days</option>
+                <option value="90" {% if date_range == '90' %}selected{% endif %}>Last 90 Days</option>
+                <option value="365" {% if date_range == '365' %}selected{% endif %}>This Year</option>
             </select>
-            <a href="{{ url_for('export_reports') }}" class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-label-md text-label-md flex items-center gap-2 hover:opacity-90 shadow-sm transition-all">
-                <span class="material-symbols-outlined text-[18px]">file_download</span>
-                EXPORT REPORT
+            <a href="{{ url_for('export_reports') }}" class="flex items-center justify-center gap-1.5 h-[32px] px-4 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary/95 transition-all shadow-sm active:scale-95 whitespace-nowrap">
+                <span class="material-symbols-outlined text-[16px]">file_download</span>
+                Export Report
             </a>
         </div>
-    </div>
+    </section>
 
     <!-- Executive Summary Widgets -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
-        <div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-3 bg-primary/10 rounded-xl text-primary group-hover:scale-110 transition-transform">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1 -->
+        <div class="bg-white border border-outline-variant/10 rounded-2xl p-4 shadow-sm flex flex-col justify-between gap-2.5">
+            <div class="flex justify-between items-start">
+                <div class="w-7 h-7 rounded bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[16px]">trending_up</span>
                 </div>
-                <span class="text-primary font-bold text-label-md bg-primary-fixed/30 px-2 py-1 rounded-full">+12.4%</span>
+                <span class="text-[10px] font-semibold text-primary bg-primary/5 border border-primary/20 px-2 py-0.5 rounded">+12.4%</span>
             </div>
-            <p class="text-label-md font-label-md text-outline uppercase tracking-wider mb-1">Total Revenue Potential</p>
-            <h3 class="text-headline-md font-headline-md text-on-surface">$4.2M</h3>
+            <div>
+                <p class="text-[10px] font-semibold text-outline-variant uppercase tracking-wider mb-0.5">Total Revenue Potential</p>
+                <h3 class="text-base font-bold text-on-surface leading-tight">$4.2M</h3>
+            </div>
         </div>
-        <div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-3 bg-tertiary-container/10 rounded-xl text-tertiary group-hover:scale-110 transition-transform">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+
+        <!-- Card 2 -->
+        <div class="bg-white border border-outline-variant/10 rounded-2xl p-4 shadow-sm flex flex-col justify-between gap-2.5">
+            <div class="flex justify-between items-start">
+                <div class="w-7 h-7 rounded bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[16px]">bolt</span>
                 </div>
-                <span class="text-tertiary font-bold text-label-md bg-tertiary-fixed/30 px-2 py-1 rounded-full">+28%</span>
+                <span class="text-[10px] font-semibold text-primary bg-primary/5 border border-primary/20 px-2 py-0.5 rounded">+28%</span>
             </div>
-            <p class="text-label-md font-label-md text-outline uppercase tracking-wider mb-1">Proposed Capacity</p>
-            <h3 class="text-headline-md font-headline-md text-on-surface">84.5 MW</h3>
+            <div>
+                <p class="text-[10px] font-semibold text-outline-variant uppercase tracking-wider mb-0.5">Proposed Capacity</p>
+                <h3 class="text-base font-bold text-on-surface leading-tight">84.5 MW</h3>
+            </div>
         </div>
-        <div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-3 bg-secondary-container/10 rounded-xl text-secondary group-hover:scale-110 transition-transform">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">description</span>
+
+        <!-- Card 3 -->
+        <div class="bg-white border border-outline-variant/10 rounded-2xl p-4 shadow-sm flex flex-col justify-between gap-2.5">
+            <div class="flex justify-between items-start">
+                <div class="w-7 h-7 rounded bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[16px]">description</span>
                 </div>
-                <span class="text-secondary font-bold text-label-md bg-secondary-fixed/30 px-2 py-1 rounded-full">142 total</span>
+                <span class="text-[10px] font-semibold text-outline-variant bg-surface-container border border-outline-variant/20 px-2 py-0.5 rounded">142 total</span>
             </div>
-            <p class="text-label-md font-label-md text-outline uppercase tracking-wider mb-1">Active Proposals</p>
-            <h3 class="text-headline-md font-headline-md text-on-surface">94</h3>
+            <div>
+                <p class="text-[10px] font-semibold text-outline-variant uppercase tracking-wider mb-0.5">Active Proposals</p>
+                <h3 class="text-base font-bold text-on-surface leading-tight">94</h3>
+            </div>
         </div>
-        <div class="glass-card p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow group">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-3 bg-primary-container/10 rounded-xl text-primary group-hover:scale-110 transition-transform">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">partner_heart</span>
+
+        <!-- Card 4 -->
+        <div class="bg-white border border-outline-variant/10 rounded-2xl p-4 shadow-sm flex flex-col justify-between gap-2.5">
+            <div class="flex justify-between items-start">
+                <div class="w-7 h-7 rounded bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[16px]">partner_heart</span>
                 </div>
-                <span class="text-primary font-bold text-label-md bg-primary-fixed/30 px-2 py-1 rounded-full">89% score</span>
+                <span class="text-[10px] font-semibold text-primary bg-primary/5 border border-primary/20 px-2 py-0.5 rounded">89% score</span>
             </div>
-            <p class="text-label-md font-label-md text-outline uppercase tracking-wider mb-1">Client Retention</p>
-            <h3 class="text-headline-md font-headline-md text-on-surface">High</h3>
+            <div>
+                <p class="text-[10px] font-semibold text-outline-variant uppercase tracking-wider mb-0.5">Client Retention</p>
+                <h3 class="text-base font-bold text-on-surface leading-tight">High</h3>
+            </div>
         </div>
     </div>
 
     <!-- Main Charts Grid -->
-    <div class="grid grid-cols-12 gap-gutter">
+    <div class="grid grid-cols-12 gap-4 items-stretch">
         <!-- Lead Conversion Trends -->
-        <div class="col-span-12 lg:col-span-8 glass-card p-8 rounded-3xl relative overflow-hidden">
-            <div class="flex justify-between items-start mb-8 relative z-10">
-                <div>
-                    <h4 class="text-body-lg font-bold text-on-surface">Lead Conversion Trends</h4>
-                    <p class="text-body-sm text-outline">Pipeline efficiency over the last 6 months</p>
-                </div>
+        <div class="col-span-12 lg:col-span-8 bg-white border border-outline-variant/10 rounded-2xl p-6 shadow-sm flex flex-col gap-4 relative">
+            <div>
+                <h4 class="text-sm font-bold text-on-surface tracking-tight">Lead Conversion Trends</h4>
+                <p class="text-xs text-on-surface-variant opacity-80 mt-0.5">Pipeline efficiency over the last 6 months</p>
             </div>
             <div class="h-64 relative">
                 <canvas id="conversionChart"></canvas>
             </div>
         </div>
 
-        <!-- Total Capacity -->
-        <div class="col-span-12 lg:col-span-4 glass-card p-8 rounded-3xl flex flex-col justify-between">
+        <!-- Proposed Capacity Distribution -->
+        <div class="col-span-12 lg:col-span-4 bg-white border border-outline-variant/10 rounded-2xl p-6 shadow-sm flex flex-col gap-4 relative">
             <div>
-                <h4 class="text-body-lg font-bold text-on-surface">Proposed Capacity Distribution</h4>
-                <p class="text-body-sm text-outline">Proposed MW by client segment</p>
+                <h4 class="text-sm font-bold text-on-surface tracking-tight">Proposed Capacity Distribution</h4>
+                <p class="text-xs text-on-surface-variant opacity-80 mt-0.5">Proposed MW by client segment</p>
             </div>
-            <div class="h-52 w-full relative">
+            <div class="h-64 relative w-full flex items-center justify-center">
                 <canvas id="capacityDoughnutChart"></canvas>
             </div>
         </div>
 
         <!-- Revenue Potential by Industry -->
-        <div class="col-span-12 lg:col-span-7 glass-card p-8 rounded-3xl">
-            <div class="flex justify-between items-center mb-8">
-                <h4 class="text-body-lg font-bold text-on-surface">Revenue Potential by Industry</h4>
-                <a href="{{ url_for('customers') }}" class="text-primary font-bold text-label-md hover:underline flex items-center gap-1">
-                    VIEW DETAILS <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        <div class="col-span-12 lg:col-span-7 bg-white border border-outline-variant/10 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+            <div class="flex justify-between items-center">
+                <h4 class="text-sm font-bold text-on-surface tracking-tight">Revenue Potential by Industry</h4>
+                <a href="{{ url_for('customers') }}" class="text-primary text-xs font-bold hover:underline flex items-center gap-1">
+                    View Details <span class="material-symbols-outlined text-xs">arrow_forward</span>
                 </a>
             </div>
-            <div class="space-y-6">
-                <div class="space-y-2">
-                    <div class="flex justify-between text-label-md font-label-md">
+            <div class="space-y-4">
+                <div class="space-y-1.5">
+                    <div class="flex justify-between text-xs font-semibold">
                         <span class="text-on-surface">Manufacturing & Logistics</span>
                         <span class="text-on-surface-variant">$1.4M</span>
                     </div>
-                    <div class="w-full bg-surface-container-high h-4 rounded-full overflow-hidden">
-                        <div class="h-full bg-primary-container w-[85%] rounded-full"></div>
+                    <div class="w-full bg-surface-container-high h-2.5 rounded-full overflow-hidden">
+                        <div class="h-full bg-primary w-[85%] rounded-full"></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Industry Breakdown -->
-        <div class="col-span-12 glass-card rounded-3xl overflow-hidden">
-            <div class="p-8 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-lowest/50">
+        <div class="col-span-12 bg-white border border-outline-variant/10 rounded-2xl shadow-sm flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-outline-variant/10 flex justify-between items-center">
                 <div>
-                    <h4 class="text-body-lg font-bold text-on-surface">Industry Lead Distribution</h4>
-                    <p class="text-body-sm text-outline">Top sector opportunities and win-rates</p>
+                    <h4 class="text-sm font-bold text-on-surface tracking-tight">Industry Lead Distribution</h4>
+                    <p class="text-xs text-on-surface-variant opacity-80 mt-0.5">Top sector opportunities and win-rates</p>
                 </div>
-                <a href="{{ url_for('export_reports') }}" class="text-primary font-bold text-label-md flex items-center gap-1">
-                    DOWNLOAD CSV <span class="material-symbols-outlined text-sm">download</span>
+                <a href="{{ url_for('export_reports') }}" class="text-primary text-xs font-bold hover:underline flex items-center gap-1">
+                    Download CSV <span class="material-symbols-outlined text-xs">download</span>
                 </a>
+            </div>
+            <div class="p-6 text-center text-on-surface-variant text-xs italic bg-surface-container-lowest/10">
+                No active industry lead distribution data recorded.
             </div>
         </div>
     </div>
 
     <!-- Project Analytics Overview Section -->
     {% if project_stats %}
-    <div class="border-t border-outline-variant/20 pt-8 mt-8">
-        <div class="mb-6">
-            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2 mb-1">
-                <span class="material-symbols-outlined text-primary text-[24px]">analytics</span>
+    <div class="border-t border-outline-variant/10 pt-5 mt-5 space-y-4">
+        <section class="flex flex-col gap-1">
+            <h3 class="text-lg font-bold text-on-surface tracking-tight flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[20px]">analytics</span>
                 Project Execution Analytics
             </h3>
-            <p class="text-on-surface-variant font-body-sm opacity-80">Aggregate metrics tracking project status, MW capacity distribution, and contract revenue.</p>
-        </div>
+            <p class="text-sm text-on-surface-variant opacity-80">Aggregate metrics tracking project status, MW capacity distribution, and contract revenue.</p>
+        </section>
         
-        <div class="grid grid-cols-12 gap-gutter">
+        <div class="grid grid-cols-12 gap-4 items-stretch">
             <!-- Projects & Revenue by Status (8 columns) -->
-            <div class="col-span-12 lg:col-span-8 glass-card p-8 rounded-3xl">
-                <h4 class="text-body-lg font-bold text-on-surface mb-6">Distribution by Project Status</h4>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
+            <div class="col-span-12 lg:col-span-8 bg-white border border-outline-variant/10 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+                <h4 class="text-sm font-bold text-on-surface tracking-tight">Distribution by Project Status</h4>
+                <div class="overflow-x-auto max-w-full custom-scrollbar">
+                    <table class="w-full text-left">
                         <thead>
-                            <tr class="border-b border-outline-variant/20 text-outline uppercase font-bold tracking-wider">
-                                <th class="py-3 px-4">Status</th>
-                                <th class="py-3 px-4 text-center">Project Count</th>
-                                <th class="py-3 px-4">Capacity (MW)</th>
-                                <th class="py-3 px-4 text-right">Contract Value</th>
+                            <tr class="border-b border-outline-variant/10 text-outline-variant text-[11px] font-bold uppercase tracking-wider bg-surface-container-low/10">
+                                <th class="px-4 py-2.5">Status</th>
+                                <th class="px-4 py-2.5 text-center">Project Count</th>
+                                <th class="px-4 py-2.5">Capacity (MW)</th>
+                                <th class="px-4 py-2.5 text-right">Contract Value</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-outline-variant/10">
+                        <tbody class="divide-y divide-outline-variant/10 text-xs">
                             {% for stat in project_stats.by_status %}
-                            <tr class="hover:bg-surface-container-low/40 transition-all">
-                                <td class="py-3 px-4 font-bold text-on-surface">
-                                    {% if stat.status == 'Completed' %}
-                                        <span class="bg-success-container/20 text-success text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Completed</span>
-                                    {% elif stat.status == 'Planning' %}
-                                        <span class="bg-surface-container-highest px-2 py-0.5 rounded-full text-[10px] font-bold text-on-surface uppercase tracking-wider">Planning</span>
-                                    {% elif stat.status == 'On Hold' %}
-                                        <span class="bg-warning-container/20 text-warning text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">On Hold</span>
-                                    {% elif stat.status == 'Cancelled' %}
-                                        <span class="bg-error-container/20 text-error text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Cancelled</span>
-                                    {% else %}
-                                        <span class="bg-secondary-container/20 text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">{{ stat.status }}</span>
-                                    {% endif %}
+                            <tr class="hover:bg-surface-container-low/20 transition-all">
+                                <td class="px-4 py-2.5 align-middle">
+                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md border inline-block
+                                        {% if stat.status == 'Completed' %}bg-primary/5 text-primary border-primary/20
+                                        {% elif stat.status == 'Cancelled' %}bg-outline-variant/30 text-outline border-outline-variant/20
+                                        {% else %}bg-amber-500/10 text-amber-700 border-amber-500/20{% endif %}">
+                                        {{ stat.status }}
+                                    </span>
                                 </td>
-                                <td class="py-3 px-4 text-center font-bold text-on-surface-variant">{{ stat.count }}</td>
-                                <td class="py-3 px-4 font-bold text-on-surface">
-                                    <div class="flex items-center gap-2">
+                                <td class="px-4 py-2.5 text-center font-bold text-on-surface-variant align-middle">{{ stat.count }}</td>
+                                <td class="px-4 py-2.5 font-bold text-on-surface align-middle">
+                                    <div class="flex items-center gap-3">
                                         <span>{{ stat.capacity_mw }} MW</span>
                                         {% set cap_width = (stat.capacity_mw * 10)|int %}
                                         {% if cap_width > 100 %}{% set cap_width = 100 %}{% endif %}
-                                        <div class="hidden sm:block w-24 bg-surface-container-high h-2 rounded-full overflow-hidden">
+                                        <div class="hidden sm:block w-20 bg-surface-container-high h-1.5 rounded-full overflow-hidden">
                                             <div class="h-full bg-primary rounded-full" style="width: {{ cap_width }}%"></div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="py-3 px-4 text-right font-bold text-primary">${{ "{:,.2f}".format(stat.revenue) }}</td>
+                                <td class="px-4 py-2.5 text-right font-bold text-primary align-middle">${{ "{:,.2f}".format(stat.revenue) }}</td>
                             </tr>
                             {% endfor %}
                             {% if not project_stats.by_status %}
                             <tr>
-                                <td colspan="4" class="py-6 text-center text-outline italic">No project stats available.</td>
+                                <td colspan="4" class="px-4 py-10 text-center text-outline-variant italic">No project stats available.</td>
                             </tr>
                             {% endif %}
                         </tbody>
@@ -203,36 +216,42 @@
             </div>
 
             <!-- Monthly Project Creation (4 columns) -->
-            <div class="col-span-12 lg:col-span-4 glass-card p-8 rounded-3xl flex flex-col">
+            <div class="col-span-12 lg:col-span-4 bg-white border border-outline-variant/10 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                 <div>
-                    <h4 class="text-body-lg font-bold text-on-surface mb-2">Monthly Project Creation</h4>
-                    <p class="text-body-sm text-outline mb-6">New project conversions timeline</p>
-                </div>
-                <div class="space-y-4 flex-1">
-                    {% for m in project_stats.monthly_creation %}
-                    <div class="flex items-center justify-between text-xs">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
-                            <span class="font-bold text-on-surface-variant">{{ m.month }}</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-on-surface">{{ m.count }} projects</span>
-                            {% set cnt_width = (m.count * 20)|int %}
-                            {% if cnt_width > 100 %}{% set cnt_width = 100 %}{% endif %}
-                            <div class="w-16 bg-surface-container-high h-3 rounded-full overflow-hidden">
-                                <div class="h-full bg-secondary rounded-full" style="width: {{ cnt_width }}%"></div>
+                    <div class="mb-4">
+                        <h4 class="text-sm font-bold text-on-surface tracking-tight">Monthly Project Creation</h4>
+                        <p class="text-xs text-on-surface-variant opacity-80 mt-0.5">New project conversions timeline</p>
+                    </div>
+                    <div class="space-y-3 flex-1 flex flex-col justify-center">
+                        {% for m in project_stats.monthly_creation %}
+                        <div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-[16px] text-primary">calendar_today</span>
+                                <span class="font-bold text-on-surface-variant">{{ m.month }}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="font-bold text-on-surface text-right">
+                                    {{ m.count }} {% if m.count == 1 %}project{% else %}projects{% endif %}
+                                </span>
+                                {% set cnt_width = (m.count * 20)|int %}
+                                {% if cnt_width > 100 %}{% set cnt_width = 100 %}{% endif %}
+                                <div class="w-16 bg-surface-container-high h-2 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary rounded-full" style="width: {{ cnt_width }}%"></div>
+                                </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
 
-            <!-- Project Execution Status visual chart (12 columns) -->
-            <div class="col-span-12 glass-card p-8 rounded-3xl">
-                <h4 class="text-body-lg font-bold text-on-surface mb-2">Project Sizing & Capacity Distribution</h4>
-                <p class="text-body-sm text-outline mb-6">Execution milestones vs MW capacity</p>
-                <div class="h-64 relative">
+            <!-- Project Sizing & Capacity Distribution (12 columns) -->
+            <div class="col-span-12 bg-white border border-outline-variant/10 rounded-2xl p-6 shadow-sm flex flex-col gap-4 relative">
+                <div>
+                    <h4 class="text-sm font-bold text-on-surface tracking-tight">Project Sizing & Capacity Distribution</h4>
+                    <p class="text-xs text-on-surface-variant opacity-80 mt-0.5">Execution milestones vs MW capacity</p>
+                </div>
+                <div class="h-48 relative">
                     <canvas id="projectStatusChart"></canvas>
                 </div>
             </div>
@@ -246,7 +265,7 @@
     document.addEventListener("DOMContentLoaded", () => {
         const projectData = {{ project_stats|tojson if project_stats else '{"by_status": [], "monthly_creation": [], "lead_conversion": [], "sector_capacity": []}' }};
 
-        function showNoDataOverlay(canvasId, text = "No Data Available") {
+        function showNoDataOverlay(canvasId, title = "No sufficient pipeline data", subtitle = "Lead conversion trends will appear once enough pipeline activity is recorded.") {
             const canvas = document.getElementById(canvasId);
             if (!canvas) return;
             const parent = canvas.parentElement;
@@ -256,10 +275,11 @@
             
             canvas.style.display = 'none';
             const overlay = document.createElement('div');
-            overlay.className = 'no-data-overlay flex flex-col items-center justify-center h-full w-full py-10';
+            overlay.className = 'no-data-overlay flex flex-col items-center justify-center absolute inset-0 text-center p-6 bg-white rounded-2xl z-10';
             overlay.innerHTML = `
-                <span class="material-symbols-outlined text-[48px] mb-2 text-outline/30">analytics</span>
-                <p class="text-label-md text-outline font-semibold">${text}</p>
+                <span class="material-symbols-outlined text-[36px] mb-2 text-outline-variant/50">analytics</span>
+                <p class="text-xs font-bold text-on-surface">${title}</p>
+                <p class="text-[10px] text-outline-variant mt-1">${subtitle}</p>
             `;
             parent.appendChild(overlay);
         }
@@ -273,8 +293,8 @@
             : [];
         const totalLeads = leadCounts.reduce((a, b) => a + b, 0);
 
-        if (totalLeads === 0 || leadLabels.length === 0) {
-            showNoDataOverlay('conversionChart', 'No conversion trend data recorded.');
+        if (totalLeads === 0 || leadLabels.length <= 1) {
+            showNoDataOverlay('conversionChart', 'No sufficient pipeline data', 'Lead conversion trends will appear once enough pipeline activity is recorded.');
         } else {
             const ctxConv = document.getElementById('conversionChart')?.getContext('2d');
             if (ctxConv) {
@@ -314,7 +334,7 @@
         const totalSectorCapacity = sectorData.reduce((a, b) => a + b, 0);
 
         if (totalSectorCapacity === 0 || sectorLabels.length === 0) {
-            showNoDataOverlay('capacityDoughnutChart', 'No solar assets mapped to client sectors.');
+            showNoDataOverlay('capacityDoughnutChart', 'No sufficient segment data', 'No solar assets mapped to client sectors.');
         } else {
             const ctxCap = document.getElementById('capacityDoughnutChart')?.getContext('2d');
             if (ctxCap) {
@@ -324,12 +344,18 @@
                         labels: sectorLabels,
                         datasets: [{
                             data: sectorData,
-                            backgroundColor: ['#006b1b', '#ff8f06', '#0288d1', '#7b1fa2', '#9c27b0', '#009688']
+                            backgroundColor: ['#006b1b', '#94a3b8', '#0288d1', '#7b1fa2', '#9c27b0', '#009688']
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                top: 10,
+                                bottom: 10
+                            }
+                        },
                         plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
                     }
                 });
@@ -352,7 +378,7 @@
                             {
                                 label: 'Projects Count',
                                 data: statusCounts,
-                                backgroundColor: '#ff8f06',
+                                backgroundColor: '#94a3b8',
                                 borderRadius: 4,
                                 yAxisID: 'y'
                             },
@@ -368,6 +394,14 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                left: 5,
+                                right: 5,
+                                top: 5,
+                                bottom: 5
+                            }
+                        },
                         scales: {
                             y: {
                                 type: 'linear',
@@ -389,7 +423,7 @@
                 });
             }
         } else {
-            showNoDataOverlay('projectStatusChart', 'No project conversion data recorded yet.');
+            showNoDataOverlay('projectStatusChart', 'No sufficient execution data', 'No project conversion data recorded yet.');
         }
     });
 </script>

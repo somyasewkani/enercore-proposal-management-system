@@ -242,7 +242,7 @@ def _render_header_actions() -> str:
 
 
 def _render_kpis(kpis) -> None:
-    cols = st.columns(4)
+    cols = st.columns(len(kpis))
     for col, kpi in zip(cols, kpis):
         delta_class = "enercore-kpi-delta-up" if kpi["tone"] == "up" else "enercore-kpi-delta-neutral"
         icon_bg = "#d8f5e4" if kpi["tone"] == "up" else "#d3e4ff"

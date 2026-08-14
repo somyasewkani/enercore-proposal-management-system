@@ -9,6 +9,7 @@ Supports customer profile updates, soft delete archiving, and safety checks.
 from __future__ import annotations
 import sqlite3
 import re
+import logging
 from typing import Optional, List, Dict, Any, Tuple
 from database.connection import get_connection
 from services.dashboard_service import _format_value_display
@@ -69,7 +70,8 @@ def list_customers(
     search: Optional[str] = None,
     category: Optional[str] = None,
     status: Optional[str] = None,
-    include_deleted: bool = False
+    include_deleted: bool = False,
+    archive_filter: str = "active"
 ) -> List[Dict[str, Any]]:
     """Return active customers matching filters directly from the database."""
     conn = get_connection()
@@ -81,7 +83,11 @@ def list_customers(
         where_clauses = []
         params = []
 
-        if not include_deleted:
+        if include_deleted or archive_filter == "all":
+            pass
+        elif archive_filter == "archived":
+            where_clauses.append("is_deleted = 1")
+        else:
             where_clauses.append("is_deleted = 0")
 
         if search and search.strip():
@@ -293,6 +299,7 @@ def create_customer(data: Dict[str, Any]) -> Dict[str, Any]:
 
         cur.execute(query, (new_id, name, category, segment, contact, phone, email, address, gstin, status, tone, value_numeric, capacity_mw, updated_at))
         conn.commit()
+        logging.info(f"[database] Successfully created customer: {new_id} ({name}) - Category: {category}, Status: {status}")
 
         return {
             "id": new_id,
@@ -349,6 +356,7 @@ def update_customer_profile(customer_id: str, data: Dict[str, Any]) -> bool:
         """
         cur.execute(query, (name, category, segment, contact, phone, email, address, gstin, value_numeric, capacity_mw, customer_id))
         conn.commit()
+        logging.info(f"[database] Successfully updated customer profile: {customer_id} ({name}) - Category: {category}")
         return True
     except Exception as e:
         print(f"Error updating customer profile {customer_id}: {e}")
@@ -378,6 +386,7 @@ def update_customer_status(customer_id: str, new_status: str) -> Optional[Dict[s
         """
         cur.execute(query, (new_status, tone, customer_id))
         conn.commit()
+        logging.info(f"[database] Successfully updated status to '{new_status}' for customer: {customer_id}")
         return get_customer(customer_id)
     except Exception as e:
         print(f"Error updating customer status: {e}")
@@ -396,37 +405,38 @@ def delete_customer(customer_id: str, permanent: bool = False) -> Tuple[bool, st
     try:
         cur = conn.cursor()
         
-        # Check active related sites
-        cur.execute("SELECT COUNT(*) FROM sites WHERE customer_id = ? AND is_deleted = 0;" if is_sqlite else "SELECT COUNT(*) FROM sites WHERE customer_id = %s AND is_deleted = 0;", (customer_id,))
-        site_cnt = cur.fetchone()[0]
-        
-        # Check proposals
-        cur.execute("SELECT COUNT(*) FROM proposals WHERE customer_id = ?;" if is_sqlite else "SELECT COUNT(*) FROM proposals WHERE customer_id = %s;", (customer_id,))
-        prop_cnt = cur.fetchone()[0]
-        
-        # Check projects
-        cur.execute("SELECT COUNT(*) FROM projects WHERE customer_id = ?;" if is_sqlite else "SELECT COUNT(*) FROM projects WHERE customer_id = %s;", (customer_id,))
-        proj_cnt = cur.fetchone()[0]
-        
-        # Check bills
-        cur.execute("""
-            SELECT COUNT(*) FROM electricity_bills b
-            JOIN sites s ON b.site_id = s.id
-            WHERE s.customer_id = ? AND s.is_deleted = 0;
-        """ if is_sqlite else """
-            SELECT COUNT(*) FROM electricity_bills b
-            JOIN sites s ON b.site_id = s.id
-            WHERE s.customer_id = %s AND s.is_deleted = 0;
-        """, (customer_id,))
-        bill_cnt = cur.fetchone()[0]
-
         if permanent:
+            # Check active related sites
+            cur.execute("SELECT COUNT(*) FROM sites WHERE customer_id = ? AND is_deleted = 0;" if is_sqlite else "SELECT COUNT(*) FROM sites WHERE customer_id = %s AND is_deleted = 0;", (customer_id,))
+            site_cnt = cur.fetchone()[0]
+            
+            # Check proposals
+            cur.execute("SELECT COUNT(*) FROM proposals WHERE customer_id = ?;" if is_sqlite else "SELECT COUNT(*) FROM proposals WHERE customer_id = %s;", (customer_id,))
+            prop_cnt = cur.fetchone()[0]
+            
+            # Check projects
+            cur.execute("SELECT COUNT(*) FROM projects WHERE customer_id = ?;" if is_sqlite else "SELECT COUNT(*) FROM projects WHERE customer_id = %s;", (customer_id,))
+            proj_cnt = cur.fetchone()[0]
+            
+            # Check bills
+            cur.execute("""
+                SELECT COUNT(*) FROM electricity_bills b
+                JOIN sites s ON b.site_id = s.id
+                WHERE s.customer_id = ? AND s.is_deleted = 0;
+            """ if is_sqlite else """
+                SELECT COUNT(*) FROM electricity_bills b
+                JOIN sites s ON b.site_id = s.id
+                WHERE s.customer_id = %s AND s.is_deleted = 0;
+            """, (customer_id,))
+            bill_cnt = cur.fetchone()[0]
+
             # Safe checking for permanent hard delete
             if site_cnt > 0 or prop_cnt > 0 or proj_cnt > 0 or bill_cnt > 0:
                 return False, "Cannot permanently delete customer: associated project sites, bills, proposals, or projects exist."
             
             cur.execute("DELETE FROM customers WHERE id = ?;" if is_sqlite else "DELETE FROM customers WHERE id = %s;", (customer_id,))
             conn.commit()
+            logging.info(f"[database] Successfully permanently deleted customer: {customer_id}")
             return True, "Customer permanently deleted successfully."
         else:
             # Soft Delete (marks as is_deleted = 1, status = 'Archived')
@@ -440,10 +450,118 @@ def delete_customer(customer_id: str, permanent: bool = False) -> Tuple[bool, st
                 WHERE id = %s;
             """, (customer_id,))
             conn.commit()
+            logging.info(f"[database] Successfully soft-deleted/archived customer: {customer_id}")
             return True, "Customer successfully archived (soft deleted)."
             
     except Exception as e:
         print(f"[customer_service] Error during deletion of client {customer_id}: {e}")
+        return False, str(e)
+    finally:
+        conn.close()
+
+
+def restore_customer(customer_id: str) -> Tuple[bool, str]:
+    """
+    Restore an archived customer to active status.
+    Infers and restores the previous lifecycle stage (Contract Signed, Proposal Sent, New Lead).
+    """
+    conn = get_connection()
+    is_sqlite = isinstance(conn, sqlite3.Connection)
+    try:
+        cur = conn.cursor()
+        
+        # 1. Validate customer exists
+        cur.execute(
+            "SELECT COUNT(*), name FROM customers WHERE id = ?;" 
+            if is_sqlite else 
+            "SELECT COUNT(*), name FROM customers WHERE id = %s;", 
+            (customer_id,)
+        )
+        row = cur.fetchone()
+        count = row[0]
+        name = row[1] if count > 0 else ""
+        if count == 0:
+            return False, f"Customer with ID '{customer_id}' does not exist."
+            
+        # 2. Check duplicate customer name (must not conflict with another active customer of the same name)
+        cur.execute(
+            "SELECT COUNT(*) FROM customers WHERE name = ? AND is_deleted = 0 AND id != ?;"
+            if is_sqlite else
+            "SELECT COUNT(*) FROM customers WHERE name = %s AND is_deleted = 0 AND id != %s;",
+            (name, customer_id)
+        )
+        dup_count = cur.fetchone()[0]
+        if dup_count > 0:
+            return False, f"Cannot restore customer '{name}'. Another active customer with the same name already exists."
+            
+        # 3. Infer previous lifecycle stage
+        # Check projects first
+        cur.execute(
+            "SELECT COUNT(*) FROM projects WHERE customer_id = ?;"
+            if is_sqlite else
+            "SELECT COUNT(*) FROM projects WHERE customer_id = %s;",
+            (customer_id,)
+        )
+        has_projects = cur.fetchone()[0] > 0
+        
+        # Check proposals
+        cur.execute(
+            "SELECT COUNT(*) FROM proposals WHERE customer_id = ?;"
+            if is_sqlite else
+            "SELECT COUNT(*) FROM proposals WHERE customer_id = %s;",
+            (customer_id,)
+        )
+        has_proposals = cur.fetchone()[0] > 0
+        
+        # Check pipeline_deals stage
+        cur.execute(
+            "SELECT stage FROM pipeline_deals WHERE customer_id = ?;"
+            if is_sqlite else
+            "SELECT stage FROM pipeline_deals WHERE customer_id = %s;",
+            (customer_id,)
+        )
+        deal_row = cur.fetchone()
+        deal_stage = deal_row[0] if deal_row else None
+        
+        # Determine status
+        if has_projects:
+            status = "Contract Signed"
+        elif has_proposals:
+            status = "Proposal Sent"
+        elif deal_stage:
+            status = deal_stage
+        else:
+            status = "New Lead"
+            
+        # 4. Perform update (is_deleted = 0)
+        cur.execute("""
+            UPDATE customers
+            SET is_deleted = 0, status = ?, tone = 'neutral', updated_at = 'Just now'
+            WHERE id = ?;
+        """ if is_sqlite else """
+            UPDATE customers
+            SET is_deleted = 0, status = %s, tone = 'neutral', updated_at = 'Just now'
+            WHERE id = %s;
+        """, (status, customer_id))
+        
+        # Also restore associated pipeline deal if archived
+        if deal_row:
+            cur.execute("""
+                UPDATE pipeline_deals
+                SET is_archived = 0
+                WHERE customer_id = ?;
+            """ if is_sqlite else """
+                UPDATE pipeline_deals
+                SET is_archived = 0
+                WHERE customer_id = %s;
+            """, (customer_id,))
+            
+        conn.commit()
+        logging.info(f"[database] Successfully restored customer: {customer_id} (status set to '{status}')")
+        return True, f"Customer '{name}' restored successfully to stage '{status}'."
+        
+    except Exception as e:
+        print(f"[customer_service] Error during restoration of client {customer_id}: {e}")
         return False, str(e)
     finally:
         conn.close()

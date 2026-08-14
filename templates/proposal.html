@@ -21,28 +21,28 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-[1440px] mx-auto p-gutter flex gap-gutter h-[calc(100vh-64px)] overflow-hidden">
+<div class="max-w-[1440px] mx-auto p-gutter flex flex-col lg:flex-row gap-gutter h-auto lg:h-[calc(100vh-64px)] lg:overflow-hidden">
     <!-- Left: Workspace Editor -->
-    <section class="flex-1 overflow-y-auto pr-2 space-y-gutter pb-margin-desktop">
+    <section class="w-full lg:flex-[11] lg:overflow-y-auto pr-2 space-y-gutter pb-margin-desktop min-w-[300px]">
         <!-- Action Bar -->
         <div class="flex items-center justify-between sticky top-0 bg-background/90 backdrop-blur-sm z-10 pb-4">
-            <div class="flex gap-3">
-                <form id="proposalForm" method="POST" action="{{ url_for('proposal') }}">
-                    <button type="submit" class="bg-primary text-on-primary px-6 h-[44px] rounded-lg font-bold flex items-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
-                        <span class="material-symbols-outlined">send</span>
+            <div class="flex flex-wrap items-center gap-3">
+                <form id="proposalForm" method="POST" action="{{ url_for('proposal') }}" class="m-0 inline-flex">
+                    <button type="submit" class="bg-primary text-on-primary px-5 h-[44px] rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-md whitespace-nowrap text-xs uppercase tracking-wider">
+                        <span class="material-symbols-outlined text-[20px]">send</span>
                         Send to Client
                     </button>
                 </form>
-                <button onclick="window.print()" class="border border-tertiary text-tertiary px-6 h-[44px] rounded-lg font-bold flex items-center gap-2 hover:bg-tertiary/5 active:scale-[0.98] transition-all">
-                    <span class="material-symbols-outlined">picture_as_pdf</span>
-                    Export as PDF
+                <button onclick="window.print()" class="border border-tertiary text-tertiary px-5 h-[44px] rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-tertiary/5 active:scale-[0.98] transition-all whitespace-nowrap text-xs uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+                    Export PDF
                 </button>
-                <button onclick="alert('Proposal editor unlocked for live parameter updates.')" class="border border-outline text-on-surface-variant px-6 h-[44px] rounded-lg font-bold flex items-center gap-2 hover:bg-surface-container-high active:scale-[0.98] transition-all">
-                    <span class="material-symbols-outlined">edit</span>
+                <button onclick="alert('Proposal editor unlocked for live parameter updates.')" class="border border-outline text-on-surface-variant px-5 h-[44px] rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-surface-container-high active:scale-[0.98] transition-all whitespace-nowrap text-xs uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[20px]">edit</span>
                     Edit Proposal
                 </button>
             </div>
-            <span class="text-label-md font-label-md text-outline italic">Last saved 2m ago</span>
+            <span class="text-label-md font-label-md text-outline italic hidden sm:inline">Last saved 2m ago</span>
         </div>
 
         <!-- Add Component Modal -->
@@ -68,13 +68,16 @@
                 <label class="font-label-md text-label-md text-on-surface-variant block mb-3 uppercase tracking-wider">Target Client / Company</label>
                 <select name="customer_id" form="proposalForm" class="w-full bg-white border border-outline-variant rounded-lg p-3 focus:border-primary focus:ring-primary outline-none text-body-md" required>
                     {% for c in customers %}
-                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    <option value="{{ c.id }}" {% if selected_customer_id == c.id %}selected{% endif %}>{{ c.name }}</option>
                     {% else %}
                     <option value="">No clients available - Add client first</option>
                     {% endfor %}
                 </select>
+                {% if bill %}
+                <input type="hidden" name="bill_id" value="{{ bill.id }}" form="proposalForm">
+                {% endif %}
             </div>
-            <div class="grid grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
                     <label class="font-label-md text-label-md text-on-surface-variant block mb-3 uppercase tracking-wider">Theme choice</label>
                     <div class="flex gap-4">
@@ -133,16 +136,16 @@
                         Add Component
                     </button>
                 </div>
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
                         <p class="text-label-md font-label-md text-outline uppercase">Panels</p>
                         <p class="font-body-lg font-bold">Hanwha Q.PEAK 400W</p>
-                        <p class="text-body-sm text-on-surface-variant">Qty: 24 units</p>
+                        <p class="text-body-sm text-on-surface-variant">Qty: {% if bill %}{{ (bill.plant_size_kw * 2.5)|round|int }}{% else %}24{% endif %} units</p>
                     </div>
                     <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
                         <p class="text-label-md font-label-md text-outline uppercase">Inverter</p>
-                        <p class="font-body-lg font-bold">SolarEdge SE10000H</p>
-                        <p class="text-body-sm text-on-surface-variant">Grid-tied string</p>
+                        <p class="font-body-lg font-bold">{% if bill %}{{ bill.recommended_inverter_kw }} kW{% else %}SolarEdge SE10000H{% endif %}</p>
+                        <p class="text-body-sm text-on-surface-variant">{% if bill %}Feasibility Sized{% else %}Grid-tied string{% endif %}</p>
                     </div>
                     <div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
                         <p class="text-label-md font-label-md text-outline uppercase">Battery</p>
@@ -153,7 +156,7 @@
             </div>
 
             <!-- Financial Analysis -->
-            <div class="col-span-7 glass-card rounded-xl p-8 shadow-sm">
+            <div class="col-span-12 md:col-span-7 glass-card rounded-xl p-8 shadow-sm">
                 <h3 class="font-headline-md text-headline-md mb-6 flex items-center gap-2">
                     <span class="material-symbols-outlined text-secondary">payments</span>
                     Financial Analysis
@@ -161,21 +164,21 @@
                 <div class="space-y-6">
                     <div class="flex justify-between border-b border-outline-variant/20 pb-4">
                         <span class="text-on-surface-variant">System Total Cost</span>
-                        <span class="font-bold text-headline-md">$34,250.00</span>
+                        <span class="font-bold text-headline-md">{% if bill %}₹{{ "{:,.0f}".format(bill.system_cost) }}{% else %}$34,250.00{% endif %}</span>
                     </div>
                     <div class="flex justify-between border-b border-outline-variant/20 pb-4">
                         <span class="text-on-surface-variant">Estimated Yearly Savings</span>
-                        <span class="font-bold text-primary">+$2,480.00</span>
+                        <span class="font-bold text-primary">{% if bill %}+₹{{ "{:,.0f}".format(bill.annual_savings) }}{% else %}+$2,480.00{% endif %}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-on-surface-variant">Payback Period</span>
-                        <span class="font-bold text-secondary">7.2 Years</span>
+                        <span class="font-bold text-secondary">{% if bill %}{{ bill.payback_years }} Years{% else %}7.2 Years{% endif %}</span>
                     </div>
                 </div>
             </div>
 
             <!-- Company Profile -->
-            <div class="col-span-5 glass-card rounded-xl p-8 shadow-sm">
+            <div class="col-span-12 md:col-span-5 glass-card rounded-xl p-8 shadow-sm">
                 <h3 class="font-headline-md text-headline-md mb-6 flex items-center gap-2">
                     <span class="material-symbols-outlined text-outline">business</span>
                     Company Profile
@@ -197,53 +200,51 @@
     </section>
 
     <!-- Right: Real-time Preview Pane -->
-    <section class="w-[480px] h-full flex flex-col bg-surface-container-high rounded-t-xl shadow-inner border-l border-outline-variant/20 relative overflow-hidden">
+    <section class="w-full lg:flex-[9] min-w-[320px] lg:min-w-[450px] lg:max-w-[620px] h-[650px] lg:h-full flex flex-col bg-surface-container-high rounded-xl shadow-inner border border-outline-variant/20 relative overflow-hidden">
         <div class="p-4 flex items-center justify-between border-b border-outline-variant/20 bg-surface/50 backdrop-blur-md">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-on-surface-variant">visibility</span>
                 <span class="font-label-md font-bold uppercase tracking-widest text-on-surface-variant">PDF Preview</span>
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="window.print()" class="flex items-center gap-1 px-3 py-1 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors">
-                    <span class="material-symbols-outlined text-[18px]">print</span>
-                    <span class="text-label-md font-bold uppercase tracking-wider">Print</span>
+                <button onclick="window.print()" class="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors text-xs font-bold uppercase tracking-wider">
+                    <span class="material-symbols-outlined text-[16px]">print</span>
+                    Print
                 </button>
             </div>
         </div>
         <!-- Simulated PDF Page -->
-        <div class="flex-1 p-8 overflow-y-auto bg-slate-300/30">
-            <div class="mx-auto w-[360px] min-h-[510px] bg-white shadow-2xl origin-top transition-transform hover:scale-[1.02] duration-500 relative">
-                <div class="p-8 h-full flex flex-col">
-                    <div class="flex justify-between items-start mb-12">
-                        <img alt="Enercore Logo Preview" class="h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9XWgUneDqE-7DKHJHd0aS1Ctzb3FQmrWTfn_yYEsDCtJNd9aMPK0spspnUiJ3Zvx8onsl9mH6ffUhyTU0ELJPM0EAOQFn04UUeTvlD5eNaptjzv9Q8Pnq2XF6J-pdtAnI_NwZifnUE6pezBAZVQNOYw10ZoEs8u8LOWPFHG6xxSE1L7ABHoijqYW-jyRg8lenfNv6vWU2hU4tVlhan8xKM5SLeeJPMJZ-8gehbR4ZOD0Xp3Uug5iR4IZyL9jfMUKsBCkyl8A7DUI">
-                        <div class="text-right">
-                            <p class="text-[8px] font-bold text-primary">OFFICIAL PROPOSAL</p>
-                            <p class="text-[6px] text-outline">Ref: #ENE-2024-882</p>
-                        </div>
+        <div class="flex-1 p-6 overflow-y-auto bg-slate-300/30 flex justify-center items-start custom-scrollbar">
+            <div class="w-[420px] min-h-[594px] bg-white shadow-2xl origin-top transition-transform hover:scale-[1.01] duration-500 relative my-4 p-8 flex flex-col border border-slate-200">
+                <div class="flex justify-between items-start mb-12">
+                    <img alt="Enercore Logo Preview" class="h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9XWgUneDqE-7DKHJHd0aS1Ctzb3FQmrWTfn_yYEsDCtJNd9aMPK0spspnUiJ3Zvx8onsl9mH6ffUhyTU0ELJPM0EAOQFn04UUeTvlD5eNaptjzv9Q8Pnq2XF6J-pdtAnI_NwZifnUE6pezBAZVQNOYw10ZoEs8u8LOWPFHG6xxSE1L7ABHoijqYW-jyRg8lenfNv6vWU2hU4tVlhan8xKM5SLeeJPMJZ-8gehbR4ZOD0Xp3Uug5iR4IZyL9jfMUKsBCkyl8A7DUI">
+                    <div class="text-right">
+                        <p class="text-[8px] font-bold text-primary">OFFICIAL PROPOSAL</p>
+                        <p class="text-[6px] text-outline">Ref: #{{ bill.id if bill else 'ENE-2026-0001' }}</p>
                     </div>
-                    <div class="mb-8">
-                        <h2 class="text-xl font-bold text-on-surface leading-tight">Solar Infrastructure Integration Plan</h2>
-                        <p class="text-[10px] text-on-surface-variant mt-2">Prepared for: <span class="font-bold">Horizon Green Energy Corp.</span></p>
-                    </div>
-                    <div class="w-full h-32 bg-slate-100 rounded-lg mb-8 overflow-hidden relative group">
-                        <div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDAVjv9HFUcCuNYn-fR2QEEO9g4oJs9tJg04n90Xhi4KoSu7a_4IErrYib4cOhtkXmoJuh6UOQ0Eyyw_HGl8e9iu9IHsnn-NH6JsAHBh-gGVPh-CEWBpjz5VgtKhBY-DOaQUAS1bioalceNoldn_cvHKQD94i6R1zXhAcwE6FBe1t215uFbAvfxUe7hmHx26dSfG_sIhhEFUIXs2KmRaVUzp20csiZwZyRj7ySxvjWwRBGk_i1JxLmIPt_FdXKH4yXWquzqHN1RGvw')"></div>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="h-1 w-12 bg-primary rounded-full"></div>
-                        <p class="text-[8px] text-on-surface leading-relaxed">
-                            This comprehensive proposal outlines technical specifications, financial projections, and strategic implementation of a high-efficiency solar photovoltaic system.
-                        </p>
-                    </div>
+                </div>
+                <div class="mb-8">
+                    <h2 class="text-xl font-bold text-on-surface leading-tight">Solar Infrastructure Integration Plan</h2>
+                    <p class="text-[10px] text-on-surface-variant mt-2">Prepared for: <span class="font-bold">{% if bill %}{{ bill.customer_name }}{% else %}Horizon Green Energy Corp.{% endif %}</span></p>
+                </div>
+                <div class="w-full h-36 bg-slate-100 rounded-lg mb-8 overflow-hidden relative group">
+                    <div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDAVjv9HFUcCuNYn-fR2QEEO9g4oJs9tJg04n90Xhi4KoSu7a_4IErrYib4cOhtkXmoJuh6UOQ0Eyyw_HGl8e9iu9IHsnn-NH6JsAHBh-gGVPh-CEWBpjz5VgtKhBY-DOaQUAS1bioalceNoldn_cvHKQD94i6R1zXhAcwE6FBe1t215uFbAvfxUe7hmHx26dSfG_sIhhEFUIXs2KmRaVUzp20csiZwZyRj7ySxvjWwRBGk_i1JxLmIPt_FdXKH4yXWquzqHN1RGvw')"></div>
+                </div>
+                <div class="space-y-4 mt-auto">
+                    <div class="h-1 w-12 bg-primary rounded-full"></div>
+                    <p class="text-[8px] text-on-surface leading-relaxed">
+                        This comprehensive proposal outlines technical specifications for a {% if bill %}{{ bill.plant_size_kw }} kWp{% else %}250 kWp{% endif %} solar system with an estimated payback of {% if bill %}{{ bill.payback_years }}{% else %}7.2{% endif %} years.
+                    </p>
                 </div>
             </div>
         </div>
         <!-- Preview Controls -->
-        <div class="p-3 bg-surface border-t border-outline-variant/20 flex justify-center gap-2">
-            <button onclick="changePage(-1)" class="bg-primary/10 text-primary p-2 rounded-full hover:bg-primary/20">
+        <div class="p-3 bg-surface border-t border-outline-variant/20 flex justify-center items-center gap-2">
+            <button onclick="changePage(-1)" class="bg-primary/10 text-primary p-2 rounded-full hover:bg-primary/20 transition-all">
                 <span class="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-            <span id="previewPageNum" class="px-4 py-2 bg-surface-container-highest rounded-full text-label-md font-bold">PAGE 1 / 12</span>
-            <button onclick="changePage(1)" class="bg-primary/10 text-primary p-2 rounded-full hover:bg-primary/20">
+            <span id="previewPageNum" class="px-4 py-1.5 bg-surface-container-highest rounded-full text-xs font-bold">PAGE 1 / 12</span>
+            <button onclick="changePage(1)" class="bg-primary/10 text-primary p-2 rounded-full hover:bg-primary/20 transition-all">
                 <span class="material-symbols-outlined text-[18px]">chevron_right</span>
             </button>
         </div>

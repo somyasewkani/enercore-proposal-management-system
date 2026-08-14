@@ -108,6 +108,33 @@
             transform: translateY(-2px);
         }
 
+        /* Global Reusable KPI Card Styles */
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 1rem;
+            padding: 1.5rem; /* 24px padding */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 160px;
+            height: 100%;
+            width: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .kpi-card:hover {
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 10px 30px -10px rgba(0, 107, 27, 0.12);
+            border-color: rgba(0, 107, 27, 0.2);
+            transform: translateY(-2px);
+        }
+
         .active-nav-border {
             border-left-width: 4px;
             border-left-color: #006b1b;
@@ -150,68 +177,62 @@
 </head>
 <body class="bg-background text-on-surface antialiased overflow-x-hidden">
     <!-- SideNavBar Shell -->
-    <aside class="w-[280px] h-screen fixed left-0 top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 flex flex-col py-base z-50 shadow-sm">
-        <div class="px-6 py-4 flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
-                <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">solar_power</span>
-            </div>
-            <div>
-                <h1 class="font-headline-md text-headline-md font-bold text-primary">Enercore</h1>
-                <p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Solar Intelligence</p>
-            </div>
+    <aside class="w-[260px] h-screen fixed left-0 top-0 bg-surface-container-lowest dark:bg-surface-container-low border-r border-outline-variant/30 flex flex-col py-4 z-50 shadow-sm">
+        <div class="px-6 py-2 mb-2 flex items-center justify-start">
+            <img src="{{ url_for('static', filename='images/enercore-logo.png') }}" alt="Enercore" class="h-[52px] w-auto object-contain block" />
         </div>
-        <nav class="mt-8 flex-grow custom-scrollbar overflow-y-auto">
+        <nav class="mt-4 flex-grow custom-scrollbar overflow-y-auto">
             <ul class="space-y-1">
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'dashboard' %}text-primary font-bold border-l-4 border-primary bg-surface-container/50 transition-colors{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('dashboard') }}">
+                    <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'dashboard' %}text-primary font-bold border-l-4 border-primary bg-surface-container/50 transition-colors{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('dashboard') }}">
                         <span class="material-symbols-outlined">dashboard</span>
                         <span class="font-label-md text-label-md">Dashboard</span>
                     </a>
                 </li>
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'customers' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('customers') }}">
+                    <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'customers' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('customers') }}">
                         <span class="material-symbols-outlined">groups</span>
                         <span class="font-label-md text-label-md">Clients</span>
                     </a>
                 </li>
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'sites' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('sites_list_route') }}">
+                    <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'sites' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('sites_list_route') }}">
                         <span class="material-symbols-outlined">domain</span>
                         <span class="font-label-md text-label-md">Sites</span>
                     </a>
                 </li>
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'bills' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('bills_directory_route') }}">
+                    <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'bills' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('bills_directory_route') }}">
                         <span class="material-symbols-outlined">description</span>
                         <span class="font-label-md text-label-md">Bills</span>
                     </a>
                 </li>
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'pipeline' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('pipeline') }}">
+                    <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'pipeline' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('pipeline') }}">
                         <span class="material-symbols-outlined">account_tree</span>
                         <span class="font-label-md text-label-md">Pipeline</span>
                     </a>
                 </li>
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'analysis' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('analysis') }}">
+                    <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'analysis' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('analysis') }}">
                         <span class="material-symbols-outlined">query_stats</span>
                         <span class="font-label-md text-label-md">Bill Analysis</span>
                     </a>
                 </li>
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'proposals' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('proposals_list_route') }}">
+                    <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'proposals' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('proposals_list_route') }}">
                         <span class="material-symbols-outlined">description</span>
                         <span class="font-label-md text-label-md">Proposals</span>
                     </a>
                 </li>
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'projects' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('projects_list_route') }}">
+                    <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'projects' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('projects_list_route') }}">
                         <span class="material-symbols-outlined">construction</span>
                         <span class="font-label-md text-label-md">Projects</span>
                     </a>
                 </li>
                 <li>
-                    <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'reports' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('reports') }}">
+                    <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'reports' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors{% endif %}" href="{{ url_for('reports') }}">
                         <span class="material-symbols-outlined">insights</span>
                         <span class="font-label-md text-label-md">Reports & Analytics</span>
                     </a>
@@ -219,7 +240,7 @@
             </ul>
         </nav>
         <div class="px-4 mt-auto">
-            <a class="flex items-center gap-4 px-6 py-3 {% if active_page == 'settings' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors rounded-lg{% endif %}" href="{{ url_for('settings') }}">
+            <a class="flex items-center gap-4 px-6 py-2 {% if active_page == 'settings' %}sidebar-active{% else %}text-on-surface-variant font-medium hover:bg-surface-container-high transition-colors rounded-lg{% endif %}" href="{{ url_for('settings') }}">
                 <span class="material-symbols-outlined">settings</span>
                 <span class="font-label-md text-label-md">Settings</span>
             </a>
@@ -227,7 +248,7 @@
     </aside>
 
     <!-- TopNavBar Shell -->
-    <header class="h-16 w-full fixed top-0 z-40 flex justify-between items-center pl-[312px] pr-margin-desktop bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm">
+    <header class="h-16 w-full fixed top-0 z-40 flex justify-between items-center pl-[292px] pr-margin-desktop bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-outline-variant/20 shadow-sm">
         <div class="flex items-center flex-1 max-w-md">
             <form method="GET" action="{{ url_for('customers') }}" class="relative w-full">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
@@ -289,11 +310,12 @@
     {% endwith %}
 
     <!-- Main Content Stage -->
-    <main class="ml-[280px] pt-16 min-h-screen max-w-container-max mx-auto">
+    <main class="ml-[260px] pt-16 min-h-screen max-w-container-max mx-auto">
         {% block content %}{% endblock %}
     </main>
 
     <!-- Floating AI Chatbot -->
+    {% if active_page != 'dashboard' and active_page != 'customers' and active_page != 'sites' and active_page != 'bills' %}
     <div class="fixed bottom-8 right-8 z-[100] flex flex-col items-end" id="chatbot">
         <div class="hidden mb-4 w-80 glass-card rounded-2xl overflow-hidden shadow-2xl flex flex-col transition-all duration-300 opacity-0 scale-90 translate-y-4" id="chat-window">
             <div class="p-4 bg-primary text-on-primary flex items-center justify-between">
@@ -322,6 +344,7 @@
             <span class="material-symbols-outlined text-[28px] group-hover:rotate-12 transition-transform">forum</span>
         </button>
     </div>
+    {% endif %}
 
     <script>
         function toggleChat() {

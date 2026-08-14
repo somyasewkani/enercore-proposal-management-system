@@ -27,6 +27,9 @@ from services.customer_service import (
     get_customer_kpis,
     update_customer_status,
     get_customer,
+    delete_customer,
+    update_customer_profile,
+    restore_customer,
 )
 from services.dashboard_service import (
     get_dashboard_kpis,
@@ -34,6 +37,7 @@ from services.dashboard_service import (
     get_followups,
     get_recent_activity,
     export_recent_activity_csv,
+    get_capacity_pipeline,
 )
 from services.pipeline_service import (
     get_all_deals_by_stage,
@@ -49,6 +53,23 @@ from services.proposal_service import (
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'enercore-solar-secret-key')
+
+import os
+import sys
+
+# Guard database initialization to run exactly once on startup/reload
+is_reloader_parent = (
+    os.environ.get("WERKZEUG_RUN_MAIN") is None 
+    and (
+        os.environ.get("FLASK_DEBUG") == "1" 
+        or os.environ.get("FLASK_ENV") == "development" 
+        or any("app_flask.py" in arg for arg in sys.argv)
+    )
+)
+
+if not is_reloader_parent:
+    from database.connection import init_db
+    init_db(seed_demo=False)
 
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -137,7 +158,19 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    date_range = request.args.get('range', '30')
+    raw_range = request.args.get('range', '30')
+    from services.dashboard_service import normalize_date_range
+    date_range = normalize_date_range(raw_range)
+    
+    if date_range == "30":
+        date_range_ui = "30"
+    elif date_range == "90":
+        date_range_ui = "90"
+    elif date_range == "year":
+        date_range_ui = "365"
+    else:
+        date_range_ui = "all"
+
     search_q = request.args.get('search', '').strip()
     category_filter = request.args.get('category', 'all')
     status_filter = request.args.get('status', 'all')
@@ -152,8 +185,8 @@ def dashboard():
     per_page = 5
 
     kpis = get_dashboard_kpis(date_range=date_range)
-    pipeline_chart = get_pipeline_chart_data()
-    followups = get_followups()
+    pipeline_chart = get_capacity_pipeline()
+    followups = get_followups(date_range=date_range)
     activity_items, total_count = get_recent_activity(
         search=search_q,
         category=category_filter,
@@ -161,23 +194,37 @@ def dashboard():
         sort_by=sort_by,
         sort_order=sort_order,
         page=page,
-        per_page=per_page
+        per_page=per_page,
+        date_range=date_range
     )
 
     total_pages = max(1, math.ceil(total_count / per_page))
 
-    from services.project_service import get_project_dashboard_kpis
-    project_kpis = get_project_dashboard_kpis()
+    from services.project_service import (
+        get_project_execution_overview,
+        format_project_count,
+        format_mw,
+        format_currency,
+    )
+    raw_overview = get_project_execution_overview(date_range=date_range)
+    project_overview = {
+        "active_projects": format_project_count(raw_overview["active_projects"]),
+        "completed_projects": format_project_count(raw_overview["completed_projects"]),
+        "projects_on_hold": format_project_count(raw_overview["projects_on_hold"]),
+        "installed_capacity": format_mw(raw_overview["installed_capacity_mw"]),
+        "pipeline_capacity": format_mw(raw_overview["pipeline_capacity_mw"]),
+        "project_revenue": format_currency(raw_overview["project_revenue"]),
+    }
 
     return render_template(
         'dashboard.html',
         active_page='dashboard',
         kpis=kpis,
-        project_kpis=project_kpis,
+        project_overview=project_overview,
         pipeline_chart=pipeline_chart,
         followups=followups,
         activity_items=activity_items,
-        date_range=date_range,
+        date_range=date_range_ui,
         search_q=search_q,
         category_filter=category_filter,
         status_filter=status_filter,
@@ -196,11 +243,13 @@ def export_dashboard_csv():
     search_q = request.args.get('search', '')
     category_filter = request.args.get('category', 'all')
     status_filter = request.args.get('status', 'all')
+    date_range = request.args.get('range', '30')
 
     csv_data = export_recent_activity_csv(
         search=search_q,
         category=category_filter,
-        status=status_filter
+        status=status_filter,
+        date_range=date_range
     )
 
     return Response(
@@ -231,8 +280,9 @@ def customers():
     search = request.args.get('search', '').strip()
     category = request.args.get('category', 'all')
     status = request.args.get('status', 'all')
+    archive = request.args.get('archive', 'active')
 
-    customer_list = list_customers(search, category, status)
+    customer_list = list_customers(search, category, status, archive_filter=archive)
 
     from services.proposal_service import get_customer_stats
     enriched_list = []
@@ -251,6 +301,7 @@ def customers():
         search_q=search,
         category_filter=category,
         status_filter=status,
+        archive_filter=archive,
     )
 
 
@@ -342,6 +393,17 @@ def archive_customer_route(customer_id):
     else:
         flash(msg, 'error')
         return redirect(url_for('customer_details_route', customer_id=customer_id))
+
+
+@app.route('/customers/<customer_id>/restore', methods=['POST'])
+@login_required
+def restore_customer_route(customer_id):
+    success, msg = restore_customer(customer_id)
+    if success:
+        flash(msg, 'success')
+    else:
+        flash(msg, 'error')
+    return redirect(request.referrer or url_for('customer_details_route', customer_id=customer_id))
 
 
 @app.route('/customers/<customer_id>/delete', methods=['POST'])
@@ -445,30 +507,120 @@ def export_analysis_data():
 @app.route('/proposal', methods=['GET', 'POST'])
 @login_required
 def proposal():
+    from services.proposal_service import get_bill_details
     if request.method == 'POST':
         customer_id = request.form.get('customer_id')
-        if not customer_id:
-            flash('Please select or add a client first before generating a proposal.', 'error')
-            return redirect(url_for('proposal'))
+        bill_id = request.form.get('bill_id')
+        actor = session.get('user', {}).get('full_name', 'System')
 
-        cust = get_customer(customer_id)
-        if cust:
-            create_proposal({
-                'customer_id': customer_id,
-                'name': f'Solar Integration Proposal - {cust["name"]}',
-                'system_size_kwp': 250.0,
-                'annual_yield_kwh': 1125.0,
-                'project_cost': 34250.0,
-                'payback_years': 7.2,
-                'irr': 15.0
-            })
-            flash(f'Official proposal for "{cust["name"]}" generated and saved in database.', 'success')
+        if bill_id:
+            # Production-grade proposal generation workflow
+            from services.proposal_generator import generate_proposal_record
+            success, warnings, proposal_id = generate_proposal_record(bill_id, actor=actor, remarks="Generated via proposal settings wizard.")
+            if success:
+                flash("Solar proposal generated successfully!", "success")
+                return redirect(url_for('proposal_preview_route', proposal_id=proposal_id))
+            else:
+                err = warnings[0] if warnings else "Unknown proposal generation error."
+                flash(f"Proposal Generation failed: {err}", "error")
+                return redirect(url_for('proposal', bill_id=bill_id))
         else:
-            flash('Selected client does not exist.', 'error')
-        return redirect(url_for('proposal_history'))
+            # Manual Mode / Skip Bill Upload
+            if not customer_id:
+                flash('Please select or add a client first before generating a proposal.', 'error')
+                return redirect(url_for('proposal'))
+
+            cust = get_customer(customer_id)
+            if cust:
+                # Generate new proposal number ENR-2026-XXXX and store in unified table
+                import uuid
+                from datetime import datetime
+                conn = get_connection()
+                is_sqlite = isinstance(conn, sqlite3.Connection)
+                try:
+                    cur = conn.cursor()
+                    current_year = datetime.now().year
+                    prefix = f"ENR-{current_year}-"
+                    cur.execute("SELECT proposal_number FROM proposals WHERE proposal_number LIKE ? ORDER BY proposal_number DESC LIMIT 1;" if is_sqlite else "SELECT proposal_number FROM proposals WHERE proposal_number LIKE %s ORDER BY proposal_number DESC LIMIT 1;", (prefix + "%",))
+                    last_row = cur.fetchone()
+                    if last_row:
+                        last_num = last_row[0] if is_sqlite else (last_row["proposal_number"] if isinstance(last_row, dict) else last_row[0])
+                        try:
+                            seq = int(last_num.split("-")[-1])
+                            next_seq = seq + 1
+                        except Exception:
+                            next_seq = 1
+                    else:
+                        next_seq = 1
+                        
+                    prop_num = f"{prefix}{next_seq:04d}"
+                    proposal_id = f"prop_{uuid.uuid4().hex[:12]}"
+                    
+                    insert_query = """
+                        INSERT INTO proposals (
+                            id, proposal_number, customer_id, site_id, bill_id, calculation_id,
+                            proposal_name, version, status, plant_size_kw, recommended_inverter_kw,
+                            annual_generation, annual_savings, system_cost, payback_years,
+                            prepared_by, prepared_date, remarks, is_active
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1);
+                    """ if is_sqlite else """
+                        INSERT INTO proposals (
+                            id, proposal_number, customer_id, site_id, bill_id, calculation_id,
+                            proposal_name, version, status, plant_size_kw, recommended_inverter_kw,
+                            annual_generation, annual_savings, system_cost, payback_years,
+                            prepared_by, prepared_date, remarks, is_active
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 1);
+                    """
+                    cur.execute(insert_query, (
+                        proposal_id,
+                        prop_num,
+                        customer_id,
+                        None,
+                        None,
+                        None,
+                        f"Manual Proposal - {cust['name']}",
+                        1,
+                        "Draft",
+                        250.0,
+                        10.0,
+                        1125.0,
+                        42500.0,
+                        34250.0,
+                        7.2,
+                        actor,
+                        datetime.now().strftime("%Y-%m-%d"),
+                        "Generated manually (skipped bill upload)",
+                        ""
+                    ))
+                    conn.commit()
+                    flash(f'Manual proposal {prop_num} for "{cust["name"]}" created successfully.', 'success')
+                    return redirect(url_for('proposal_preview_route', proposal_id=proposal_id))
+                except Exception as e:
+                    if conn: conn.rollback()
+                    flash(f"Error creating manual proposal: {e}", "error")
+                    return redirect(url_for('proposal'))
+                finally:
+                    conn.close()
+            else:
+                flash('Selected client does not exist.', 'error')
+                return redirect(url_for('proposal'))
+
+    bill_id = request.args.get('bill_id')
+    selected_customer_id = request.args.get('customer_id')
+    bill = None
+    if bill_id:
+        bill = get_bill_details(bill_id)
+        if bill:
+            selected_customer_id = bill['customer_id']
 
     customers_list = list_customers()
-    return render_template('proposal.html', active_page='proposal', customers=customers_list)
+    return render_template(
+        'proposal.html',
+        active_page='proposal',
+        customers=customers_list,
+        bill=bill,
+        selected_customer_id=selected_customer_id
+    )
 
 
 @app.route('/proposal_history')
@@ -583,15 +735,15 @@ def upload_bill():
                 'user': session.get('user', {}).get('full_name', 'System')
             })
 
-            # Re-save demo OCR results for backward compatibility with analysis view
-            from services.proposal_service import save_ocr_result
-            save_ocr_result(
-                bill_id=bill_id,
-                extracted_text="OCR Parsed Utility Bill",
-                json_data='{"plant_size": "250", "daily_yield": "1,125", "annual_savings": "42,500", "payback": "3.8", "irr": "24.6%"}'
-            )
+            # Automatically execute production-grade OCR and feasibility calculation pipeline
+            from services.ocr_service import run_ocr_for_bill
+            from services.calculation_service import run_solar_calculations
+            
+            actor = session.get('user', {}).get('full_name', 'System')
+            ocr_success, ocr_warnings = run_ocr_for_bill(bill_id, actor=actor)
+            calc_success, calc_warnings = run_solar_calculations(bill_id, actor=actor)
 
-            flash(f'Electricity bill "{orig_filename}" uploaded successfully.', 'success')
+            flash(f'Electricity bill "{orig_filename}" uploaded, and AI OCR & solar feasibility analysis completed successfully.', 'success')
             return redirect(url_for('analysis', bill_id=bill_id))
         except Exception as e:
             flash(f"Error saving statement: {e}", "error")
